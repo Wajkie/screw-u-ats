@@ -273,7 +273,7 @@ async function enrichRepo(owner: string, raw: RawRepo, token: string): Promise<G
   };
 }
 
-async function withConcurrency<T, R>(
+export async function withConcurrency<T, R>(
   items: T[],
   limit: number,
   fn: (item: T) => Promise<R>,

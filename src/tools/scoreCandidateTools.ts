@@ -5,6 +5,7 @@ import type { ToolRuntime } from "../toolRuntime.js";
 import { withCache } from "../cache.js";
 import { scoreCandidate } from "./scoreCandidate.js";
 import { scoreAllRoles } from "./scoreAllRoles.js";
+import { scoreBatch } from "./scoreBatch.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rolesDir = resolve(__dirname, "../../knowledge/roles");
@@ -60,5 +61,25 @@ export function registerScoreCandidateTools(runtime: ToolRuntime): void {
         600,
         () => scoreAllRoles(github_username, ctx.config.githubToken, rolesDir),
       ),
+  });
+
+  runtime.register({
+    name: "score_batch",
+    description:
+      "Score multiple GitHub users against a role and return candidates ranked by fit_score descending, plus an ASCII comparison table.",
+    sideEffect: "read",
+    inputSchema: {
+      github_usernames: z
+        .array(z.string())
+        .min(1)
+        .describe("GitHub usernames to evaluate (at least one)"),
+      role: z.enum(ROLES).describe("Role to evaluate all candidates against"),
+    },
+    handler: async ({ github_usernames, role }, ctx) => {
+      const cacheKey = `score_batch:${[...github_usernames].sort().join(",")}:${role}`;
+      return withCache(ctx.cache, cacheKey, 600, () =>
+        scoreBatch(github_usernames, role, ctx.config.githubToken, rolesDir),
+      );
+    },
   });
 }
