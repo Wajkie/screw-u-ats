@@ -39,6 +39,14 @@ interface RawReadme {
 
 const TEST_DIR_NAMES = new Set(["test", "tests", "__tests__", "spec", "specs", "e2e"]);
 const TEST_FILE_PATTERN = /\.(test|spec)\.[jt]sx?$/;
+// Config files are a reliable indicator that tests are set up even when test files live in src/.
+const TEST_CONFIG_PATTERN = /^(vitest|jest|mocha|playwright|cypress)\.config\.[jt]sx?$|^\.mocharc\./;
+// Directories that are never package roots — skip them during monorepo scanning.
+const INFRA_DIRS = new Set([
+  ".github", ".husky", ".changeset", ".git", ".turbo", ".cache",
+  "node_modules", "dist", "build", "coverage", "docs", "docssite", "docker",
+  ".next", ".nuxt", "public", "static", "assets",
+]);
 
 function githubHeaders(token: string): Record<string, string> {
   return {
@@ -48,14 +56,16 @@ function githubHeaders(token: string): Record<string, string> {
   };
 }
 
-async function fetchRootContents(
+async function fetchDirContents(
   owner: string,
   repo: string,
+  path: string,
   token: string,
 ): Promise<RawContentItem[]> {
-  const res = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/`, {
-    headers: githubHeaders(token),
-  });
+  const res = await fetch(
+    `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${path}`,
+    { headers: githubHeaders(token) },
+  );
   if (!res.ok) return [];
   return (await res.json()) as RawContentItem[];
 }
@@ -74,18 +84,64 @@ async function fetchReadme(
   return Buffer.from(raw.content.replace(/\n/g, ""), "base64").toString("utf-8");
 }
 
+function hasTestsInContents(items: RawContentItem[]): boolean {
+  return items.some(
+    (item) =>
+      (item.type === "dir" && TEST_DIR_NAMES.has(item.name.toLowerCase())) ||
+      (item.type === "file" && TEST_FILE_PATTERN.test(item.name)) ||
+      (item.type === "file" && TEST_CONFIG_PATTERN.test(item.name)),
+  );
+}
+
 async function enrichRepo(owner: string, raw: RawRepo, token: string): Promise<GitHubRepo> {
   const [contents, readmeContent] = await Promise.all([
-    fetchRootContents(owner, raw.name, token),
+    fetchDirContents(owner, raw.name, "", token),
     fetchReadme(owner, raw.name, token),
   ]);
 
   const hasCi = contents.some((item) => item.name === ".github" && item.type === "dir");
-  const hasTests = contents.some(
-    (item) =>
-      (item.type === "dir" && TEST_DIR_NAMES.has(item.name.toLowerCase())) ||
-      (item.type === "file" && TEST_FILE_PATTERN.test(item.name)),
+
+  // Check root first; if tests live under src/ (common in TypeScript projects),
+  // do one extra fetch to catch patterns like src/__tests__/.
+  const hasSrcDir = contents.some((item) => item.name === "src" && item.type === "dir");
+  const srcContents = hasSrcDir
+    ? await fetchDirContents(owner, raw.name, "src", token)
+    : [];
+
+  // Nested monorepo: packages/ or apps/ at root.
+  // Sample the first package directory — if it has tests, the repo counts as tested.
+  const nestedMonorepoDir = contents.find(
+    (item) => item.type === "dir" && (item.name === "packages" || item.name === "apps"),
   );
+  let monorepoHasTests = false;
+  if (nestedMonorepoDir && !hasTestsInContents(contents) && !hasTestsInContents(srcContents)) {
+    const pkgList = await fetchDirContents(owner, raw.name, nestedMonorepoDir.name, token);
+    const firstPkg = pkgList.find((item) => item.type === "dir");
+    if (firstPkg) {
+      const pkgRoot = await fetchDirContents(owner, raw.name, `${nestedMonorepoDir.name}/${firstPkg.name}`, token);
+      const pkgSrc = pkgRoot.find((item) => item.name === "src" && item.type === "dir")
+        ? await fetchDirContents(owner, raw.name, `${nestedMonorepoDir.name}/${firstPkg.name}/src`, token)
+        : [];
+      monorepoHasTests = hasTestsInContents(pkgRoot) || hasTestsInContents(pkgSrc);
+    }
+  }
+
+  // Flat monorepo: packages sit directly at root (e.g. a11y-core/, react-a11y/).
+  // Check the first few non-infra directories for test indicators.
+  if (!monorepoHasTests && !hasTestsInContents(contents) && !hasTestsInContents(srcContents)) {
+    const candidatePkgDirs = contents
+      .filter((item) => item.type === "dir" && !item.name.startsWith(".") && !INFRA_DIRS.has(item.name))
+      .slice(0, 3);
+    for (const pkgDir of candidatePkgDirs) {
+      const pkgContents = await fetchDirContents(owner, raw.name, pkgDir.name, token);
+      if (hasTestsInContents(pkgContents)) {
+        monorepoHasTests = true;
+        break;
+      }
+    }
+  }
+
+  const hasTests = hasTestsInContents(contents) || hasTestsInContents(srcContents) || monorepoHasTests;
 
   return {
     name: raw.name,

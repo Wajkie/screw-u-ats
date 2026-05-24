@@ -52,6 +52,7 @@ describe("fetchRepos", () => {
       { status: 200, body: [makeRawRepo()] },
       { status: 200, body: rootContents([".github", "src"], ["dir", "dir"]) },
       { status: 200, body: { content: b64("# Readme"), encoding: "base64" } },
+      { status: 200, body: [] }, // src/ contents
     ]);
 
     const repos = await fetchRepos("octocat", TOKEN);
@@ -73,6 +74,7 @@ describe("fetchRepos", () => {
       { status: 200, body: [makeRawRepo()] },
       { status: 200, body: rootContents([".github", "src"], ["dir", "dir"]) },
       { status: 404, body: {} },
+      { status: 200, body: [] }, // src/ contents
     ]);
 
     const [repo] = await fetchRepos("octocat", TOKEN);
@@ -84,17 +86,43 @@ describe("fetchRepos", () => {
       { status: 200, body: [makeRawRepo()] },
       { status: 200, body: rootContents(["src", "index.ts"], ["dir", "file"]) },
       { status: 404, body: {} },
+      { status: 200, body: [] }, // src/ contents
     ]);
 
     const [repo] = await fetchRepos("octocat", TOKEN);
     expect(repo!.hasCi).toBe(false);
   });
 
-  it("detects tests from __tests__ directory", async () => {
+  it("detects tests from __tests__ directory at root", async () => {
     stubFetch([
       { status: 200, body: [makeRawRepo()] },
       { status: 200, body: rootContents(["__tests__", "src"], ["dir", "dir"]) },
       { status: 404, body: {} },
+      { status: 200, body: [] }, // src/ contents
+    ]);
+
+    const [repo] = await fetchRepos("octocat", TOKEN);
+    expect(repo!.hasTests).toBe(true);
+  });
+
+  it("detects tests from __tests__ directory inside src/", async () => {
+    stubFetch([
+      { status: 200, body: [makeRawRepo()] },
+      { status: 200, body: rootContents(["src"], ["dir"]) },
+      { status: 404, body: {} },
+      { status: 200, body: rootContents(["__tests__", "index.ts"], ["dir", "file"]) }, // src/ contents
+    ]);
+
+    const [repo] = await fetchRepos("octocat", TOKEN);
+    expect(repo!.hasTests).toBe(true);
+  });
+
+  it("detects tests from vitest.config.ts at root", async () => {
+    stubFetch([
+      { status: 200, body: [makeRawRepo()] },
+      { status: 200, body: rootContents(["vitest.config.ts", "src"], ["file", "dir"]) },
+      { status: 404, body: {} },
+      { status: 200, body: [] }, // src/ contents
     ]);
 
     const [repo] = await fetchRepos("octocat", TOKEN);
@@ -112,11 +140,42 @@ describe("fetchRepos", () => {
     expect(repo!.hasTests).toBe(true);
   });
 
-  it("sets hasTests false when no test indicators exist", async () => {
+  it("detects tests inside a monorepo packages/ directory", async () => {
+    stubFetch([
+      { status: 200, body: [makeRawRepo()] },
+      { status: 200, body: rootContents(["packages", "package.json"], ["dir", "file"]) }, // root
+      { status: 404, body: {} }, // readme
+      // no src/ fetch (no src dir at root)
+      // monorepo path:
+      { status: 200, body: rootContents(["pkg-a", "pkg-b"], ["dir", "dir"]) }, // packages/
+      { status: 200, body: rootContents(["src", "package.json"], ["dir", "file"]) }, // packages/pkg-a/
+      { status: 200, body: rootContents(["__tests__", "index.ts"], ["dir", "file"]) }, // packages/pkg-a/src/
+    ]);
+
+    const [repo] = await fetchRepos("octocat", TOKEN);
+    expect(repo!.hasTests).toBe(true);
+  });
+
+  it("detects tests in a flat monorepo (packages at root level)", async () => {
+    stubFetch([
+      { status: 200, body: [makeRawRepo()] },
+      // root — no src/, no packages/ dir, but has package-like dirs
+      { status: 200, body: rootContents([".github", "a11y-core", "react-a11y"], ["dir", "dir", "dir"]) },
+      { status: 404, body: {} }, // readme
+      // flat monorepo scan — a11y-core/ has vitest.config.ts
+      { status: 200, body: rootContents(["vitest.config.ts", "src", "package.json"], ["file", "dir", "file"]) },
+    ]);
+
+    const [repo] = await fetchRepos("octocat", TOKEN);
+    expect(repo!.hasTests).toBe(true);
+  });
+
+  it("sets hasTests false when no test indicators exist in root or src/", async () => {
     stubFetch([
       { status: 200, body: [makeRawRepo()] },
       { status: 200, body: rootContents(["src", "README.md"], ["dir", "file"]) },
       { status: 404, body: {} },
+      { status: 200, body: rootContents(["index.ts", "utils.ts"]) }, // src/ — no tests
     ]);
 
     const [repo] = await fetchRepos("octocat", TOKEN);
