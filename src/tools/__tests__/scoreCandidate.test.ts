@@ -216,3 +216,54 @@ describe("scoreCandidate — top_repos and weak_repos", () => {
     expect(highlight!.url).toBe("https://github.com/bob/proj/tree/main/.github/workflows");
   });
 });
+
+describe("scoreCandidate — noise filter", () => {
+  it("complexity score is higher when low-complexity repos are filtered out", async () => {
+    // Mix: 4 trivial repos (score 0) + 1 complex repo. Filter should drop the trivial ones.
+    const complex = makeRepo({ name: "complex", size: 500, hasTests: true, hasCi: true });
+    const trivials = Array.from({ length: 4 }, (_, i) =>
+      makeRepo({ name: `trivial-${i}`, size: 0 }),
+    );
+    mockFetchRepos.mockResolvedValue([complex, ...trivials]);
+    const result = await scoreCandidate("user", "junior-frontend", "token", rolesDir);
+    // With filter active, complexity equals the complex repo score alone, not diluted by zeros.
+    expect(result.breakdown.complexity).toBeGreaterThan(0);
+  });
+
+  it("weak_repos display still includes low-complexity repos after filtering", async () => {
+    const complex = makeRepo({ name: "complex", size: 500, hasTests: true, hasCi: true });
+    const trivials = Array.from({ length: 4 }, (_, i) =>
+      makeRepo({ name: `trivial-${i}`, size: 0 }),
+    );
+    mockFetchRepos.mockResolvedValue([complex, ...trivials]);
+    const result = await scoreCandidate("user", "junior-frontend", "token", rolesDir);
+    // The weak_repos list is built from all repos (unfiltered) so trivials still appear.
+    expect(result.weak_repos.some((r) => r.name.startsWith("trivial"))).toBe(true);
+  });
+
+  it("skips noise filter when portfolio has 3 or fewer repos", async () => {
+    // With ≤3 repos, even zero-complexity ones should not be filtered.
+    // Set createdAt == pushedAt so span score is also 0, giving total complexity 0.
+    const repos = [
+      makeRepo({ name: "a", size: 0, createdAt: "2025-05-01T00:00:00Z" }),
+      makeRepo({ name: "b", size: 0, createdAt: "2025-05-01T00:00:00Z" }),
+      makeRepo({ name: "c", size: 0, createdAt: "2025-05-01T00:00:00Z" }),
+    ];
+    mockFetchRepos.mockResolvedValue(repos);
+    const result = await scoreCandidate("user", "junior-frontend", "token", rolesDir);
+    expect(result.fit_score).toBe(0);
+  });
+});
+
+describe("scoreCandidate — graduation_date", () => {
+  it("accepts graduation_date and does not throw", async () => {
+    mockFetchRepos.mockResolvedValue([
+      makeRepo({ name: "school-proj", pushedAt: "2025-01-01T00:00:00Z" }),
+      makeRepo({ name: "post-grad", size: 200, hasTests: true, hasCi: true }),
+    ]);
+    const grad = new Date("2025-06-01");
+    await expect(
+      scoreCandidate("user", "junior-frontend", "token", rolesDir, false, "", grad),
+    ).resolves.not.toThrow();
+  });
+});

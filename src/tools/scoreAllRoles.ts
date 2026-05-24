@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { fetchRepos } from "../github/fetchRepos.js";
-import { scoreComplexity } from "../scoring/complexitySignals.js";
+import { scoreComplexity, filterNoise } from "../scoring/complexitySignals.js";
 import { parseRoleDefinition, matchConcepts } from "../scoring/conceptMatch.js";
 import { scoreTrajectory } from "../scoring/trajectoryScore.js";
 import type { GitHubRepo } from "../github/fetchRepos.js";
@@ -61,16 +61,18 @@ export async function scoreAllRoles(
   githubUsername: string,
   githubToken: string,
   rolesDir: string,
+  graduationDate?: Date | null,
 ): Promise<AllRolesResult> {
   const repos = await fetchRepos(githubUsername, githubToken);
-  const trajectoryResult = scoreTrajectory(repos);
-  const complexityScore = avgComplexity(repos);
+  const scoringRepos = filterNoise(repos);
+  const trajectoryResult = scoreTrajectory(scoringRepos, Date.now(), graduationDate);
+  const complexityScore = avgComplexity(scoringRepos);
 
   const scores: RoleScore[] = ALL_ROLES.map((slug) => {
     const rolePath = resolve(rolesDir, `${slug}.md`);
     const roleMarkdown = readFileSync(rolePath, "utf-8");
     const roleDef = parseRoleDefinition(roleMarkdown);
-    const conceptResult = matchConcepts(repos, roleDef);
+    const conceptResult = matchConcepts(scoringRepos, roleDef);
 
     const fit_score = Math.round(
       trajectoryResult.score * 0.45 + conceptResult.score * 0.35 + complexityScore * 0.2,

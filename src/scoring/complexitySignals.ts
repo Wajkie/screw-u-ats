@@ -210,3 +210,11 @@ export function scoreComplexityDetailed(repo: GitHubRepo): ComplexityBreakdown {
 export function scoreComplexity(repo: GitHubRepo): number {
   return scoreComplexityDetailed(repo).total;
 }
+
+const NOISE_FLOOR = 10;
+
+/** Drop low-complexity repos from scoring inputs. Skipped when the portfolio has ≤3 repos total. */
+export function filterNoise(repos: GitHubRepo[]): GitHubRepo[] {
+  if (repos.length <= 3) return repos;
+  return repos.filter((r) => scoreComplexity(r) >= NOISE_FLOOR);
+}

@@ -28,11 +28,18 @@ export function registerScoreCandidateTools(runtime: ToolRuntime): void {
         .optional()
         .default(false)
         .describe("Run Lighthouse audits on live project URLs found in repos (default: false)"),
+      graduation_date: z
+        .string()
+        .optional()
+        .describe(
+          "ISO date (YYYY-MM-DD) when the candidate graduated. Repos before this date are treated as school work and weighted lower in trajectory scoring.",
+        ),
     },
-    handler: async ({ github_username, role, include_lighthouse }, ctx) =>
-      withCache(
+    handler: async ({ github_username, role, include_lighthouse, graduation_date }, ctx) => {
+      const gradDate = graduation_date ? new Date(graduation_date) : null;
+      return withCache(
         ctx.cache,
-        `score_candidate:${github_username}:${role}:lh${include_lighthouse ? "1" : "0"}`,
+        `score_candidate:${github_username}:${role}:lh${include_lighthouse ? "1" : "0"}:grad${graduation_date ?? ""}`,
         600,
         () =>
           scoreCandidate(
@@ -42,8 +49,10 @@ export function registerScoreCandidateTools(runtime: ToolRuntime): void {
             rolesDir,
             include_lighthouse,
             ctx.config.pagespeedApiKey,
+            gradDate,
           ),
-      ),
+      );
+    },
   });
 
   runtime.register({
@@ -53,14 +62,22 @@ export function registerScoreCandidateTools(runtime: ToolRuntime): void {
     sideEffect: "read",
     inputSchema: {
       github_username: z.string().describe("GitHub username to evaluate"),
+      graduation_date: z
+        .string()
+        .optional()
+        .describe(
+          "ISO date (YYYY-MM-DD) when the candidate graduated. Repos before this date are treated as school work and weighted lower in trajectory scoring.",
+        ),
     },
-    handler: async ({ github_username }, ctx) =>
-      withCache(
+    handler: async ({ github_username, graduation_date }, ctx) => {
+      const gradDate = graduation_date ? new Date(graduation_date) : null;
+      return withCache(
         ctx.cache,
-        `score_all_roles:${github_username}`,
+        `score_all_roles:${github_username}:grad${graduation_date ?? ""}`,
         600,
-        () => scoreAllRoles(github_username, ctx.config.githubToken, rolesDir),
-      ),
+        () => scoreAllRoles(github_username, ctx.config.githubToken, rolesDir, gradDate),
+      );
+    },
   });
 
   runtime.register({
@@ -74,11 +91,18 @@ export function registerScoreCandidateTools(runtime: ToolRuntime): void {
         .min(1)
         .describe("GitHub usernames to evaluate (at least one)"),
       role: z.enum(ROLES).describe("Role to evaluate all candidates against"),
+      graduation_date: z
+        .string()
+        .optional()
+        .describe(
+          "ISO date (YYYY-MM-DD) when the candidates graduated. Repos before this date are treated as school work and weighted lower in trajectory scoring.",
+        ),
     },
-    handler: async ({ github_usernames, role }, ctx) => {
-      const cacheKey = `score_batch:${[...github_usernames].sort().join(",")}:${role}`;
+    handler: async ({ github_usernames, role, graduation_date }, ctx) => {
+      const gradDate = graduation_date ? new Date(graduation_date) : null;
+      const cacheKey = `score_batch:${[...github_usernames].sort().join(",")}:${role}:grad${graduation_date ?? ""}`;
       return withCache(ctx.cache, cacheKey, 600, () =>
-        scoreBatch(github_usernames, role, ctx.config.githubToken, rolesDir),
+        scoreBatch(github_usernames, role, ctx.config.githubToken, rolesDir, gradDate),
       );
     },
   });

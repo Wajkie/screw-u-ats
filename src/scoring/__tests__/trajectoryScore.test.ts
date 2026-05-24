@@ -221,3 +221,55 @@ describe("scoreTrajectory -- curve field", () => {
     expect(result.curve.map((p) => p.period)).toEqual(["12m+", "6-12m", "3-6m", "0-3m"]);
   });
 });
+
+describe("scoreTrajectory -- graduation date", () => {
+  // Graduation = 60 days before NOW. Pre-grad = anything pushed before that.
+  const GRAD = new Date(NOW - 60 * 86_400_000);
+
+  it("routes pre-graduation repos into pre-grad bucket", () => {
+    const repos = [
+      trivialRepo(200), // 200 days ago < graduation → pre-grad
+      complexRepo(10),  // 10 days ago > graduation → 0-3m
+    ];
+    const result = scoreTrajectory(repos, NOW, GRAD);
+    expect("pre-grad" in result.bucketAverages).toBe(true);
+    expect("0-3m" in result.bucketAverages).toBe(true);
+  });
+
+  it("delta compares post-grad (recent) vs pre-grad (older)", () => {
+    const repos = [
+      trivialRepo(200), // pre-grad school project
+      complexRepo(10),  // post-grad quality work
+    ];
+    const result = scoreTrajectory(repos, NOW, GRAD);
+    expect(result.delta).not.toBeNull();
+    expect(result.delta!).toBeGreaterThan(0); // post-grad more complex than pre-grad
+  });
+
+  it("graduation filter raises score vs no graduation filter for candidate with school noise", () => {
+    const repos = [
+      trivialRepo(400), // school noise
+      trivialRepo(300), // school noise
+      trivialRepo(200), // school noise
+      complexRepo(10),  // post-grad quality work
+      complexRepo(30),  // post-grad quality work
+    ];
+    const withGrad = scoreTrajectory(repos, NOW, GRAD);
+    const withoutGrad = scoreTrajectory(repos, NOW);
+    expect(withGrad.score).toBeGreaterThan(withoutGrad.score);
+  });
+
+  it("curve places pre-grad first (oldest) when present", () => {
+    const repos = [trivialRepo(200), complexRepo(10)];
+    const result = scoreTrajectory(repos, NOW, GRAD);
+    expect(result.curve[0]!.period).toBe("pre-grad");
+  });
+
+  it("without graduation date, behaves identically to existing logic", () => {
+    const repos = [complexRepo(10), complexRepo(400)];
+    const withNull = scoreTrajectory(repos, NOW, null);
+    const withUndefined = scoreTrajectory(repos, NOW);
+    expect(withNull.score).toBe(withUndefined.score);
+    expect(withNull.delta).toBe(withUndefined.delta);
+  });
+});

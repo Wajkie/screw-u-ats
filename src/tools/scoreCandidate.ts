@@ -2,7 +2,7 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 import { fetchRepos } from "../github/fetchRepos.js";
 import { extractLiveUrls } from "../github/extractUrls.js";
-import { scoreComplexity } from "../scoring/complexitySignals.js";
+import { scoreComplexity, filterNoise } from "../scoring/complexitySignals.js";
 import { parseRoleDefinition, matchConcepts } from "../scoring/conceptMatch.js";
 import { scoreTrajectory } from "../scoring/trajectoryScore.js";
 import { computeSkillMap } from "../scoring/skillMap.js";
@@ -80,6 +80,7 @@ export async function scoreCandidate(
   rolesDir: string,
   includeLighthouse = false,
   pagespeedApiKey = "",
+  graduationDate?: Date | null,
 ): Promise<CandidateScoreResult> {
   const rolePath = resolve(rolesDir, `${role}.md`);
   let roleMarkdown: string;
@@ -91,12 +92,13 @@ export async function scoreCandidate(
 
   const roleDef = parseRoleDefinition(roleMarkdown);
   const repos = await fetchRepos(githubUsername, githubToken);
+  const scoringRepos = filterNoise(repos);
 
-  const trajectoryResult = scoreTrajectory(repos);
-  const conceptResult = matchConcepts(repos, roleDef);
-  const complexityScore = avgComplexity(repos);
+  const trajectoryResult = scoreTrajectory(scoringRepos, Date.now(), graduationDate);
+  const conceptResult = matchConcepts(scoringRepos, roleDef);
+  const complexityScore = avgComplexity(scoringRepos);
   const { top, weak } = buildRepoSummaries(repos, githubUsername);
-  const skill_map = computeSkillMap(repos);
+  const skill_map = computeSkillMap(scoringRepos);
 
   const fit_score = Math.round(
     trajectoryResult.score * 0.45 +

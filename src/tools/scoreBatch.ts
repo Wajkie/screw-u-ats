@@ -37,9 +37,10 @@ export async function scoreBatch(
   role: RoleSlug,
   githubToken: string,
   rolesDir: string,
+  graduationDate?: Date | null,
 ): Promise<BatchResult> {
   const results = await withConcurrency(githubUsernames, 5, (username) =>
-    scoreCandidate(username, role, githubToken, rolesDir),
+    scoreCandidate(username, role, githubToken, rolesDir, false, "", graduationDate),
   );
 
   const candidates = results.sort((a, b) => b.fit_score - a.fit_score);

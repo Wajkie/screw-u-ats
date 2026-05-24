@@ -1,9 +1,11 @@
 import type { GitHubRepo } from "../github/fetchRepos.js";
 import { scoreComplexity } from "./complexitySignals.js";
 
-export type BucketKey = "0-3m" | "3-6m" | "6-12m" | "12m+";
+export type BucketKey = "0-3m" | "3-6m" | "6-12m" | "12m+" | "pre-grad";
 
-const BUCKET_THRESHOLDS_DAYS: Array<[BucketKey, number]> = [
+type PostGradBucketKey = Exclude<BucketKey, "pre-grad">;
+
+const BUCKET_THRESHOLDS_DAYS: Array<[PostGradBucketKey, number]> = [
   ["0-3m", 90],
   ["3-6m", 180],
   ["6-12m", 365],
@@ -16,6 +18,8 @@ const BUCKET_WEIGHTS: Record<BucketKey, number> = {
   "3-6m": 2.0,
   "6-12m": 1.0,
   "12m+": 0.5,
+  // Pre-graduation work is evidence of growth direction but shouldn't dominate the score.
+  "pre-grad": 0.25,
 };
 
 export interface CurvePoint {
@@ -38,7 +42,7 @@ function avg(nums: number[]): number {
   return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
-function bucketKey(ageDays: number): BucketKey {
+function postGradBucketKey(ageDays: number): PostGradBucketKey {
   for (const [key, maxDays] of BUCKET_THRESHOLDS_DAYS) {
     if (ageDays <= maxDays) return key;
   }
@@ -71,24 +75,37 @@ function buildSummary(
   return "Declining trajectory — recent work is notably less complex than older projects.";
 }
 
-export function scoreTrajectory(repos: GitHubRepo[], now = Date.now()): TrajectoryResult {
+export function scoreTrajectory(
+  repos: GitHubRepo[],
+  now = Date.now(),
+  graduationDate?: Date | null,
+): TrajectoryResult {
   const bucketScores: Record<BucketKey, number[]> = {
     "0-3m": [],
     "3-6m": [],
     "6-12m": [],
     "12m+": [],
+    "pre-grad": [],
   };
 
+  const gradMs = graduationDate?.getTime() ?? null;
+
   for (const repo of repos) {
-    const ageDays = (now - new Date(repo.pushedAt).getTime()) / 86_400_000;
-    bucketScores[bucketKey(ageDays)].push(scoreComplexity(repo));
+    const repoMs = new Date(repo.pushedAt).getTime();
+    if (gradMs !== null && repoMs < gradMs) {
+      bucketScores["pre-grad"].push(scoreComplexity(repo));
+    } else {
+      const ageDays = (now - repoMs) / 86_400_000;
+      bucketScores[postGradBucketKey(ageDays)].push(scoreComplexity(repo));
+    }
   }
 
   const bucketAverages: Partial<Record<BucketKey, number>> = {};
   let weightedSum = 0;
   let totalWeight = 0;
 
-  for (const key of ["0-3m", "3-6m", "6-12m", "12m+"] as BucketKey[]) {
+  const ALL_BUCKET_KEYS: BucketKey[] = ["0-3m", "3-6m", "6-12m", "12m+", "pre-grad"];
+  for (const key of ALL_BUCKET_KEYS) {
     const scores = bucketScores[key];
     if (scores.length === 0) continue;
     const bucketAvg = avg(scores);
@@ -99,8 +116,14 @@ export function scoreTrajectory(repos: GitHubRepo[], now = Date.now()): Trajecto
 
   const baseScore = totalWeight > 0 ? weightedSum / totalWeight : 0;
 
-  const recentScores = [...bucketScores["0-3m"], ...bucketScores["3-6m"]];
-  const olderScores = [...bucketScores["6-12m"], ...bucketScores["12m+"]];
+  // When graduation date is provided, compare pre-grad (older) vs all post-grad (recent).
+  // Otherwise fall back to the time-based split: ≤6m vs >6m.
+  const recentScores = gradMs !== null
+    ? [...bucketScores["0-3m"], ...bucketScores["3-6m"], ...bucketScores["6-12m"], ...bucketScores["12m+"]]
+    : [...bucketScores["0-3m"], ...bucketScores["3-6m"]];
+  const olderScores = gradMs !== null
+    ? bucketScores["pre-grad"]
+    : [...bucketScores["6-12m"], ...bucketScores["12m+"]];
 
   let delta: number | null = null;
   let growthAdjustment = 0;
@@ -117,7 +140,7 @@ export function scoreTrajectory(repos: GitHubRepo[], now = Date.now()): Trajecto
   const score = Math.round(Math.min(100, Math.max(0, baseScore + growthAdjustment)));
   const summary = buildSummary(bucketAverages, delta, score);
 
-  const OLDEST_FIRST: BucketKey[] = ["12m+", "6-12m", "3-6m", "0-3m"];
+  const OLDEST_FIRST: BucketKey[] = ["pre-grad", "12m+", "6-12m", "3-6m", "0-3m"];
   const curve: CurvePoint[] = OLDEST_FIRST
     .filter((key) => bucketScores[key].length > 0)
     .map((key) => ({
