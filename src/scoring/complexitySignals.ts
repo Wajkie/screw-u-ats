@@ -90,7 +90,7 @@ export interface ComplexityBreakdown {
   total: number;        // 0–100
 }
 
-function hasDep(packageDeps: string[], term: string): boolean {
+export function hasDep(packageDeps: string[], term: string): boolean {
   const t = term.toLowerCase();
   return packageDeps.some((d) => {
     const dep = d.toLowerCase();
@@ -111,7 +111,7 @@ function hasDep(packageDeps: string[], term: string): boolean {
 }
 
 // NuGet packages use dotted names (Microsoft.AspNetCore.OpenApi) — substring match on lowercased name.
-function hasNugetDep(csprojDeps: string[], term: string): boolean {
+export function hasNugetDep(csprojDeps: string[], term: string): boolean {
   const t = term.toLowerCase();
   return csprojDeps.some((d) => d.toLowerCase().includes(t));
 }

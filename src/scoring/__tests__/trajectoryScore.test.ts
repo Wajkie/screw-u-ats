@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import { scoreTrajectory } from "../trajectoryScore.js";
 import type { GitHubRepo } from "../../github/fetchRepos.js";
 
@@ -53,17 +53,18 @@ function trivialRepo(pushedDaysAgo: number): GitHubRepo {
   return makeRepo(pushedDaysAgo, { size: 2 });
 }
 
-describe("scoreTrajectory â€” empty input", () => {
+describe("scoreTrajectory -- empty input", () => {
   it("returns score 0 and empty bucket averages for no repos", () => {
     const result = scoreTrajectory([], NOW);
     expect(result.score).toBe(0);
     expect(result.delta).toBeNull();
     expect(result.bucketAverages).toEqual({});
+    expect(result.curve).toEqual([]);
     expect(result.summary).toMatch(/no public repositories/i);
   });
 });
 
-describe("scoreTrajectory â€” single time range (no delta)", () => {
+describe("scoreTrajectory -- single time range (no delta)", () => {
   it("scores only-recent repos without delta", () => {
     const repos = [complexRepo(10), complexRepo(30), complexRepo(60)];
     const result = scoreTrajectory(repos, NOW);
@@ -82,7 +83,7 @@ describe("scoreTrajectory â€” single time range (no delta)", () => {
   });
 });
 
-describe("scoreTrajectory â€” growing candidate", () => {
+describe("scoreTrajectory -- growing candidate", () => {
   it("produces positive delta and higher score than a flat candidate", () => {
     // Growing: trivial old work, complex recent work.
     const growing = [
@@ -108,7 +109,7 @@ describe("scoreTrajectory â€” growing candidate", () => {
   });
 });
 
-describe("scoreTrajectory â€” flat candidate", () => {
+describe("scoreTrajectory -- flat candidate", () => {
   it("produces delta near zero for consistent complexity over time", () => {
     const repos = [
       makeRepo(20, { size: 100, hasTests: true }),
@@ -122,7 +123,7 @@ describe("scoreTrajectory â€” flat candidate", () => {
   });
 });
 
-describe("scoreTrajectory â€” regressing candidate", () => {
+describe("scoreTrajectory -- regressing candidate", () => {
   it("produces negative delta when older repos are more complex", () => {
     const regressing = [
       complexRepo(400),
@@ -145,7 +146,7 @@ describe("scoreTrajectory â€” regressing candidate", () => {
   });
 });
 
-describe("scoreTrajectory â€” bucket assignment", () => {
+describe("scoreTrajectory -- bucket assignment", () => {
   it("places repos into correct buckets by pushedAt age", () => {
     const repos = [
       complexRepo(120), // 3-6m (91-180 days)
@@ -160,7 +161,7 @@ describe("scoreTrajectory â€” bucket assignment", () => {
   });
 });
 
-describe("scoreTrajectory â€” score bounds", () => {
+describe("scoreTrajectory -- score bounds", () => {
   it("score is always in [0, 100]", () => {
     const manyComplex = Array.from({ length: 20 }, (_, i) => complexRepo(i * 5));
     const manyTrivial = Array.from({ length: 20 }, (_, i) => trivialRepo(i * 5));
@@ -175,4 +176,48 @@ describe("scoreTrajectory â€” score bounds", () => {
   });
 });
 
+describe("scoreTrajectory -- curve field", () => {
+  it("curve contains one entry per non-empty bucket, ordered oldest-first", () => {
+    const repos = [
+      complexRepo(400), // 12m+
+      complexRepo(250), // 6-12m
+      complexRepo(120), // 3-6m
+    ];
+    const result = scoreTrajectory(repos, NOW);
+    expect(result.curve).toHaveLength(3);
+    expect(result.curve.map((p) => p.period)).toEqual(["12m+", "6-12m", "3-6m"]);
+  });
 
+  it("curve omits empty buckets", () => {
+    const repos = [complexRepo(10), complexRepo(400)]; // 0-3m and 12m+ only
+    const result = scoreTrajectory(repos, NOW);
+    const periods = result.curve.map((p) => p.period);
+    expect(periods).toContain("12m+");
+    expect(periods).toContain("0-3m");
+    expect(periods).not.toContain("3-6m");
+    expect(periods).not.toContain("6-12m");
+  });
+
+  it("curve entries have correct repoCount and avgComplexity", () => {
+    const repos = [complexRepo(10), complexRepo(30)]; // two repos in 0-3m
+    const result = scoreTrajectory(repos, NOW);
+    expect(result.curve).toHaveLength(1);
+    const [point] = result.curve;
+    expect(point!.period).toBe("0-3m");
+    expect(point!.repoCount).toBe(2);
+    expect(point!.avgComplexity).toBeGreaterThan(0);
+    expect(point!.avgComplexity).toBeLessThanOrEqual(100);
+  });
+
+  it("curve is ordered oldest-first when all four buckets are populated", () => {
+    const repos = [
+      complexRepo(10),  // 0-3m
+      complexRepo(120), // 3-6m
+      complexRepo(250), // 6-12m
+      complexRepo(400), // 12m+
+    ];
+    const result = scoreTrajectory(repos, NOW);
+    expect(result.curve).toHaveLength(4);
+    expect(result.curve.map((p) => p.period)).toEqual(["12m+", "6-12m", "3-6m", "0-3m"]);
+  });
+});

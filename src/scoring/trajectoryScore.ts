@@ -1,7 +1,7 @@
 import type { GitHubRepo } from "../github/fetchRepos.js";
 import { scoreComplexity } from "./complexitySignals.js";
 
-type BucketKey = "0-3m" | "3-6m" | "6-12m" | "12m+";
+export type BucketKey = "0-3m" | "3-6m" | "6-12m" | "12m+";
 
 const BUCKET_THRESHOLDS_DAYS: Array<[BucketKey, number]> = [
   ["0-3m", 90],
@@ -18,12 +18,20 @@ const BUCKET_WEIGHTS: Record<BucketKey, number> = {
   "12m+": 0.5,
 };
 
+export interface CurvePoint {
+  period: BucketKey;
+  repoCount: number;
+  avgComplexity: number;
+}
+
 export interface TrajectoryResult {
   score: number;
   summary: string;
   bucketAverages: Partial<Record<BucketKey, number>>;
   /** Newer bucket avg minus older bucket avg. null when only one time range has repos. */
   delta: number | null;
+  /** Per-bucket time series, ordered oldest → newest. Empty buckets are omitted. */
+  curve: CurvePoint[];
 }
 
 function avg(nums: number[]): number {
@@ -109,5 +117,14 @@ export function scoreTrajectory(repos: GitHubRepo[], now = Date.now()): Trajecto
   const score = Math.round(Math.min(100, Math.max(0, baseScore + growthAdjustment)));
   const summary = buildSummary(bucketAverages, delta, score);
 
-  return { score, summary, bucketAverages, delta };
+  const OLDEST_FIRST: BucketKey[] = ["12m+", "6-12m", "3-6m", "0-3m"];
+  const curve: CurvePoint[] = OLDEST_FIRST
+    .filter((key) => bucketScores[key].length > 0)
+    .map((key) => ({
+      period: key,
+      repoCount: bucketScores[key].length,
+      avgComplexity: Math.round(avg(bucketScores[key])),
+    }));
+
+  return { score, summary, bucketAverages, delta, curve };
 }

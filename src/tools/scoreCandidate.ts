@@ -5,9 +5,11 @@ import { extractLiveUrls } from "../github/extractUrls.js";
 import { scoreComplexity } from "../scoring/complexitySignals.js";
 import { parseRoleDefinition, matchConcepts } from "../scoring/conceptMatch.js";
 import { scoreTrajectory } from "../scoring/trajectoryScore.js";
+import { computeSkillMap } from "../scoring/skillMap.js";
 import { runLighthouseAudits } from "../lighthouse/runAudit.js";
 import type { GitHubRepo } from "../github/fetchRepos.js";
 import type { LighthouseEnrichment } from "../lighthouse/runAudit.js";
+import type { SkillMap } from "../scoring/skillMap.js";
 
 export interface RepoSummary {
   name: string;
@@ -31,6 +33,7 @@ export interface CandidateScoreResult {
   trajectory_summary: string;
   top_repos: RepoSummary[];
   weak_repos: RepoSummary[];
+  skill_map: SkillMap;
   enrichment?: {
     lighthouse: LighthouseEnrichment;
   };
@@ -93,6 +96,7 @@ export async function scoreCandidate(
   const conceptResult = matchConcepts(repos, roleDef);
   const complexityScore = avgComplexity(repos);
   const { top, weak } = buildRepoSummaries(repos, githubUsername);
+  const skill_map = computeSkillMap(repos);
 
   const fit_score = Math.round(
     trajectoryResult.score * 0.45 +
@@ -115,6 +119,7 @@ export async function scoreCandidate(
     trajectory_summary: trajectoryResult.summary,
     top_repos: top,
     weak_repos: weak,
+    skill_map,
   };
 
   if (includeLighthouse) {
