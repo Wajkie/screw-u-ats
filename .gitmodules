@@ -1,0 +1,3 @@
+[submodule "mcp-kit"]
+	path = mcp-kit
+	url = https://github.com/Wajkie/mcp-kit.git
