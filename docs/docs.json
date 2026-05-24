@@ -59,6 +59,50 @@
       }
     },
     {
+      "id": "candidate_profile",
+      "name": "candidate_profile",
+      "category": "candidate-scoring",
+      "requiresWrites": false,
+      "summary": "Return a role-agnostic GitHub profile for a candidate — repo count, active dates, top languages, skill map, average complexity, trajectory summary, top repos, and suggested roles.",
+      "description": "Fetches a candidate's public GitHub repos and returns a structured overview without requiring a role to be specified. Useful for a quick read on a candidate before deciding which role to score them against. Returns skill_map (five axes: frontend, backend, devops, testing, architecture), trajectory_summary, top_repos by complexity, top_languages, and suggested_roles derived from the skill_map and average complexity.",
+      "inputs": [
+        { "name": "github_username", "type": "string", "required": true, "description": "GitHub username to profile" },
+        { "name": "graduation_date", "type": "string", "required": false, "description": "ISO date (YYYY-MM-DD) when the candidate graduated. Repos before this date are weighted lower in trajectory scoring." }
+      ],
+      "returns": {
+        "description": "Role-agnostic candidate profile with skill map, trajectory summary, top repos, and suggested roles to score against.",
+        "shape": {
+          "candidate": "string",
+          "repo_count": "number",
+          "active_since": "string | null",
+          "last_active": "string | null",
+          "top_languages": "string[]",
+          "skill_map": { "frontend": "number", "backend": "number", "devops": "number", "testing": "number", "architecture": "number" },
+          "avg_complexity": "number",
+          "trajectory_summary": "string",
+          "top_repos": "[{ name, complexity_score, repo_url, highlights }]",
+          "suggested_roles": "string[]"
+        }
+      },
+      "example": {
+        "input": { "github_username": "johndoe" },
+        "output": {
+          "candidate": "johndoe",
+          "repo_count": 18,
+          "active_since": "2022-09-01T00:00:00Z",
+          "last_active": "2025-05-10T00:00:00Z",
+          "top_languages": ["TypeScript", "JavaScript", "CSS"],
+          "skill_map": { "frontend": 85, "backend": 35, "devops": 60, "testing": 55, "architecture": 50 },
+          "avg_complexity": 42,
+          "trajectory_summary": "Positive learning trajectory — recent projects are noticeably more complex than earlier ones.",
+          "top_repos": [
+            { "name": "uitool", "complexity_score": 67, "repo_url": "https://github.com/johndoe/uitool", "highlights": [{ "signal": "ci", "url": "https://github.com/johndoe/uitool/tree/main/.github/workflows" }] }
+          ],
+          "suggested_roles": ["mid-frontend"]
+        }
+      }
+    },
+    {
       "id": "search_knowledge",
       "name": "search_knowledge",
       "category": "knowledge",
@@ -231,7 +275,7 @@
             {
               "id": "candidate-scoring",
               "title": "Candidate Scoring",
-              "toolRefs": ["score_candidate"]
+              "toolRefs": ["candidate_profile", "score_candidate"]
             },
             {
               "id": "knowledge-tools",

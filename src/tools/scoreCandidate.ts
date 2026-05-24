@@ -45,7 +45,7 @@ function avgComplexity(repos: GitHubRepo[]): number {
   return Math.round(total / repos.length);
 }
 
-function buildRepoSummaries(repos: GitHubRepo[], username: string): { top: RepoSummary[]; weak: RepoSummary[] } {
+export function buildRepoSummaries(repos: GitHubRepo[], username: string): { top: RepoSummary[]; weak: RepoSummary[] } {
   if (repos.length === 0) return { top: [], weak: [] };
 
   const scored = repos

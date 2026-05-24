@@ -6,6 +6,7 @@ import { withCache } from "../cache.js";
 import { scoreCandidate } from "./scoreCandidate.js";
 import { scoreAllRoles } from "./scoreAllRoles.js";
 import { scoreBatch } from "./scoreBatch.js";
+import { candidateProfile } from "./candidateProfile.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rolesDir = resolve(__dirname, "../../knowledge/roles");
@@ -107,6 +108,31 @@ export function registerScoreCandidateTools(runtime: ToolRuntime): void {
       const cacheKey = `score_batch:${[...github_usernames].sort().join(",")}:${role}:grad${graduation_date ?? ""}`;
       return withCache(ctx.cache, cacheKey, 600, () =>
         scoreBatch(github_usernames, role, ctx.config.githubToken, rolesDir, gradDate),
+      );
+    },
+  });
+
+  runtime.register({
+    name: "candidate_profile",
+    description:
+      "Return a role-agnostic GitHub profile for a candidate — repo count, active dates, top languages, skill map, average complexity, trajectory summary, top repos, and suggested roles to score against.",
+    sideEffect: "read",
+    inputSchema: {
+      github_username: z.string().describe("GitHub username to profile"),
+      graduation_date: z
+        .string()
+        .optional()
+        .describe(
+          "ISO date (YYYY-MM-DD) when the candidate graduated. Repos before this date are treated as school work and weighted lower in trajectory scoring.",
+        ),
+    },
+    handler: async ({ github_username, graduation_date }, ctx) => {
+      const gradDate = graduation_date ? new Date(graduation_date) : null;
+      return withCache(
+        ctx.cache,
+        `candidate_profile:${github_username}:grad${graduation_date ?? ""}`,
+        600,
+        () => candidateProfile(github_username, ctx.config.githubToken, gradDate),
       );
     },
   });
