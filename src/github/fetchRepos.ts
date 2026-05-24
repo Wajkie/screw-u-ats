@@ -1,5 +1,10 @@
 import { GitHubError } from "./fetchProfile.js";
 
+export interface RepoHighlight {
+  signal: string;
+  path: string;
+}
+
 export interface GitHubRepo {
   name: string;
   language: string | null;
@@ -21,6 +26,7 @@ export interface GitHubRepo {
   csprojDeps: string[];
   size: number;
   defaultBranch: string;
+  highlights: RepoHighlight[];
 }
 
 interface RawRepo {
@@ -221,6 +227,27 @@ async function enrichRepo(owner: string, raw: RawRepo, token: string): Promise<G
   const hasActionsDir = hasDir(contents, "actions") || hasDir(srcContents, "actions");
   const hasCsFiles = contents.some((item) => item.type === "file" && item.name.endsWith(".cs"));
 
+  const highlights: RepoHighlight[] = [];
+  if (hasCi) highlights.push({ signal: "ci", path: ".github/workflows" });
+  if (hasTests) {
+    const testDirInRoot = contents.find(
+      (item) => item.type === "dir" && TEST_DIR_NAMES.has(item.name.toLowerCase()),
+    );
+    const testDirInSrc = srcContents.find(
+      (item) => item.type === "dir" && TEST_DIR_NAMES.has(item.name.toLowerCase()),
+    );
+    const testConfigInRoot = contents.find(
+      (item) => item.type === "file" && TEST_CONFIG_PATTERN.test(item.name),
+    );
+    if (testDirInRoot) highlights.push({ signal: "tests", path: testDirInRoot.name });
+    else if (testDirInSrc) highlights.push({ signal: "tests", path: `src/${testDirInSrc.name}` });
+    else if (testConfigInRoot) highlights.push({ signal: "tests", path: testConfigInRoot.name });
+  }
+  if (hasAppRouter) highlights.push({ signal: "app_router", path: hasDir(contents, "app") ? "app" : "src/app" });
+  if (hasHooksDir) highlights.push({ signal: "hooks", path: hasDir(contents, "hooks") ? "hooks" : "src/hooks" });
+  if (hasLibDir) highlights.push({ signal: "lib", path: hasDir(contents, "lib") ? "lib" : "src/lib" });
+  if (hasActionsDir) highlights.push({ signal: "actions", path: hasDir(contents, "actions") ? "actions" : "src/actions" });
+
   return {
     name: raw.name,
     language: raw.language,
@@ -241,6 +268,7 @@ async function enrichRepo(owner: string, raw: RawRepo, token: string): Promise<G
     packageDeps,
     csprojDeps,
     size: raw.size,
+    highlights,
     defaultBranch: raw.default_branch,
   };
 }

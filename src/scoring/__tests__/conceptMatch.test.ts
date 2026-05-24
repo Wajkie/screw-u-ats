@@ -37,6 +37,7 @@ function makeRepo(overrides: Partial<GitHubRepo> = {}): GitHubRepo {
     hasCsFiles: false,
     packageDeps: [],
     csprojDeps: [],
+    highlights: [],
     ...overrides,
   };
 }

@@ -25,6 +25,7 @@ function makeRepo(overrides: Partial<GitHubRepo> = {}): GitHubRepo {
     hasCsFiles: false,
     packageDeps: [],
     csprojDeps: [],
+    highlights: [],
     size: 0,
     defaultBranch: "main",
     ...overrides,

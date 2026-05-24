@@ -33,6 +33,7 @@ function makeRepo(overrides: Partial<GitHubRepo> = {}): GitHubRepo {
     hasCsFiles: false,
     packageDeps: [],
     csprojDeps: [],
+    highlights: [],
     ...overrides,
   };
 }
@@ -41,7 +42,7 @@ beforeEach(() => {
   mockFetchRepos.mockReset();
 });
 
-describe("scoreCandidate â€” role not found", () => {
+describe("scoreCandidate — role not found", () => {
   it("throws when the role file does not exist", async () => {
     mockFetchRepos.mockResolvedValue([]);
     await expect(
@@ -50,7 +51,7 @@ describe("scoreCandidate â€” role not found", () => {
   });
 });
 
-describe("scoreCandidate â€” result shape", () => {
+describe("scoreCandidate — result shape", () => {
   it("returns all required fields", async () => {
     mockFetchRepos.mockResolvedValue([makeRepo({ topics: ["react"], language: "TypeScript" })]);
     const result = await scoreCandidate("alice", "junior-frontend", "token", rolesDir);
@@ -74,7 +75,7 @@ describe("scoreCandidate â€” result shape", () => {
   });
 });
 
-describe("scoreCandidate â€” recommendation threshold", () => {
+describe("scoreCandidate — recommendation threshold", () => {
   it("recommends Interview when fit_score >= 50", async () => {
     // Provide repos that produce a high score: TypeScript + React + tests + CI
     mockFetchRepos.mockResolvedValue([
@@ -108,7 +109,7 @@ describe("scoreCandidate â€” recommendation threshold", () => {
   });
 });
 
-describe("scoreCandidate â€” scoring weights", () => {
+describe("scoreCandidate — scoring weights", () => {
   it("fit_score is the weighted average of the three breakdown scores", async () => {
     mockFetchRepos.mockResolvedValue([
       makeRepo({ topics: ["react"], language: "TypeScript" }),
@@ -129,7 +130,7 @@ describe("scoreCandidate â€” scoring weights", () => {
   });
 });
 
-describe("scoreCandidate â€” junior-fullstack role", () => {
+describe("scoreCandidate — junior-fullstack role", () => {
   it("accepts junior-fullstack as a valid role", async () => {
     mockFetchRepos.mockResolvedValue([makeRepo({ topics: ["nodejs", "express"] })]);
     const result = await scoreCandidate("user", "junior-fullstack", "token", rolesDir);
@@ -149,7 +150,7 @@ describe("scoreCandidate â€” junior-fullstack role", () => {
   });
 });
 
-describe("scoreCandidate â€” passes token to fetchRepos", () => {
+describe("scoreCandidate — passes token to fetchRepos", () => {
   it("calls fetchRepos with the supplied username and token", async () => {
     mockFetchRepos.mockResolvedValue([]);
     await scoreCandidate("myuser", "junior-frontend", "my-token", rolesDir);
@@ -157,4 +158,61 @@ describe("scoreCandidate â€” passes token to fetchRepos", () => {
   });
 });
 
+describe("scoreCandidate — top_repos and weak_repos", () => {
+  it("returns empty arrays when there are no repos", async () => {
+    mockFetchRepos.mockResolvedValue([]);
+    const result = await scoreCandidate("user", "junior-frontend", "token", rolesDir);
+    expect(result.top_repos).toEqual([]);
+    expect(result.weak_repos).toEqual([]);
+  });
 
+  it("top_repos and weak_repos are present in result shape", async () => {
+    mockFetchRepos.mockResolvedValue([makeRepo({ name: "repo-a", size: 500, hasTests: true, hasCi: true })]);
+    const result = await scoreCandidate("user", "junior-frontend", "token", rolesDir);
+    expect(Array.isArray(result.top_repos)).toBe(true);
+    expect(Array.isArray(result.weak_repos)).toBe(true);
+  });
+
+  it("top_repos contains the highest-complexity repo", async () => {
+    mockFetchRepos.mockResolvedValue([
+      makeRepo({ name: "strong", size: 500, hasTests: true, hasCi: true }),
+      makeRepo({ name: "weak", size: 0 }),
+      makeRepo({ name: "mid", size: 50 }),
+      makeRepo({ name: "mid2", size: 50 }),
+    ]);
+    const result = await scoreCandidate("user", "junior-frontend", "token", rolesDir);
+    expect(result.top_repos[0]!.name).toBe("strong");
+  });
+
+  it("weak_repos contains the lowest-complexity repo", async () => {
+    mockFetchRepos.mockResolvedValue([
+      makeRepo({ name: "strong", size: 500, hasTests: true, hasCi: true }),
+      makeRepo({ name: "weak", size: 0 }),
+      makeRepo({ name: "mid", size: 50 }),
+      makeRepo({ name: "mid2", size: 50 }),
+    ]);
+    const result = await scoreCandidate("user", "junior-frontend", "token", rolesDir);
+    expect(result.weak_repos[0]!.name).toBe("weak");
+  });
+
+  it("repo_url uses the correct github URL format", async () => {
+    mockFetchRepos.mockResolvedValue([makeRepo({ name: "my-project" })]);
+    const result = await scoreCandidate("alice", "junior-frontend", "token", rolesDir);
+    expect(result.top_repos[0]!.repo_url).toBe("https://github.com/alice/my-project");
+  });
+
+  it("highlight URLs use the repo default branch and path", async () => {
+    mockFetchRepos.mockResolvedValue([
+      makeRepo({
+        name: "proj",
+        defaultBranch: "main",
+        highlights: [{ signal: "ci", path: ".github/workflows" }],
+      }),
+    ]);
+    const result = await scoreCandidate("bob", "junior-frontend", "token", rolesDir);
+    const highlight = result.top_repos[0]!.highlights[0];
+    expect(highlight).toBeDefined();
+    expect(highlight!.signal).toBe("ci");
+    expect(highlight!.url).toBe("https://github.com/bob/proj/tree/main/.github/workflows");
+  });
+});
