@@ -10,7 +10,11 @@ import { scoreBatch } from "./scoreBatch.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rolesDir = resolve(__dirname, "../../knowledge/roles");
 
-const ROLES = ["junior-frontend", "junior-fullstack", "junior-backend", "junior-csharp"] as const;
+const ROLES = [
+  "junior-frontend", "junior-fullstack", "junior-backend", "junior-csharp",
+  "mid-frontend", "mid-fullstack", "mid-backend", "mid-csharp",
+  "senior-frontend", "senior-fullstack", "senior-backend", "senior-csharp",
+] as const;
 
 export function registerScoreCandidateTools(runtime: ToolRuntime): void {
   runtime.register({
@@ -22,7 +26,7 @@ export function registerScoreCandidateTools(runtime: ToolRuntime): void {
       github_username: z.string().describe("GitHub username to evaluate"),
       role: z
         .enum(ROLES)
-        .describe("Role to evaluate against: junior-frontend or junior-fullstack"),
+        .describe("Role to evaluate against — three tiers (junior / mid / senior) across four tracks (frontend / fullstack / backend / csharp)"),
       include_lighthouse: z
         .boolean()
         .optional()
@@ -90,7 +94,7 @@ export function registerScoreCandidateTools(runtime: ToolRuntime): void {
         .array(z.string())
         .min(1)
         .describe("GitHub usernames to evaluate (at least one)"),
-      role: z.enum(ROLES).describe("Role to evaluate all candidates against"),
+      role: z.enum(ROLES).describe("Role to evaluate all candidates against — three tiers (junior / mid / senior) across four tracks (frontend / fullstack / backend / csharp)"),
       graduation_date: z
         .string()
         .optional()

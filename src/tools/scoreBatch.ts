@@ -1,10 +1,9 @@
 import { scoreCandidate } from "./scoreCandidate.js";
 import type { CandidateScoreResult } from "./scoreCandidate.js";
-import type { RoleSlug } from "./scoreAllRoles.js";
 import { withConcurrency } from "../github/fetchRepos.js";
 
 export interface BatchResult {
-  role: RoleSlug;
+  role: string;
   candidates: CandidateScoreResult[];
   chart: string;
 }
@@ -34,7 +33,7 @@ function buildChart(role: string, candidates: CandidateScoreResult[]): string {
 
 export async function scoreBatch(
   githubUsernames: string[],
-  role: RoleSlug,
+  role: string,
   githubToken: string,
   rolesDir: string,
   graduationDate?: Date | null,
