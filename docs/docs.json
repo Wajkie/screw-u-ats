@@ -1,0 +1,308 @@
+{
+  "meta": {
+    "title": "Screw U, ATS",
+    "description": "MCP server that screens junior developer candidates by analyzing their GitHub profile instead of their CV.",
+    "version": "0.1.0",
+    "repo": "https://github.com/Wajkie/screw-u-ats"
+  },
+  "tools": [
+    {
+      "id": "echo",
+      "name": "echo",
+      "category": "example",
+      "requiresWrites": false,
+      "summary": "Echo a message back with its reversed form and character count.",
+      "description": "Starter scaffold tool — will be removed once score_candidate is wired up.",
+      "inputs": [
+        { "name": "message", "type": "string", "required": true, "description": "The message to echo" }
+      ],
+      "returns": {
+        "description": "The original message, its reverse, and character count.",
+        "shape": { "message": "string", "reversed": "string", "length": "number" }
+      },
+      "example": {
+        "input": { "message": "hello" },
+        "output": { "message": "hello", "reversed": "olleh", "length": 5 }
+      }
+    },
+    {
+      "id": "add",
+      "name": "add",
+      "category": "example",
+      "requiresWrites": false,
+      "summary": "Add two numbers together.",
+      "description": "Starter scaffold tool — will be removed once score_candidate is wired up.",
+      "inputs": [
+        { "name": "a", "type": "number", "required": true, "description": "First number" },
+        { "name": "b", "type": "number", "required": true, "description": "Second number" }
+      ],
+      "returns": {
+        "description": "Both operands and their sum.",
+        "shape": { "a": "number", "b": "number", "sum": "number" }
+      },
+      "example": {
+        "input": { "a": 2, "b": 3 },
+        "output": { "a": 2, "b": 3, "sum": 5 }
+      }
+    },
+    {
+      "id": "search_knowledge",
+      "name": "search_knowledge",
+      "category": "knowledge",
+      "requiresWrites": false,
+      "summary": "Search the knowledge base for role definitions and documentation.",
+      "description": "Full-text searches all markdown files in the knowledge/ directory, including role definitions under knowledge/roles/. Requires DATABASE_URL to be set — without it, returns an error explaining the requirement.",
+      "inputs": [
+        { "name": "query", "type": "string", "required": true, "description": "Search terms" }
+      ],
+      "returns": {
+        "description": "Ranked list of matching excerpts with source file and section heading.",
+        "shape": { "results": [{ "file": "string", "section": "string", "excerpt": "string", "score": "number" }] }
+      },
+      "example": {
+        "input": { "query": "junior frontend required concepts" },
+        "output": { "results": [{ "file": "roles/junior-frontend", "section": "Required Concepts", "excerpt": "React with hooks...", "score": 0.85 }] }
+      }
+    }
+  ],
+  "audiences": {
+    "developer": {
+      "nav": ["Overview", "Quick Start", "Configuration", "Tools"],
+      "sections": [
+        {
+          "id": "overview",
+          "title": "Overview",
+          "pages": [
+            {
+              "id": "what-is-this",
+              "title": "What is this server?",
+              "content": [
+                {
+                  "type": "prose",
+                  "body": "Screw U, ATS is an MCP server that screens junior developer candidates by analyzing their public GitHub profile instead of their CV. ATS systems filter on keywords; junior devs and career-changers often have no work history but strong GitHub activity. This server surfaces that signal."
+                },
+                {
+                  "type": "prose",
+                  "body": "Give it a GitHub username and a role (e.g. junior-frontend), and it returns a scored hiring signal: a fit_score (0–100), a recommendation (Interview / Pass), a per-signal breakdown, matched and missing concepts, and a plain-English trajectory summary describing how the candidate's complexity has grown over time."
+                },
+                {
+                  "type": "capability-list",
+                  "items": [
+                    { "label": "score_candidate", "summary": "Score a GitHub user against a role definition — returns fit_score, recommendation, and breakdown (coming in issue #6)" },
+                    { "label": "search_knowledge", "summary": "Full-text search across role definitions in knowledge/roles/ (requires DATABASE_URL)" },
+                    { "label": "echo / add", "summary": "Scaffold placeholder tools — present until score_candidate is wired up" }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "architecture",
+              "title": "Architecture",
+              "content": [
+                {
+                  "type": "prose",
+                  "body": "The server runs on stdio by default. Set PORT to also expose an HTTP+SSE endpoint. All tools go through a ToolRuntime that centralises error handling, write-gating, and response formatting. Optional PostgreSQL and Redis connections enable audit logging and caching."
+                },
+                {
+                  "type": "list",
+                  "items": [
+                    "GitHub client — fetches public profile and repos, detects CI and test presence per repo",
+                    "Complexity signals — scores each repo on tests, CI, dependency maturity, README quality, commit span",
+                    "Concept matcher — parses role definition markdown and matches against repo languages, READMEs, and deps",
+                    "Trajectory algorithm — buckets repos by age, calculates complexity delta, weights recent repos 3x",
+                    "Role definitions — plain markdown in knowledge/roles/, community-contributable",
+                    "stdio transport — default, works with Claude Desktop, Cursor, and any MCP client",
+                    "HTTP+SSE transport — optional, enabled by setting PORT",
+                    "PostgreSQL — optional, enables audit log and knowledge search",
+                    "Redis — optional, enables GitHub response caching"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "quickstart",
+          "title": "Quick Start",
+          "pages": [
+            {
+              "id": "setup",
+              "title": "Setup",
+              "content": [
+                {
+                  "type": "steps",
+                  "items": [
+                    "Clone this repository",
+                    "Run: npm install",
+                    "Copy .env.example to .env and set GITHUB_TOKEN (required)",
+                    "Run: npm run dev",
+                    "Connect your MCP client to the server via stdio"
+                  ]
+                },
+                {
+                  "type": "code",
+                  "lang": "bash",
+                  "label": "Minimum .env",
+                  "body": "GITHUB_TOKEN=ghp_your_token_here   # required — read:user and public_repo scopes"
+                },
+                {
+                  "type": "callout",
+                  "variant": "info",
+                  "body": "The server will refuse to start if GITHUB_TOKEN is missing. Create a classic token at github.com/settings/tokens with read:user and public_repo scopes. No write permissions needed."
+                }
+              ]
+            },
+            {
+              "id": "http-mode",
+              "title": "HTTP Mode",
+              "content": [
+                {
+                  "type": "prose",
+                  "body": "Set PORT to run an HTTP+SSE server alongside stdio. Useful for web-based MCP clients or multiple concurrent sessions."
+                },
+                {
+                  "type": "code",
+                  "lang": "bash",
+                  "label": ".env (HTTP mode)",
+                  "body": "GITHUB_TOKEN=ghp_your_token_here\nPORT=3000\nMCP_SECRET=your-secret   # optional: require x-mcp-secret header"
+                },
+                {
+                  "type": "list",
+                  "items": [
+                    "GET /health — returns { status: \"ok\" }",
+                    "POST /mcp — MCP protocol endpoint (requires x-mcp-secret header if MCP_SECRET is set)",
+                    "GET /audit — audit log dashboard (requires Authorization: Bearer <MCP_SECRET>)"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "configuration",
+          "title": "Configuration",
+          "pages": [
+            {
+              "id": "env-vars",
+              "title": "Environment Variables",
+              "content": [
+                {
+                  "type": "prose",
+                  "body": "All configuration is via environment variables. Copy .env.example to .env to get started. GITHUB_TOKEN is the only required variable."
+                },
+                {
+                  "type": "env-table",
+                  "vars": [
+                    { "name": "GITHUB_TOKEN", "required": true, "default": null, "description": "GitHub personal access token — required to fetch candidate profiles and repos. Needs read:user and public_repo scopes.", "example": "ghp_abc123" },
+                    { "name": "SERVER_NAME", "required": false, "default": "screw-u-ats", "description": "Name shown to MCP clients", "example": "my-ats-server" },
+                    { "name": "ALLOW_WRITES", "required": false, "default": "false", "description": "Set to true to enable write tools (tools that modify data)", "example": "true" },
+                    { "name": "LOG_LEVEL", "required": false, "default": "info", "description": "Log verbosity level", "example": "debug" },
+                    { "name": "PORT", "required": false, "default": null, "description": "Enables HTTP+SSE transport on this port alongside stdio", "example": "3000" },
+                    { "name": "DB_TYPE", "required": false, "default": "postgres", "description": "Storage adapter. Set to postgres to enable audit log and knowledge search.", "example": "postgres" },
+                    { "name": "DATABASE_URL", "required": false, "default": null, "description": "PostgreSQL connection string — used when DB_TYPE=postgres", "example": "postgresql://user:pass@localhost:5432/ats" },
+                    { "name": "REDIS_URL", "required": false, "default": null, "description": "Redis — enables GitHub API response caching (recommended in production)", "example": "redis://localhost:6379" },
+                    { "name": "MCP_SECRET", "required": false, "default": null, "description": "If set, HTTP /mcp endpoint requires x-mcp-secret header to match", "example": "super-secret-token" },
+                    { "name": "CACHE_TTL_DEFAULT", "required": false, "default": "300", "description": "Default cache TTL in seconds. GitHub profiles are cached for this duration.", "example": "600" },
+                    { "name": "METRICS_INTERVAL", "required": false, "default": "100", "description": "Emit a metrics summary log every N tool calls", "example": "50" }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "title": "Tools",
+          "groups": [
+            {
+              "id": "candidate-scoring",
+              "title": "Candidate Scoring",
+              "toolRefs": ["score_candidate"]
+            },
+            {
+              "id": "knowledge-tools",
+              "title": "Knowledge Base",
+              "toolRefs": ["search_knowledge"]
+            },
+            {
+              "id": "example-tools",
+              "title": "Example Tools (temporary)",
+              "toolRefs": ["echo", "add"]
+            }
+          ]
+        }
+      ]
+    },
+    "business": {
+      "nav": ["Overview", "What can it do?", "Getting started"],
+      "sections": [
+        {
+          "id": "biz-overview",
+          "title": "Overview",
+          "pages": [
+            {
+              "id": "biz-what",
+              "title": "What is this?",
+              "content": [
+                {
+                  "type": "prose",
+                  "body": "Most ATS systems filter junior candidates on CV keywords — but junior developers and career-changers often have no work history to put on a CV. Screw U, ATS bypasses the CV entirely and scores candidates on their actual GitHub activity."
+                },
+                {
+                  "type": "prose",
+                  "body": "Give it a GitHub username and a role, and it tells you: fit score (0–100), whether to interview, which concepts they've demonstrated, which are missing, and a plain-English summary of how their skills have grown over time."
+                },
+                {
+                  "type": "callout",
+                  "variant": "info",
+                  "body": "Scoped to junior and career-changer candidates. Scoring is intentionally generous on trajectory — a candidate who is clearly improving is a stronger hire than one with a static skill set."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "biz-capabilities",
+          "title": "What can it do?",
+          "pages": [
+            {
+              "id": "biz-tools",
+              "title": "Available capabilities",
+              "content": [
+                {
+                  "type": "capability-list",
+                  "items": [
+                    { "label": "score_candidate", "summary": "Score a GitHub profile against a role — returns a hiring signal with fit score, recommendation, and breakdown" },
+                    { "label": "Role definitions", "summary": "Plain markdown files in knowledge/roles/ — easy to extend with new roles or adjust concept weights" }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "biz-start",
+          "title": "Getting started",
+          "pages": [
+            {
+              "id": "biz-contact",
+              "title": "How to use",
+              "content": [
+                {
+                  "type": "prose",
+                  "body": "Connect the server to your AI client (Claude Desktop, Cursor, or any MCP-compatible tool). Ask it to score a candidate by GitHub username and role. The server fetches their public GitHub activity and returns a structured hiring signal — no CV required."
+                },
+                {
+                  "type": "code",
+                  "lang": "text",
+                  "label": "Example prompt",
+                  "body": "Score GitHub user 'johndoe' for the junior-frontend role."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

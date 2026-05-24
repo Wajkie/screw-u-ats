@@ -1,0 +1,37 @@
+{
+  "name": "screw-u-ats",
+  "version": "0.1.0",
+  "description": "MCP server that screens junior developer candidates by analyzing their GitHub profile instead of their CV",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "type-coverage": "type-coverage --atLeast 100"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "dotenv": "^16.0.0",
+    "ioredis": "^5.10.1",
+    "pg": "^8.21.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.20.0",
+    "eslint": "^10.4.0",
+    "tsx": "^4.0.0",
+    "type-coverage": "^2.29.7",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.59.4",
+    "vitest": "^4.1.7"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

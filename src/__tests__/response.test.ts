@@ -1,0 +1,30 @@
+import { describe, it, expect } from "vitest";
+import { ok, toErrorContent } from "../internal/response.js";
+
+describe("ok", () => {
+  it("wraps data in a text content array", () => {
+    const result = ok({ foo: "bar" });
+    expect(result.content).toHaveLength(1);
+    expect(result.content[0].type).toBe("text");
+    expect(JSON.parse(result.content[0].text)).toEqual({ foo: "bar" });
+  });
+
+  it("pretty-prints with 2-space indent", () => {
+    const result = ok({ a: 1 });
+    expect(result.content[0].text).toBe(JSON.stringify({ a: 1 }, null, 2));
+  });
+});
+
+describe("toErrorContent", () => {
+  it("returns message from a plain Error", () => {
+    const result = toErrorContent(new Error("something broke"));
+    const body = JSON.parse(result.content[0].text);
+    expect(body.error).toBe("something broke");
+  });
+
+  it("coerces a non-Error unknown to string", () => {
+    const result = toErrorContent("unexpected string");
+    const body = JSON.parse(result.content[0].text);
+    expect(body.error).toBe("unexpected string");
+  });
+});
