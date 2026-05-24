@@ -7,42 +7,41 @@
   },
   "tools": [
     {
-      "id": "echo",
-      "name": "echo",
-      "category": "example",
+      "id": "score_candidate",
+      "name": "score_candidate",
+      "category": "candidate-scoring",
       "requiresWrites": false,
-      "summary": "Echo a message back with its reversed form and character count.",
-      "description": "Starter scaffold tool — will be removed once score_candidate is wired up.",
+      "summary": "Score a GitHub user against a role definition — returns fit_score, recommendation, per-signal breakdown, matched/missing concepts, and a trajectory summary.",
+      "description": "Fetches the candidate's public GitHub repos, runs trajectory, concept-match, and complexity scoring against the specified role definition, and returns a structured hiring signal. fit_score (0–100) is the weighted combination of all three signals (trajectory 45%, concept match 35%, complexity 20%). A fit_score of 50 or higher yields a recommendation of Interview.",
       "inputs": [
-        { "name": "message", "type": "string", "required": true, "description": "The message to echo" }
+        { "name": "github_username", "type": "string", "required": true, "description": "GitHub username of the candidate to evaluate" },
+        { "name": "role", "type": "string", "required": true, "description": "Role to evaluate against. Accepted values: junior-frontend, junior-fullstack" }
       ],
       "returns": {
-        "description": "The original message, its reverse, and character count.",
-        "shape": { "message": "string", "reversed": "string", "length": "number" }
+        "description": "Structured hiring signal with fit score, recommendation, per-signal breakdown, matched and missing concepts, and a plain-English trajectory summary.",
+        "shape": {
+          "candidate": "string",
+          "role": "string",
+          "fit_score": "number",
+          "recommendation": "\"Interview\" | \"Pass\"",
+          "breakdown": { "trajectory": "number", "concept_match": "number", "complexity": "number" },
+          "matched_concepts": "string[]",
+          "missing_concepts": "string[]",
+          "trajectory_summary": "string"
+        }
       },
       "example": {
-        "input": { "message": "hello" },
-        "output": { "message": "hello", "reversed": "olleh", "length": 5 }
-      }
-    },
-    {
-      "id": "add",
-      "name": "add",
-      "category": "example",
-      "requiresWrites": false,
-      "summary": "Add two numbers together.",
-      "description": "Starter scaffold tool — will be removed once score_candidate is wired up.",
-      "inputs": [
-        { "name": "a", "type": "number", "required": true, "description": "First number" },
-        { "name": "b", "type": "number", "required": true, "description": "Second number" }
-      ],
-      "returns": {
-        "description": "Both operands and their sum.",
-        "shape": { "a": "number", "b": "number", "sum": "number" }
-      },
-      "example": {
-        "input": { "a": 2, "b": 3 },
-        "output": { "a": 2, "b": 3, "sum": 5 }
+        "input": { "github_username": "johndoe", "role": "junior-frontend" },
+        "output": {
+          "candidate": "johndoe",
+          "role": "junior-frontend",
+          "fit_score": 72,
+          "recommendation": "Interview",
+          "breakdown": { "trajectory": 81, "concept_match": 68, "complexity": 60 },
+          "matched_concepts": ["React with hooks", "TypeScript in React context", "REST API integration"],
+          "missing_concepts": ["Component testing", "Accessibility fundamentals"],
+          "trajectory_summary": "Positive learning trajectory — recent projects are noticeably more complex than earlier ones."
+        }
       }
     },
     {
@@ -88,9 +87,8 @@
                 {
                   "type": "capability-list",
                   "items": [
-                    { "label": "score_candidate", "summary": "Score a GitHub user against a role definition — returns fit_score, recommendation, and breakdown (coming in issue #6)" },
-                    { "label": "search_knowledge", "summary": "Full-text search across role definitions in knowledge/roles/ (requires DATABASE_URL)" },
-                    { "label": "echo / add", "summary": "Scaffold placeholder tools — present until score_candidate is wired up" }
+                    { "label": "score_candidate", "summary": "Score a GitHub user against a role definition — returns fit_score, recommendation, per-signal breakdown, matched/missing concepts, and trajectory summary" },
+                    { "label": "search_knowledge", "summary": "Full-text search across role definitions in knowledge/roles/ (requires DATABASE_URL)" }
                   ]
                 }
               ]
@@ -223,11 +221,6 @@
               "id": "knowledge-tools",
               "title": "Knowledge Base",
               "toolRefs": ["search_knowledge"]
-            },
-            {
-              "id": "example-tools",
-              "title": "Example Tools (temporary)",
-              "toolRefs": ["echo", "add"]
             }
           ]
         }

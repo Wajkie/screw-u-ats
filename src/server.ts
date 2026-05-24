@@ -6,7 +6,7 @@ import { createAuditStore } from "./audit.js";
 import { createCache } from "./cache.js";
 import { startHttpServer } from "./http.js";
 import { ToolRuntime, type ToolContext } from "./toolRuntime.js";
-import { registerExampleTools } from "./tools/exampleTools.js";
+import { registerScoreCandidateTools } from "./tools/scoreCandidateTools.js";
 import { registerKnowledgeResources } from "./resources/knowledgeResources.js";
 import { registerKnowledgeTools } from "./tools/knowledgeTools.js";
 import { createKnowledgeStore, type KnowledgeStore } from "./knowledge/search.js";
@@ -17,7 +17,7 @@ const SERVER_VERSION = "0.1.0";
 export const server = new McpServer({ name: config.serverName, version: SERVER_VERSION });
 
 async function registerAllTools(runtime: ToolRuntime, knowledgeStore: KnowledgeStore): Promise<void> {
-  registerExampleTools(runtime);
+  registerScoreCandidateTools(runtime);
   await registerKnowledgeResources(runtime.server);
   registerKnowledgeTools(runtime, knowledgeStore);
 }
