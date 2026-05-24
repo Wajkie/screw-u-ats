@@ -22,6 +22,7 @@ function makeRepo(overrides: Partial<GitHubRepo> = {}): GitHubRepo {
     hasHooksDir: false,
     hasLibDir: false,
     hasActionsDir: false,
+    hasCsFiles: false,
     packageDeps: [],
     csprojDeps: [],
     size: 0,

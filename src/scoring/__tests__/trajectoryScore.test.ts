@@ -29,6 +29,7 @@ function makeRepo(pushedDaysAgo: number, overrides: Partial<GitHubRepo> = {}): G
     hasHooksDir: false,
     hasLibDir: false,
     hasActionsDir: false,
+    hasCsFiles: false,
     packageDeps: [],
     csprojDeps: [],
     ...overrides,

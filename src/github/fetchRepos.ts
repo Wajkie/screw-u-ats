@@ -16,6 +16,7 @@ export interface GitHubRepo {
   hasHooksDir: boolean;
   hasLibDir: boolean;
   hasActionsDir: boolean;
+  hasCsFiles: boolean;
   packageDeps: string[];
   csprojDeps: string[];
   size: number;
@@ -218,6 +219,7 @@ async function enrichRepo(owner: string, raw: RawRepo, token: string): Promise<G
   const hasHooksDir = hasDir(contents, "hooks") || hasDir(srcContents, "hooks");
   const hasLibDir = hasDir(contents, "lib") || hasDir(srcContents, "lib");
   const hasActionsDir = hasDir(contents, "actions") || hasDir(srcContents, "actions");
+  const hasCsFiles = contents.some((item) => item.type === "file" && item.name.endsWith(".cs"));
 
   return {
     name: raw.name,
@@ -235,6 +237,7 @@ async function enrichRepo(owner: string, raw: RawRepo, token: string): Promise<G
     hasHooksDir,
     hasLibDir,
     hasActionsDir,
+    hasCsFiles,
     packageDeps,
     csprojDeps,
     size: raw.size,

@@ -28,22 +28,43 @@ function extractTokens(concept: string): string[] {
     .filter((t) => t.length >= 3 && !STOPWORDS.has(t));
 }
 
+// Insert spaces before "js"/"ts" suffixes so GitHub topic slugs like "nodejs" → "node js",
+// letting \bnode\b match, while "javascript" (no such suffix) stays unsplit.
+function expandSlug(s: string): string {
+  return s.replace(/([a-z]{2,})(js|ts)$/i, "$1 $2");
+}
+
+function normalizeLanguage(lang: string): string {
+  return lang.replace(/c#/gi, "csharp").replace(/f#/gi, "fsharp").replace(/c\+\+/gi, "cpp");
+}
+
 function buildHaystack(repos: GitHubRepo[]): string {
   return repos
     .flatMap((r) => [
-      r.language ?? "",
+      normalizeLanguage(r.language ?? ""),
+      r.hasCsFiles ? "csharp dotnet" : "",
+      r.csprojDeps.length > 0 ? "csharp dotnet" : "",
       r.readmeContent ?? "",
       r.description ?? "",
-      r.topics.join(" "),
-      r.packageDeps.join(" "),
+      r.topics.map(expandSlug).join(" "),
+      r.packageDeps.map(expandSlug).join(" "),
+      r.csprojDeps.join(" "),
     ])
     .join(" ")
     .toLowerCase();
 }
 
-function conceptMatches(concept: string, haystack: string): boolean {
-  const tokens = extractTokens(concept);
-  return tokens.length > 0 && tokens.some((t) => haystack.includes(t));
+// Supports "key tokens | Human-readable display" format.
+// Only the key part is used for matching; the display part is returned in results.
+function splitConcept(concept: string): { matchKey: string; display: string } {
+  const pipeIdx = concept.indexOf(" | ");
+  if (pipeIdx === -1) return { matchKey: concept, display: concept };
+  return { matchKey: concept.slice(0, pipeIdx).trim(), display: concept.slice(pipeIdx + 3).trim() };
+}
+
+function conceptMatches(matchKey: string, haystack: string): boolean {
+  const tokens = extractTokens(matchKey);
+  return tokens.length > 0 && tokens.some((t) => new RegExp(`\\b${t}\\b`).test(haystack));
 }
 
 export function parseRoleDefinition(markdown: string): RoleDefinition {
@@ -85,16 +106,18 @@ export function matchConcepts(repos: GitHubRepo[], role: RoleDefinition): Concep
   const bonusMatched: string[] = [];
 
   for (const concept of role.requiredConcepts) {
-    if (conceptMatches(concept, haystack)) {
-      matchedConcepts.push(concept);
+    const { matchKey, display } = splitConcept(concept);
+    if (conceptMatches(matchKey, haystack)) {
+      matchedConcepts.push(display);
     } else {
-      missingConcepts.push(concept);
+      missingConcepts.push(display);
     }
   }
 
   for (const concept of role.bonusConcepts) {
-    if (conceptMatches(concept, haystack)) {
-      bonusMatched.push(concept);
+    const { matchKey, display } = splitConcept(concept);
+    if (conceptMatches(matchKey, haystack)) {
+      bonusMatched.push(display);
     }
   }
 

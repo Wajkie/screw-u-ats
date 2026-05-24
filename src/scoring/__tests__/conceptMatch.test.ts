@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { parseRoleDefinition, matchConcepts } from "../conceptMatch.js";
@@ -34,13 +34,14 @@ function makeRepo(overrides: Partial<GitHubRepo> = {}): GitHubRepo {
     hasHooksDir: false,
     hasLibDir: false,
     hasActionsDir: false,
+    hasCsFiles: false,
     packageDeps: [],
     csprojDeps: [],
     ...overrides,
   };
 }
 
-describe("parseRoleDefinition â€” junior-frontend.md", () => {
+describe("parseRoleDefinition - junior-frontend.md", () => {
   it("extracts the role name", () => {
     const role = parseRoleDefinition(frontendMd);
     expect(role.name).toBe("Junior Frontend Engineer");
@@ -75,7 +76,7 @@ describe("parseRoleDefinition â€” junior-frontend.md", () => {
   });
 });
 
-describe("parseRoleDefinition â€” junior-fullstack.md", () => {
+describe("parseRoleDefinition - junior-fullstack.md", () => {
   it("extracts the role name", () => {
     const role = parseRoleDefinition(fullstackMd);
     expect(role.name).toBe("Junior Fullstack Engineer");
@@ -99,7 +100,7 @@ describe("parseRoleDefinition â€” junior-fullstack.md", () => {
   });
 });
 
-describe("matchConcepts â€” empty repos", () => {
+describe("matchConcepts - empty repos", () => {
   it("marks all required concepts as missing when repos have no content", () => {
     const role = parseRoleDefinition(frontendMd);
     const result = matchConcepts([makeRepo()], role);
@@ -120,7 +121,7 @@ describe("matchConcepts â€” empty repos", () => {
   });
 });
 
-describe("matchConcepts â€” frontend concept detection", () => {
+describe("matchConcepts - frontend concept detection", () => {
   it("detects React from topics", () => {
     const role = parseRoleDefinition(frontendMd);
     const result = matchConcepts([makeRepo({ topics: ["react", "vite"] })], role);
@@ -163,7 +164,7 @@ describe("matchConcepts â€” frontend concept detection", () => {
   });
 });
 
-describe("matchConcepts â€” fullstack concept detection", () => {
+describe("matchConcepts - fullstack concept detection", () => {
   it("detects Node.js from topics", () => {
     const role = parseRoleDefinition(fullstackMd);
     const result = matchConcepts([makeRepo({ topics: ["nodejs", "express"] })], role);
@@ -189,7 +190,46 @@ describe("matchConcepts â€” fullstack concept detection", () => {
   });
 });
 
-describe("matchConcepts â€” scoring", () => {
+describe("matchConcepts - pipe format (key | display)", () => {
+  it("matches on key tokens only, returns display in matched list", () => {
+    const role: RoleDefinition = {
+      name: "Test",
+      requiredConcepts: ["csharp linq | C# fundamentals (OOP, LINQ, async/await)"],
+      bonusConcepts: [],
+      minimumComplexityScore: 0,
+    };
+    const repos = [makeRepo({ readmeContent: "This project uses csharp and linq queries." })];
+    const result = matchConcepts(repos, role);
+    expect(result.matchedConcepts).toEqual(["C# fundamentals (OOP, LINQ, async/await)"]);
+  });
+
+  it("does not match when key tokens are absent even if display text appears in haystack", () => {
+    const role: RoleDefinition = {
+      name: "Test",
+      requiredConcepts: ["csharp | C# fundamentals"],
+      bonusConcepts: [],
+      minimumComplexityScore: 0,
+    };
+    const repos = [makeRepo({ readmeContent: "learning the fundamentals of programming" })];
+    const result = matchConcepts(repos, role);
+    expect(result.matchedConcepts).toHaveLength(0);
+    expect(result.missingConcepts).toEqual(["C# fundamentals"]);
+  });
+
+  it("returns display text (not key) in missingConcepts", () => {
+    const role: RoleDefinition = {
+      name: "Test",
+      requiredConcepts: ["xunit nunit | Unit testing in C#"],
+      bonusConcepts: [],
+      minimumComplexityScore: 0,
+    };
+    const repos = [makeRepo()];
+    const result = matchConcepts(repos, role);
+    expect(result.missingConcepts).toEqual(["Unit testing in C#"]);
+  });
+});
+
+describe("matchConcepts - scoring", () => {
   it("score is 80 when all required concepts match and no bonus", () => {
     const role: RoleDefinition = {
       name: "Test Role",
@@ -253,5 +293,3 @@ describe("matchConcepts â€” scoring", () => {
     expect(matchConcepts(repos, role).score).toBeGreaterThan(70);
   });
 });
-
-
