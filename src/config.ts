@@ -26,6 +26,7 @@ export const config = {
     default: parseInt(process.env["CACHE_TTL_DEFAULT"] ?? "300", 10),
   },
   metricsInterval: parseInt(process.env["METRICS_INTERVAL"] ?? "100", 10),
+  pagespeedApiKey: optional("PAGESPEED_API_KEY", ""),
   mcpSecret: process.env["MCP_SECRET"],
   maxBodyBytes: parseInt(process.env["MAX_BODY_BYTES"] ?? "1048576", 10),
   maxSessions: parseInt(process.env["MAX_SESSIONS"] ?? "100", 10),

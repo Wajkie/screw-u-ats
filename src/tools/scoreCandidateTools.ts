@@ -8,7 +8,7 @@ import { scoreCandidate } from "./scoreCandidate.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rolesDir = resolve(__dirname, "../../knowledge/roles");
 
-const ROLES = ["junior-frontend", "junior-fullstack"] as const;
+const ROLES = ["junior-frontend", "junior-fullstack", "junior-csharp"] as const;
 
 export function registerScoreCandidateTools(runtime: ToolRuntime): void {
   runtime.register({
@@ -21,13 +21,26 @@ export function registerScoreCandidateTools(runtime: ToolRuntime): void {
       role: z
         .enum(ROLES)
         .describe("Role to evaluate against: junior-frontend or junior-fullstack"),
+      include_lighthouse: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe("Run Lighthouse audits on live project URLs found in repos (default: false)"),
     },
-    handler: async ({ github_username, role }, ctx) =>
+    handler: async ({ github_username, role, include_lighthouse }, ctx) =>
       withCache(
         ctx.cache,
-        `score_candidate:${github_username}:${role}`,
+        `score_candidate:${github_username}:${role}:lh${include_lighthouse ? "1" : "0"}`,
         600,
-        () => scoreCandidate(github_username, role, ctx.config.githubToken, rolesDir),
+        () =>
+          scoreCandidate(
+            github_username,
+            role,
+            ctx.config.githubToken,
+            rolesDir,
+            include_lighthouse,
+            ctx.config.pagespeedApiKey,
+          ),
       ),
   });
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "vitest";
+﻿import { describe, it, expect, beforeAll } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { parseRoleDefinition, matchConcepts } from "../conceptMatch.js";
@@ -23,17 +23,24 @@ function makeRepo(overrides: Partial<GitHubRepo> = {}): GitHubRepo {
     pushedAt: "2024-01-01T00:00:00Z",
     topics: [],
     description: null,
+    homepage: null,
     stargazersCount: 0,
     readmeContent: null,
     hasTests: false,
     hasCi: false,
     size: 0,
     defaultBranch: "main",
+    hasAppRouter: false,
+    hasHooksDir: false,
+    hasLibDir: false,
+    hasActionsDir: false,
+    packageDeps: [],
+    csprojDeps: [],
     ...overrides,
   };
 }
 
-describe("parseRoleDefinition — junior-frontend.md", () => {
+describe("parseRoleDefinition â€” junior-frontend.md", () => {
   it("extracts the role name", () => {
     const role = parseRoleDefinition(frontendMd);
     expect(role.name).toBe("Junior Frontend Engineer");
@@ -68,7 +75,7 @@ describe("parseRoleDefinition — junior-frontend.md", () => {
   });
 });
 
-describe("parseRoleDefinition — junior-fullstack.md", () => {
+describe("parseRoleDefinition â€” junior-fullstack.md", () => {
   it("extracts the role name", () => {
     const role = parseRoleDefinition(fullstackMd);
     expect(role.name).toBe("Junior Fullstack Engineer");
@@ -92,7 +99,7 @@ describe("parseRoleDefinition — junior-fullstack.md", () => {
   });
 });
 
-describe("matchConcepts — empty repos", () => {
+describe("matchConcepts â€” empty repos", () => {
   it("marks all required concepts as missing when repos have no content", () => {
     const role = parseRoleDefinition(frontendMd);
     const result = matchConcepts([makeRepo()], role);
@@ -113,7 +120,7 @@ describe("matchConcepts — empty repos", () => {
   });
 });
 
-describe("matchConcepts — frontend concept detection", () => {
+describe("matchConcepts â€” frontend concept detection", () => {
   it("detects React from topics", () => {
     const role = parseRoleDefinition(frontendMd);
     const result = matchConcepts([makeRepo({ topics: ["react", "vite"] })], role);
@@ -156,7 +163,7 @@ describe("matchConcepts — frontend concept detection", () => {
   });
 });
 
-describe("matchConcepts — fullstack concept detection", () => {
+describe("matchConcepts â€” fullstack concept detection", () => {
   it("detects Node.js from topics", () => {
     const role = parseRoleDefinition(fullstackMd);
     const result = matchConcepts([makeRepo({ topics: ["nodejs", "express"] })], role);
@@ -182,7 +189,7 @@ describe("matchConcepts — fullstack concept detection", () => {
   });
 });
 
-describe("matchConcepts — scoring", () => {
+describe("matchConcepts â€” scoring", () => {
   it("score is 80 when all required concepts match and no bonus", () => {
     const role: RoleDefinition = {
       name: "Test Role",
@@ -246,3 +253,5 @@ describe("matchConcepts — scoring", () => {
     expect(matchConcepts(repos, role).score).toBeGreaterThan(70);
   });
 });
+
+

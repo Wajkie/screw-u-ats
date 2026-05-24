@@ -15,10 +15,11 @@
       "description": "Fetches the candidate's public GitHub repos, runs trajectory, concept-match, and complexity scoring against the specified role definition, and returns a structured hiring signal. fit_score (0–100) is the weighted combination of all three signals (trajectory 45%, concept match 35%, complexity 20%). A fit_score of 50 or higher yields a recommendation of Interview.",
       "inputs": [
         { "name": "github_username", "type": "string", "required": true, "description": "GitHub username of the candidate to evaluate" },
-        { "name": "role", "type": "string", "required": true, "description": "Role to evaluate against. Accepted values: junior-frontend, junior-fullstack" }
+        { "name": "role", "type": "string", "required": true, "description": "Role to evaluate against. Accepted values: junior-frontend, junior-fullstack, junior-csharp" },
+        { "name": "include_lighthouse", "type": "boolean", "required": false, "description": "Run Lighthouse audits on live project URLs found in the candidate's repos. Default: false. Results appear in enrichment.lighthouse and have no effect on fit_score." }
       ],
       "returns": {
-        "description": "Structured hiring signal with fit score, recommendation, per-signal breakdown, matched and missing concepts, and a plain-English trajectory summary.",
+        "description": "Structured hiring signal with fit score, recommendation, per-signal breakdown, matched and missing concepts, and a plain-English trajectory summary. When include_lighthouse is true, an enrichment.lighthouse block is added with PageSpeed scores and WCAG violations per live URL.",
         "shape": {
           "candidate": "string",
           "role": "string",
@@ -27,11 +28,12 @@
           "breakdown": { "trajectory": "number", "concept_match": "number", "complexity": "number" },
           "matched_concepts": "string[]",
           "missing_concepts": "string[]",
-          "trajectory_summary": "string"
+          "trajectory_summary": "string",
+          "enrichment": "(optional) { lighthouse: { live_projects_found: number, audits: [{ url: string, scores: { performance: number, accessibility: number, best_practices: number, seo: number }, wcag_violations: string[] }] } }"
         }
       },
       "example": {
-        "input": { "github_username": "johndoe", "role": "junior-frontend" },
+        "input": { "github_username": "johndoe", "role": "junior-frontend", "include_lighthouse": true },
         "output": {
           "candidate": "johndoe",
           "role": "junior-frontend",
@@ -40,7 +42,19 @@
           "breakdown": { "trajectory": 81, "concept_match": 68, "complexity": 60 },
           "matched_concepts": ["React with hooks", "TypeScript in React context", "REST API integration"],
           "missing_concepts": ["Component testing", "Accessibility fundamentals"],
-          "trajectory_summary": "Positive learning trajectory — recent projects are noticeably more complex than earlier ones."
+          "trajectory_summary": "Positive learning trajectory — recent projects are noticeably more complex than earlier ones.",
+          "enrichment": {
+            "lighthouse": {
+              "live_projects_found": 1,
+              "audits": [
+                {
+                  "url": "https://johndoe-portfolio.vercel.app",
+                  "scores": { "performance": 78, "accessibility": 91, "best_practices": 83, "seo": 90 },
+                  "wcag_violations": []
+                }
+              ]
+            }
+          }
         }
       }
     },
@@ -108,6 +122,7 @@
                     "Complexity signals — scores each repo on tests, CI, dependency maturity, README quality, commit span",
                     "Concept matcher — parses role definition markdown and matches against repo languages, READMEs, and deps",
                     "Trajectory algorithm — buckets repos by age, calculates complexity delta, weights recent repos 3x",
+                    "Lighthouse enrichment — opt-in: extracts live project URLs from READMEs and package.json, audits them via PageSpeed Insights API, returns per-URL Lighthouse scores and WCAG violations (no effect on fit_score)",
                     "Role definitions — plain markdown in knowledge/roles/, community-contributable",
                     "stdio transport — default, works with Claude Desktop, Cursor, and any MCP client",
                     "HTTP+SSE transport — optional, enabled by setting PORT",
@@ -201,6 +216,7 @@
                     { "name": "REDIS_URL", "required": false, "default": null, "description": "Redis — enables GitHub API response caching (recommended in production)", "example": "redis://localhost:6379" },
                     { "name": "MCP_SECRET", "required": false, "default": null, "description": "If set, HTTP /mcp endpoint requires x-mcp-secret header to match", "example": "super-secret-token" },
                     { "name": "CACHE_TTL_DEFAULT", "required": false, "default": "300", "description": "Default cache TTL in seconds. GitHub profiles are cached for this duration.", "example": "600" },
+                    { "name": "PAGESPEED_API_KEY", "required": false, "default": null, "description": "Google PageSpeed Insights API key — enables authenticated requests for higher rate limits when include_lighthouse is used. Works without a key at low volume.", "example": "AIzaSy..." },
                     { "name": "METRICS_INTERVAL", "required": false, "default": "100", "description": "Emit a metrics summary log every N tool calls", "example": "50" }
                   ]
                 }

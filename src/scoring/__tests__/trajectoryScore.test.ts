@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect } from "vitest";
 import { scoreTrajectory } from "../trajectoryScore.js";
 import type { GitHubRepo } from "../../github/fetchRepos.js";
 
@@ -18,12 +18,19 @@ function makeRepo(pushedDaysAgo: number, overrides: Partial<GitHubRepo> = {}): G
     pushedAt: daysAgo(pushedDaysAgo),
     topics: [],
     description: null,
+    homepage: null,
     stargazersCount: 0,
     readmeContent: null,
     hasTests: false,
     hasCi: false,
     size: 0,
     defaultBranch: "main",
+    hasAppRouter: false,
+    hasHooksDir: false,
+    hasLibDir: false,
+    hasActionsDir: false,
+    packageDeps: [],
+    csprojDeps: [],
     ...overrides,
   };
 }
@@ -44,7 +51,7 @@ function trivialRepo(pushedDaysAgo: number): GitHubRepo {
   return makeRepo(pushedDaysAgo, { size: 2 });
 }
 
-describe("scoreTrajectory — empty input", () => {
+describe("scoreTrajectory â€” empty input", () => {
   it("returns score 0 and empty bucket averages for no repos", () => {
     const result = scoreTrajectory([], NOW);
     expect(result.score).toBe(0);
@@ -54,7 +61,7 @@ describe("scoreTrajectory — empty input", () => {
   });
 });
 
-describe("scoreTrajectory — single time range (no delta)", () => {
+describe("scoreTrajectory â€” single time range (no delta)", () => {
   it("scores only-recent repos without delta", () => {
     const repos = [complexRepo(10), complexRepo(30), complexRepo(60)];
     const result = scoreTrajectory(repos, NOW);
@@ -73,7 +80,7 @@ describe("scoreTrajectory — single time range (no delta)", () => {
   });
 });
 
-describe("scoreTrajectory — growing candidate", () => {
+describe("scoreTrajectory â€” growing candidate", () => {
   it("produces positive delta and higher score than a flat candidate", () => {
     // Growing: trivial old work, complex recent work.
     const growing = [
@@ -99,7 +106,7 @@ describe("scoreTrajectory — growing candidate", () => {
   });
 });
 
-describe("scoreTrajectory — flat candidate", () => {
+describe("scoreTrajectory â€” flat candidate", () => {
   it("produces delta near zero for consistent complexity over time", () => {
     const repos = [
       makeRepo(20, { size: 100, hasTests: true }),
@@ -113,7 +120,7 @@ describe("scoreTrajectory — flat candidate", () => {
   });
 });
 
-describe("scoreTrajectory — regressing candidate", () => {
+describe("scoreTrajectory â€” regressing candidate", () => {
   it("produces negative delta when older repos are more complex", () => {
     const regressing = [
       complexRepo(400),
@@ -136,7 +143,7 @@ describe("scoreTrajectory — regressing candidate", () => {
   });
 });
 
-describe("scoreTrajectory — bucket assignment", () => {
+describe("scoreTrajectory â€” bucket assignment", () => {
   it("places repos into correct buckets by pushedAt age", () => {
     const repos = [
       complexRepo(120), // 3-6m (91-180 days)
@@ -151,7 +158,7 @@ describe("scoreTrajectory — bucket assignment", () => {
   });
 });
 
-describe("scoreTrajectory — score bounds", () => {
+describe("scoreTrajectory â€” score bounds", () => {
   it("score is always in [0, 100]", () => {
     const manyComplex = Array.from({ length: 20 }, (_, i) => complexRepo(i * 5));
     const manyTrivial = Array.from({ length: 20 }, (_, i) => trivialRepo(i * 5));
@@ -165,3 +172,5 @@ describe("scoreTrajectory — score bounds", () => {
     expect(highScore).toBeGreaterThan(lowScore);
   });
 });
+
+

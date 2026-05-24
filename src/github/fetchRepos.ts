@@ -7,10 +7,17 @@ export interface GitHubRepo {
   pushedAt: string;
   topics: string[];
   description: string | null;
+  homepage: string | null;
   stargazersCount: number;
   readmeContent: string | null;
   hasTests: boolean;
   hasCi: boolean;
+  hasAppRouter: boolean;
+  hasHooksDir: boolean;
+  hasLibDir: boolean;
+  hasActionsDir: boolean;
+  packageDeps: string[];
+  csprojDeps: string[];
   size: number;
   defaultBranch: string;
 }
@@ -22,6 +29,7 @@ interface RawRepo {
   pushed_at: string;
   topics: string[];
   description: string | null;
+  homepage: string | null;
   stargazers_count: number;
   size: number;
   default_branch: string;
@@ -35,6 +43,11 @@ interface RawContentItem {
 interface RawReadme {
   content: string;
   encoding: string;
+}
+
+interface RawFile {
+  content?: string;
+  encoding?: string;
 }
 
 const TEST_DIR_NAMES = new Set(["test", "tests", "__tests__", "spec", "specs", "e2e"]);
@@ -84,6 +97,54 @@ async function fetchReadme(
   return Buffer.from(raw.content.replace(/\n/g, ""), "base64").toString("utf-8");
 }
 
+async function fetchPackageDeps(
+  owner: string,
+  repo: string,
+  token: string,
+): Promise<string[]> {
+  const res = await fetch(
+    `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/package.json`,
+    { headers: githubHeaders(token) },
+  );
+  if (!res.ok) return [];
+  const raw = (await res.json()) as RawFile;
+  if (raw.encoding !== "base64" || !raw.content) return [];
+  try {
+    const pkg = JSON.parse(
+      Buffer.from(raw.content.replace(/\n/g, ""), "base64").toString("utf-8"),
+    ) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
+    return [
+      ...Object.keys(pkg.dependencies ?? {}),
+      ...Object.keys(pkg.devDependencies ?? {}),
+    ];
+  } catch {
+    return [];
+  }
+}
+
+async function fetchCsprojDeps(
+  owner: string,
+  repo: string,
+  contents: RawContentItem[],
+  token: string,
+): Promise<string[]> {
+  const csproj = contents.find(
+    (item) => item.type === "file" && item.name.endsWith(".csproj"),
+  );
+  if (!csproj) return [];
+
+  const res = await fetch(
+    `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(csproj.name)}`,
+    { headers: githubHeaders(token) },
+  );
+  if (!res.ok) return [];
+  const raw = (await res.json()) as RawFile;
+  if (raw.encoding !== "base64" || !raw.content) return [];
+
+  const xml = Buffer.from(raw.content.replace(/\n/g, ""), "base64").toString("utf-8");
+  return [...xml.matchAll(/<PackageReference\s+Include="([^"]+)"/gi)].map((m) => m[1]!);
+}
+
 function hasTestsInContents(items: RawContentItem[]): boolean {
   return items.some(
     (item) =>
@@ -93,17 +154,24 @@ function hasTestsInContents(items: RawContentItem[]): boolean {
   );
 }
 
+function hasDir(items: RawContentItem[], name: string): boolean {
+  return items.some((item) => item.type === "dir" && item.name.toLowerCase() === name);
+}
+
 async function enrichRepo(owner: string, raw: RawRepo, token: string): Promise<GitHubRepo> {
-  const [contents, readmeContent] = await Promise.all([
+  const [contents, readmeContent, packageDeps] = await Promise.all([
     fetchDirContents(owner, raw.name, "", token),
     fetchReadme(owner, raw.name, token),
+    fetchPackageDeps(owner, raw.name, token),
   ]);
+
+  const csprojDeps = await fetchCsprojDeps(owner, raw.name, contents, token);
 
   const hasCi = contents.some((item) => item.name === ".github" && item.type === "dir");
 
   // Check root first; if tests live under src/ (common in TypeScript projects),
   // do one extra fetch to catch patterns like src/__tests__/.
-  const hasSrcDir = contents.some((item) => item.name === "src" && item.type === "dir");
+  const hasSrcDir = hasDir(contents, "src");
   const srcContents = hasSrcDir
     ? await fetchDirContents(owner, raw.name, "src", token)
     : [];
@@ -143,6 +211,14 @@ async function enrichRepo(owner: string, raw: RawRepo, token: string): Promise<G
 
   const hasTests = hasTestsInContents(contents) || hasTestsInContents(srcContents) || monorepoHasTests;
 
+  // Architecture signals — detect from root and src/ contents.
+  // app/ = Next.js App Router; hooks/ = custom hook layer; lib/ = service/utility layer;
+  // actions/ = server actions or service actions directory.
+  const hasAppRouter = hasDir(contents, "app") || hasDir(srcContents, "app");
+  const hasHooksDir = hasDir(contents, "hooks") || hasDir(srcContents, "hooks");
+  const hasLibDir = hasDir(contents, "lib") || hasDir(srcContents, "lib");
+  const hasActionsDir = hasDir(contents, "actions") || hasDir(srcContents, "actions");
+
   return {
     name: raw.name,
     language: raw.language,
@@ -150,10 +226,17 @@ async function enrichRepo(owner: string, raw: RawRepo, token: string): Promise<G
     pushedAt: raw.pushed_at,
     topics: raw.topics ?? [],
     description: raw.description,
+    homepage: raw.homepage ?? null,
     stargazersCount: raw.stargazers_count,
     readmeContent,
     hasTests,
     hasCi,
+    hasAppRouter,
+    hasHooksDir,
+    hasLibDir,
+    hasActionsDir,
+    packageDeps,
+    csprojDeps,
     size: raw.size,
     defaultBranch: raw.default_branch,
   };

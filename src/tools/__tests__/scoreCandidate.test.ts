@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+﻿import { describe, it, expect, vi, beforeEach } from "vitest";
 import { resolve } from "path";
 
 vi.mock("../../github/fetchRepos.js");
@@ -19,12 +19,19 @@ function makeRepo(overrides: Partial<GitHubRepo> = {}): GitHubRepo {
     pushedAt: "2025-05-01T00:00:00Z",
     topics: [],
     description: null,
+    homepage: null,
     stargazersCount: 0,
     readmeContent: null,
     hasTests: false,
     hasCi: false,
     size: 0,
     defaultBranch: "main",
+    hasAppRouter: false,
+    hasHooksDir: false,
+    hasLibDir: false,
+    hasActionsDir: false,
+    packageDeps: [],
+    csprojDeps: [],
     ...overrides,
   };
 }
@@ -33,7 +40,7 @@ beforeEach(() => {
   mockFetchRepos.mockReset();
 });
 
-describe("scoreCandidate — role not found", () => {
+describe("scoreCandidate â€” role not found", () => {
   it("throws when the role file does not exist", async () => {
     mockFetchRepos.mockResolvedValue([]);
     await expect(
@@ -42,7 +49,7 @@ describe("scoreCandidate — role not found", () => {
   });
 });
 
-describe("scoreCandidate — result shape", () => {
+describe("scoreCandidate â€” result shape", () => {
   it("returns all required fields", async () => {
     mockFetchRepos.mockResolvedValue([makeRepo({ topics: ["react"], language: "TypeScript" })]);
     const result = await scoreCandidate("alice", "junior-frontend", "token", rolesDir);
@@ -66,7 +73,7 @@ describe("scoreCandidate — result shape", () => {
   });
 });
 
-describe("scoreCandidate — recommendation threshold", () => {
+describe("scoreCandidate â€” recommendation threshold", () => {
   it("recommends Interview when fit_score >= 50", async () => {
     // Provide repos that produce a high score: TypeScript + React + tests + CI
     mockFetchRepos.mockResolvedValue([
@@ -100,7 +107,7 @@ describe("scoreCandidate — recommendation threshold", () => {
   });
 });
 
-describe("scoreCandidate — scoring weights", () => {
+describe("scoreCandidate â€” scoring weights", () => {
   it("fit_score is the weighted average of the three breakdown scores", async () => {
     mockFetchRepos.mockResolvedValue([
       makeRepo({ topics: ["react"], language: "TypeScript" }),
@@ -121,7 +128,7 @@ describe("scoreCandidate — scoring weights", () => {
   });
 });
 
-describe("scoreCandidate — junior-fullstack role", () => {
+describe("scoreCandidate â€” junior-fullstack role", () => {
   it("accepts junior-fullstack as a valid role", async () => {
     mockFetchRepos.mockResolvedValue([makeRepo({ topics: ["nodejs", "express"] })]);
     const result = await scoreCandidate("user", "junior-fullstack", "token", rolesDir);
@@ -141,10 +148,12 @@ describe("scoreCandidate — junior-fullstack role", () => {
   });
 });
 
-describe("scoreCandidate — passes token to fetchRepos", () => {
+describe("scoreCandidate â€” passes token to fetchRepos", () => {
   it("calls fetchRepos with the supplied username and token", async () => {
     mockFetchRepos.mockResolvedValue([]);
     await scoreCandidate("myuser", "junior-frontend", "my-token", rolesDir);
     expect(mockFetchRepos).toHaveBeenCalledWith("myuser", "my-token");
   });
 });
+
+

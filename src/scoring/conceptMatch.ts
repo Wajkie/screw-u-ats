@@ -35,6 +35,7 @@ function buildHaystack(repos: GitHubRepo[]): string {
       r.readmeContent ?? "",
       r.description ?? "",
       r.topics.join(" "),
+      r.packageDeps.join(" "),
     ])
     .join(" ")
     .toLowerCase();
