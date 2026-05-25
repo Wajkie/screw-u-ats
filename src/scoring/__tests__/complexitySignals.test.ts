@@ -32,18 +32,18 @@ function makeRepo(overrides: Partial<GitHubRepo> = {}): GitHubRepo {
   };
 }
 
-describe("scoreComplexity â€” size heuristic (0â€“15)", () => {
+describe("scoreComplexity — size heuristic (0–15)", () => {
   it("returns 0 for trivial repos (< 5 KB)", () => {
     expect(scoreComplexityDetailed(makeRepo({ size: 0 })).size).toBe(0);
     expect(scoreComplexityDetailed(makeRepo({ size: 4 })).size).toBe(0);
   });
 
-  it("returns 5 for small repos (5â€“49 KB)", () => {
+  it("returns 5 for small repos (5–49 KB)", () => {
     expect(scoreComplexityDetailed(makeRepo({ size: 5 })).size).toBe(5);
     expect(scoreComplexityDetailed(makeRepo({ size: 49 })).size).toBe(5);
   });
 
-  it("returns 10 for medium repos (50â€“499 KB)", () => {
+  it("returns 10 for medium repos (50–499 KB)", () => {
     expect(scoreComplexityDetailed(makeRepo({ size: 50 })).size).toBe(10);
     expect(scoreComplexityDetailed(makeRepo({ size: 499 })).size).toBe(10);
   });
@@ -54,7 +54,7 @@ describe("scoreComplexity â€” size heuristic (0â€“15)", () => {
   });
 });
 
-describe("scoreComplexity â€” hasTests heuristic (0 or 25)", () => {
+describe("scoreComplexity — hasTests heuristic (0 or 25)", () => {
   it("returns 0 when no tests", () => {
     expect(scoreComplexityDetailed(makeRepo({ hasTests: false })).hasTests).toBe(0);
   });
@@ -64,7 +64,7 @@ describe("scoreComplexity â€” hasTests heuristic (0 or 25)", () => {
   });
 });
 
-describe("scoreComplexity â€” hasCi heuristic (0 or 15)", () => {
+describe("scoreComplexity — hasCi heuristic (0 or 15)", () => {
   it("returns 0 when no CI", () => {
     expect(scoreComplexityDetailed(makeRepo({ hasCi: false })).hasCi).toBe(0);
   });
@@ -74,7 +74,7 @@ describe("scoreComplexity â€” hasCi heuristic (0 or 15)", () => {
   });
 });
 
-describe("scoreComplexity â€” deps heuristic (0â€“20)", () => {
+describe("scoreComplexity — deps heuristic (0–20)", () => {
   it("returns 0 with no dep signals", () => {
     expect(scoreComplexityDetailed(makeRepo()).deps).toBe(0);
   });
@@ -90,7 +90,7 @@ describe("scoreComplexity â€” deps heuristic (0â€“20)", () => {
   });
 
   it("does NOT text-match when packageDeps is present", () => {
-    // packageDeps is set but does not include react â€” text match is bypassed
+    // packageDeps is set but does not include react — text match is bypassed
     const repo = makeRepo({
       readmeContent: "Built with React and Next.js.",
       packageDeps: ["some-other-dep"],
@@ -128,7 +128,7 @@ describe("scoreComplexity â€” deps heuristic (0â€“20)", () => {
   });
 });
 
-describe("scoreComplexity â€” architecture heuristic (0â€“10)", () => {
+describe("scoreComplexity — architecture heuristic (0–10)", () => {
   it("returns 0 with no architecture signals", () => {
     expect(scoreComplexityDetailed(makeRepo()).architecture).toBe(0);
   });
@@ -167,7 +167,7 @@ describe("scoreComplexity â€” architecture heuristic (0â€“10)", () => 
   });
 });
 
-describe("scoreComplexity â€” readme heuristic (0â€“10)", () => {
+describe("scoreComplexity — readme heuristic (0–10)", () => {
   it("returns 0 for null README", () => {
     expect(scoreComplexityDetailed(makeRepo({ readmeContent: null })).readme).toBe(0);
   });
@@ -205,13 +205,13 @@ describe("scoreComplexity â€” readme heuristic (0â€“10)", () => {
   });
 });
 
-describe("scoreComplexity â€” span heuristic (0â€“5)", () => {
+describe("scoreComplexity — span heuristic (0–5)", () => {
   it("returns 0 for same-day repos", () => {
     const same = "2024-03-01T00:00:00Z";
     expect(scoreComplexityDetailed(makeRepo({ createdAt: same, pushedAt: same })).span).toBe(0);
   });
 
-  it("returns 1 for repos active 7â€“29 days", () => {
+  it("returns 1 for repos active 7–29 days", () => {
     expect(
       scoreComplexityDetailed(
         makeRepo({ createdAt: "2024-01-01T00:00:00Z", pushedAt: "2024-01-15T00:00:00Z" }),
@@ -219,7 +219,7 @@ describe("scoreComplexity â€” span heuristic (0â€“5)", () => {
     ).toBe(1);
   });
 
-  it("returns 3 for repos active 30â€“89 days", () => {
+  it("returns 3 for repos active 30–89 days", () => {
     expect(
       scoreComplexityDetailed(
         makeRepo({ createdAt: "2024-01-01T00:00:00Z", pushedAt: "2024-02-15T00:00:00Z" }),
@@ -236,7 +236,7 @@ describe("scoreComplexity â€” span heuristic (0â€“5)", () => {
   });
 });
 
-describe("scoreComplexity â€” combined score", () => {
+describe("scoreComplexity — combined score", () => {
   it("returns 0 for a completely empty repo", () => {
     expect(scoreComplexity(makeRepo())).toBe(0);
   });

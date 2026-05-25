@@ -49,4 +49,20 @@ export default tseslint.config(
       ],
     },
   },
+
+  {
+    files: ["src/**/*.test.ts"],
+    rules: {
+      "max-lines": "off",
+      "@typescript-eslint/naming-convention": "off",
+    },
+  },
+
+  {
+    // MCP tool handlers use snake_case parameter names per MCP spec.
+    files: ["src/tools/*.ts"],
+    rules: {
+      "@typescript-eslint/naming-convention": "off",
+    },
+  },
 );

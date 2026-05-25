@@ -68,7 +68,7 @@ async function auditUrl(url: string, apiKey: string): Promise<UrlAuditResult | n
   const audits = data.lighthouseResult?.audits ?? {};
 
   const a11yIds = new Set((cats?.accessibility?.auditRefs ?? []).map((r) => r.id));
-  const wcag_violations = Object.entries(audits)
+  const wcagViolations = Object.entries(audits)
     .filter(([id, a]) => a11yIds.has(id) && a.score !== null && a.score < 1)
     .map(([, a]) => a.title);
 
@@ -80,7 +80,7 @@ async function auditUrl(url: string, apiKey: string): Promise<UrlAuditResult | n
       best_practices: toScore(cats?.["best-practices"]?.score),
       seo: toScore(cats?.seo?.score),
     },
-    wcag_violations,
+    wcag_violations: wcagViolations,
   };
 }
 

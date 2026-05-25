@@ -9,8 +9,8 @@ import { config } from "./config.js";
 import type { AddressInfo } from "node:net";
 import type { MiddlewareHandler } from "hono";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-export const rolesDir = resolve(__dirname, "../knowledge/roles");
+const currentDir = dirname(fileURLToPath(import.meta.url));
+export const rolesDir = resolve(currentDir, "../knowledge/roles");
 
 const GITHUB_NAME_RE = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/;
 

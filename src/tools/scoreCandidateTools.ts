@@ -8,8 +8,8 @@ import { scoreAllRoles } from "./scoreAllRoles.js";
 import { scoreBatch } from "./scoreBatch.js";
 import { candidateProfile } from "./candidateProfile.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const rolesDir = resolve(__dirname, "../../knowledge/roles");
+const currentDir = dirname(fileURLToPath(import.meta.url));
+const rolesDir = resolve(currentDir, "../../knowledge/roles");
 
 const ROLES = [
   "junior-frontend", "junior-fullstack", "junior-backend", "junior-csharp",

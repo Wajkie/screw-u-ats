@@ -5,7 +5,7 @@ vi.mock("../logger.js", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
-import { createCheckApp, createRateLimiter } from "../checkServer.js";
+import { createCheckApp } from "../checkServer.js";
 import { scoreAllRoles } from "../tools/scoreAllRoles.js";
 import type { AllRolesResult } from "../tools/scoreAllRoles.js";
 

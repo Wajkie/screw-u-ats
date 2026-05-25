@@ -4,7 +4,7 @@ import { resolve } from "path";
 vi.mock("../../github/fetchRepos.js");
 
 import { fetchRepos } from "../../github/fetchRepos.js";
-import { scoreAllRoles, ALL_ROLES, TRACKS, TIERS } from "../scoreAllRoles.js";
+import { scoreAllRoles, ALL_ROLES, TIERS } from "../scoreAllRoles.js";
 import type { GitHubRepo } from "../../github/fetchRepos.js";
 
 const mockFetchRepos = vi.mocked(fetchRepos);
