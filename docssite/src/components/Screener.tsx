@@ -519,7 +519,7 @@ function LighthousePanel({ lighthouse }: { lighthouse: LighthouseEnrichment }) {
 export default function Screener() {
   const [username, setUsername] = useState('');
   const [graduationDate, setGraduationDate] = useState('');
-  const [apiUrl, setApiUrl] = useState('http://localhost:3001');
+  const [apiUrl, setApiUrl] = useState('https://codescreener.up.railway.app');
   const [includeLighthouse, setIncludeLighthouse] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [loading, setLoading] = useState(false);
