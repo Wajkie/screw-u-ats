@@ -5,6 +5,7 @@ import { logger } from "./logger.js";
 import { createAuditStore } from "./audit.js";
 import { createCache } from "./cache.js";
 import { startHttpServer } from "./http.js";
+import { startCheckServer } from "./checkServer.js";
 import { ToolRuntime, type ToolContext } from "./toolRuntime.js";
 import { registerScoreCandidateTools } from "./tools/scoreCandidateTools.js";
 import { registerKnowledgeResources } from "./resources/knowledgeResources.js";
@@ -70,6 +71,10 @@ async function main() {
         getAuditEntries: config.dbType === "postgres" && config.databaseUrl ? auditDashboard : undefined,
       },
     );
+  }
+
+  if (config.checkPort !== undefined) {
+    await startCheckServer(config.checkPort, config.githubToken);
   }
 
   const stdioTransport = new StdioServerTransport();

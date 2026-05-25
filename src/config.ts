@@ -20,6 +20,7 @@ export const config = {
   allowWrites: optional("ALLOW_WRITES", "false") === "true",
   logLevel: optional("LOG_LEVEL", "info"),
   port: process.env["PORT"] ? parseInt(process.env["PORT"], 10) : undefined,
+  checkPort: process.env["CHECK_PORT"] ? parseInt(process.env["CHECK_PORT"], 10) : undefined,
   databaseUrl: process.env["DATABASE_URL"],
   redisUrl: process.env["REDIS_URL"],
   cacheTtl: {

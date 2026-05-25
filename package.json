@@ -15,8 +15,10 @@
     "type-coverage": "type-coverage --atLeast 100"
   },
   "dependencies": {
+    "@hono/node-server": "^2.0.4",
     "@modelcontextprotocol/sdk": "^1.12.0",
     "dotenv": "^16.0.0",
+    "hono": "^4.12.22",
     "ioredis": "^5.10.1",
     "pg": "^8.21.0",
     "zod": "^4.4.3"
