@@ -175,7 +175,10 @@ export async function scoreAllRoles(
     };
   }
 
-  const best = roles.reduce((a, b) => (b.fit_score > a.fit_score ? b : a));
+  const best = roles.reduce((a, b) => {
+    if (b.fit_score !== a.fit_score) return b.fit_score > a.fit_score ? b : a;
+    return b.breakdown.concept_match > a.breakdown.concept_match ? b : a;
+  });
 
   return {
     candidate: githubUsername,

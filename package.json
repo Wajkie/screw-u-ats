@@ -28,6 +28,7 @@
     "@types/node": "^22.0.0",
     "@types/pg": "^8.20.0",
     "eslint": "^10.4.0",
+    "playwright": "^1.60.0",
     "tsx": "^4.0.0",
     "type-coverage": "^2.29.7",
     "typescript": "^5.0.0",

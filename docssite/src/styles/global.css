@@ -1039,3 +1039,11 @@ a:hover { text-decoration: underline; }
   color: var(--color-text-muted);
   text-align: center;
 }
+
+/* ── Screener: export buttons row ── */
+.screener-export-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}

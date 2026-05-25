@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import jsPDF from 'jspdf';
 import CopyButton from './CopyButton';
 
 interface Breakdown {
@@ -61,6 +62,14 @@ interface AllRolesResult {
   lighthouse?: LighthouseEnrichment;
 }
 
+const PERIOD_LABELS: Record<string, string> = {
+  'pre-grad': 'Pre-grad',
+  '12m+': '12m+',
+  '6-12m': '6–12m',
+  '3-6m': '3–6m',
+  '0-3m': '0–3m',
+};
+
 function buildAIPrompt(r: AllRolesResult): string {
   const best = r.roles.find(ro => ro.role === r.best_fit) ?? r.roles[0];
   const lines: string[] = [];
@@ -105,11 +114,8 @@ function buildAIPrompt(r: AllRolesResult): string {
 
   lines.push('--- Trajectory curve ---');
   lines.push(r.trajectory.summary);
-  const PERIOD_MAP: Record<string, string> = {
-    'pre-grad': 'Pre-grad', '12m+': '12m+', '6-12m': '6–12m', '3-6m': '3–6m', '0-3m': '0–3m',
-  };
   for (const pt of r.trajectory.curve) {
-    const label = PERIOD_MAP[pt.period] ?? pt.period;
+    const label = PERIOD_LABELS[pt.period] ?? pt.period;
     lines.push(`  ${label}: avg complexity ${pt.avgComplexity}, ${pt.repoCount} repo(s)`);
   }
   lines.push('');
@@ -136,6 +142,226 @@ function buildAIPrompt(r: AllRolesResult): string {
   lines.push('Keep the response concise and recruiter-friendly — avoid jargon.');
 
   return lines.join('\n');
+}
+
+function downloadAsPDF(r: AllRolesResult): void {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+  const M = 20;
+  const CW = W - M * 2;
+  let y = 22;
+
+  const best = r.roles.find(ro => ro.role === r.best_fit) ?? r.roles[0];
+  const exportDate = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  function newPageIfNeeded(needed = 14): void {
+    if (y + needed > H - 15) { doc.addPage(); y = 20; }
+  }
+
+  // ── Title ──
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Candidate Screening Report', M, y);
+  y += 9;
+
+  // ── Metadata ──
+  const meta: [string, string][] = [
+    ['Candidate', `github.com/${r.candidate}`],
+    ['Date', exportDate],
+    ['Best-fit role', best?.role_name ?? r.best_fit],
+    ['Recommendation', best?.recommendation ?? '—'],
+  ];
+  doc.setFontSize(10);
+  for (const [k, v] of meta) {
+    doc.setFont('helvetica', 'bold');
+    doc.text(k, M, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(v, M + 38, y);
+    y += 5.5;
+  }
+  y += 2;
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.5);
+  doc.line(M, y, W - M, y);
+  y += 7;
+
+  // ── Skill Map ──
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0);
+  doc.text('Skill Map', M, y);
+  y += 7;
+
+  for (const group of r.tracks) {
+    if (group.tiers.length === 0) continue;
+    newPageIfNeeded(6 + group.tiers.length * 5.5);
+
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(120);
+    doc.text(group.track.toUpperCase(), M, y);
+    doc.setTextColor(0);
+    y += 4;
+
+    for (const role of group.tiers) {
+      const tier = capitalize(role.role.split('-')[0] ?? '');
+      const isBest = role.role === r.best_fit;
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', isBest ? 'bold' : 'normal');
+      doc.setTextColor(isBest ? 0 : 70);
+      doc.text(tier, M + 3, y);
+      doc.text(role.role_name, M + 18, y);
+      doc.text(`${role.fit_score}%`, M + 105, y, { align: 'right' });
+      doc.text(role.recommendation, M + 110, y);
+      doc.setTextColor(0);
+      y += 5.5;
+    }
+    y += 2;
+  }
+
+  // ── Best-fit breakdown ──
+  if (best) {
+    newPageIfNeeded(30);
+    doc.setDrawColor(180);
+    doc.setLineWidth(0.3);
+    doc.line(M, y, W - M, y);
+    y += 7;
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0);
+    doc.text(`Breakdown: ${best.role_name}`, M, y);
+    y += 6;
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(
+      `Trajectory ${best.breakdown.trajectory}%    Concept match ${best.breakdown.concept_match}%    Complexity ${best.breakdown.complexity}%`,
+      M, y,
+    );
+    y += 6;
+
+    if (best.matched_concepts.length > 0) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Matched:', M, y);
+      y += 4;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      const lines = doc.splitTextToSize(best.matched_concepts.join(', '), CW);
+      newPageIfNeeded(lines.length * 4 + 2);
+      doc.text(lines, M, y);
+      y += lines.length * 4 + 3;
+    }
+
+    if (best.missing_concepts.length > 0) {
+      newPageIfNeeded(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.text('Missing:', M, y);
+      y += 4;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      const lines = doc.splitTextToSize(best.missing_concepts.join(', '), CW);
+      newPageIfNeeded(lines.length * 4 + 2);
+      doc.text(lines, M, y);
+      y += lines.length * 4 + 3;
+    }
+  }
+
+  // ── Trajectory ──
+  newPageIfNeeded(20);
+  doc.setDrawColor(180);
+  doc.setLineWidth(0.3);
+  doc.line(M, y, W - M, y);
+  y += 7;
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0);
+  doc.text('Trajectory', M, y);
+  y += 6;
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  const summaryLines = doc.splitTextToSize(r.trajectory.summary, CW);
+  doc.text(summaryLines, M, y);
+  y += summaryLines.length * 5 + 2;
+
+  for (const pt of r.trajectory.curve) {
+    newPageIfNeeded(5);
+    const label = PERIOD_LABELS[pt.period] ?? pt.period;
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(label, M + 3, y);
+    doc.text(`avg complexity ${pt.avgComplexity}`, M + 22, y);
+    doc.text(`${pt.repoCount} repo${pt.repoCount !== 1 ? 's' : ''}`, M + 70, y);
+    y += 4.5;
+  }
+
+  // ── Lighthouse (if present) ──
+  if (r.lighthouse && r.lighthouse.audits.length > 0) {
+    newPageIfNeeded(20);
+    doc.setDrawColor(180);
+    doc.setLineWidth(0.3);
+    doc.line(M, y, W - M, y);
+    y += 7;
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0);
+    doc.text('Lighthouse', M, y);
+    y += 6;
+
+    for (const audit of r.lighthouse.audits) {
+      newPageIfNeeded(18);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text(audit.url.replace(/^https?:\/\//, ''), M, y);
+      y += 4.5;
+      doc.setFont('helvetica', 'normal');
+      const s = audit.scores;
+      doc.text(
+        `Performance ${s.performance}   Accessibility ${s.accessibility}   Best Practices ${s.best_practices}   SEO ${s.seo}`,
+        M + 3, y,
+      );
+      y += 4;
+      if (audit.wcag_violations.length > 0) {
+        const vLines = doc.splitTextToSize(`WCAG issues: ${audit.wcag_violations.join('; ')}`, CW - 3);
+        doc.text(vLines, M + 3, y);
+        y += vLines.length * 4;
+      }
+      y += 2;
+    }
+  }
+
+  // ── AI Instructions (new page) ──
+  doc.addPage();
+  y = 20;
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0);
+  doc.text('AI INSTRUCTIONS — PASTE INTO CHATGPT, CLAUDE, OR SIMILAR', M, y);
+  y += 5;
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(120);
+  doc.text('Copy everything below and paste it into your AI assistant of choice.', M, y);
+  doc.setTextColor(0);
+  y += 7;
+
+  doc.setFontSize(7);
+  doc.setFont('courier', 'normal');
+  const aiLines = doc.splitTextToSize(buildAIPrompt(r), CW);
+  for (const line of aiLines) {
+    newPageIfNeeded(4);
+    doc.text(line, M, y);
+    y += 3.8;
+  }
+
+  doc.save(`codescreen-${r.candidate}.pdf`);
 }
 
 function capitalize(s: string): string {
@@ -204,14 +430,6 @@ function RoleRow({ role, bestFit }: { role: RoleScore; bestFit: string }) {
     </div>
   );
 }
-
-const PERIOD_LABELS: Record<string, string> = {
-  'pre-grad': 'Pre-grad',
-  '12m+': '12m+',
-  '6-12m': '6–12m',
-  '3-6m': '3–6m',
-  '0-3m': '0–3m',
-};
 
 function TrajectoryCurve({ trajectory }: { trajectory: TrajectoryInfo }) {
   if (trajectory.curve.length === 0) {
@@ -441,7 +659,12 @@ export default function Screener() {
                 github.com/{result.candidate}
               </a>
             </p>
-            <CopyButton text={buildAIPrompt(result)} label="Copy prompt" copiedLabel="Copied!" />
+            <div className="screener-export-buttons">
+              <CopyButton text={buildAIPrompt(result)} label="Copy prompt" copiedLabel="Copied!" />
+              <button type="button" className="copy-btn" onClick={() => downloadAsPDF(result)}>
+                Download PDF
+              </button>
+            </div>
           </div>
           <div className="screener-tracks">
             {result.tracks
