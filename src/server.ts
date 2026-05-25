@@ -5,7 +5,7 @@ import { logger } from "./logger.js";
 import { createAuditStore } from "./audit.js";
 import { createCache } from "./cache.js";
 import { startHttpServer } from "./http.js";
-import { startCheckServer } from "./checkServer.js";
+import { createCheckApp, startCheckServer } from "./checkServer.js";
 import { ToolRuntime, type ToolContext } from "./toolRuntime.js";
 import { registerScoreCandidateTools } from "./tools/scoreCandidateTools.js";
 import { registerKnowledgeResources } from "./resources/knowledgeResources.js";
@@ -59,6 +59,7 @@ async function main() {
   });
 
   if (config.port !== undefined) {
+    const checkApp = createCheckApp(config.githubToken, config.checkRateLimit, config.checkRateWindowMs);
     await startHttpServer(
       config.port,
       () => buildMcpServer(ctx, knowledgeStore, obs),
@@ -70,6 +71,7 @@ async function main() {
         sessionTtlMs: config.sessionTtlMs,
         getAuditEntries: config.dbType === "postgres" && config.databaseUrl ? auditDashboard : undefined,
       },
+      checkApp,
     );
   }
 

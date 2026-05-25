@@ -1,7 +1,9 @@
 import { createServer, IncomingMessage, ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
+import { getRequestListener } from "@hono/node-server";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { Hono } from "hono";
 import { logger } from "./logger.js";
 import type { AuditDashboard, AuditRow } from "./audit.js";
 
@@ -20,9 +22,11 @@ export async function startHttpServer(
   serverFactory: () => Promise<McpServer>,
   getHealth: () => object,
   options: HttpServerOptions = DEFAULT_OPTIONS,
+  checkApp?: Hono,
 ): Promise<void> {
   const transports = new Map<string, StreamableHTTPServerTransport>();
   const lastSeen = new Map<string, number>();
+  const checkListener = checkApp ? getRequestListener(checkApp.fetch) : null;
 
   const ttl = options.sessionTtlMs ?? 1_800_000;
   const cleanupInterval = setInterval(() => {
@@ -40,6 +44,10 @@ export async function startHttpServer(
   cleanupInterval.unref();
 
   const httpServer = createServer((req, res) => {
+    if (checkListener && req.url?.startsWith("/check/")) {
+      checkListener(req, res);
+      return;
+    }
     void dispatch(req, res, port, transports, lastSeen, serverFactory, getHealth, options.getAuditEntries, options);
   });
 
