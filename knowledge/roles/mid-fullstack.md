@@ -27,6 +27,8 @@ work show production-level thinking.
 - Edge rendering or server components (React Server Components, Cloudflare Workers, edge middleware)
 - Observability (structured logging with correlation IDs, distributed tracing)
 - Infrastructure as code (Terraform, Pulumi, or AWS CDK for fullstack deployments)
+- Error monitoring across the stack (Sentry with source maps on the frontend, structured logging on the backend, correlated by request ID)
+- Security hardening (OWASP awareness, dependency auditing, CSP headers, secrets scanning)
 
 ## Complexity Threshold
 

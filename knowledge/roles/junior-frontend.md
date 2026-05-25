@@ -10,6 +10,7 @@ composition patterns, and how state flows through an app.
 - JavaScript ES6+ (destructuring, async/await, modules, array methods, closures)
 - React with hooks (useState, useEffect, useCallback, useMemo, custom hooks)
 - Component composition (lifting state, prop drilling awareness, context for cross-cutting concerns)
+- Client-side routing (React Router v6 or TanStack Router — nested routes, protected routes, navigation patterns)
 - State management beyond useState (Zustand, Redux Toolkit, Jotai, or Recoil)
 - REST API integration (fetch or axios with loading, error, and empty states handled)
 - TypeScript in React context (props typing, event types, generics for API responses)
@@ -25,6 +26,7 @@ composition patterns, and how state flows through an app.
 - Accessibility fundamentals (ARIA roles, semantic HTML, keyboard navigation)
 - Deployment and CI/CD (Vercel, Netlify, GitHub Actions)
 - Performance patterns (code splitting, lazy loading, memoization trade-offs)
+- Error boundaries and fallback UI patterns (React ErrorBoundary, graceful degradation)
 - Vue or Svelte as an alternative to React
 
 ## Complexity Threshold

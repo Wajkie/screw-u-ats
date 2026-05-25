@@ -15,6 +15,7 @@ caching strategy, and container orchestration beyond a local docker-compose file
 - Container orchestration (Docker Compose for local, Kubernetes or ECS for production workloads)
 - CI/CD pipeline ownership (GitHub Actions or equivalent — build, test, lint, deploy stages)
 - Distributed systems basics (idempotency, retry with backoff, circuit breakers, at-least-once delivery)
+- Structured error handling and API error contracts (RFC 7807 problem details or equivalent, error taxonomy, no stack traces in responses)
 
 ## Bonus Concepts
 
@@ -26,6 +27,7 @@ caching strategy, and container orchestration beyond a local docker-compose file
 - Secret management (Vault, AWS Secrets Manager, environment-specific secret rotation)
 - Performance profiling and heap analysis (language-specific profilers, pprof, async flamegraphs)
 - Multi-tenant data isolation strategies (row-level security, schema-per-tenant)
+- Security hardening (OWASP top 10 awareness, dependency auditing, secrets scanning in CI)
 
 ## Complexity Threshold
 

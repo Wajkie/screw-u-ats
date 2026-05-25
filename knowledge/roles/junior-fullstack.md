@@ -28,6 +28,8 @@ route — both sides of the stack are visible in their repos.
 - Caching patterns (Redis, HTTP cache headers)
 - WebSockets or server-sent events
 - CI/CD pipelines (GitHub Actions, automated testing and deployment)
+- Error monitoring (Sentry or equivalent — both client and server error capture)
+- Environment configuration management (dotenv, config validation, secrets not in source)
 
 ## Complexity Threshold
 

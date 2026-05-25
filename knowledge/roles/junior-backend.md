@@ -7,10 +7,11 @@ backend must be production-aware, not just a tutorial CRUD app.
 
 ## Required Concepts
 
-- Server-side language proficiency (Python, Go, Java, Ruby, PHP, or C# — not Node.js or frontend tooling)
-- REST API design and implementation (routing, HTTP verbs, status codes, middleware, error handling)
+- Server-side language proficiency (Node.js, Python, Go, Java, Ruby, PHP, or C# — HTTP fundamentals, async patterns, module system)
+- REST API design and implementation (Express, Fastify, Hono, or framework equivalent — routing, HTTP verbs, status codes, middleware)
+- Structured error responses and HTTP error handling (consistent error shape, appropriate status codes, not leaking internals)
 - Relational database integration (PostgreSQL or MySQL — schema design, parameterized queries, relationships)
-- ORM or query builder usage (SQLAlchemy, GORM, Hibernate, ActiveRecord, or Dapper — migrations, model definition)
+- ORM or query builder usage (Prisma, Drizzle, SQLAlchemy, GORM, Hibernate, ActiveRecord, or Dapper — migrations, model definition)
 - Authentication and authorization (JWT or session-based auth, password hashing, protected routes)
 - Input validation and basic security (injection prevention, environment secrets, HTTPS awareness)
 - Dependency injection or service layer (separation of concerns beyond a single file)
@@ -27,6 +28,7 @@ backend must be production-aware, not just a tutorial CRUD app.
 - CI/CD pipelines (GitHub Actions, automated test runs, deployment pipelines)
 - Cloud deployment (Railway, Render, AWS, Azure — beyond localhost)
 - Observability basics (structured logging, health check endpoints)
+- Environment configuration management (dotenv, config validation, 12-factor patterns)
 
 ## Complexity Threshold
 

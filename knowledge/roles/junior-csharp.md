@@ -23,6 +23,8 @@
 - dotnet | gRPC or GraphQL in .NET (Hot Chocolate, Strawberry Shake)
 - serilog | Serilog or structured logging (sinks, enrichers, log levels)
 - aspnet | OpenAPI / Swagger documentation for ASP.NET
+- dotnet | Structured error handling in ASP.NET Core (ProblemDetails, exception middleware, not leaking stack traces)
+- dotnet | Environment configuration management (appsettings.json, IOptions pattern, environment-specific secrets)
 
 ## Complexity Threshold
 minimum_complexity_score: 45

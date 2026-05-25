@@ -25,6 +25,7 @@ containerized deployments are routine, not aspirational.
 - dotnet | OpenTelemetry instrumentation for .NET (traces, metrics, logs pipeline)
 - kubernetes dotnet | Kubernetes deployment for .NET workloads (liveness/readiness probes, ConfigMaps)
 - efcore | Multi-tenancy strategies in EF Core (row-level filtering, schema-per-tenant)
+- polly dotnet | Security hardening in .NET (OWASP awareness, dependency auditing with dotnet audit, secrets scanning)
 
 ## Complexity Threshold
 

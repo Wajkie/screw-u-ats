@@ -26,6 +26,7 @@ real monorepo or multi-package setups.
 - Module federation or micro-frontends
 - Performance profiling and memory leak diagnosis (Chrome DevTools, React Profiler)
 - CI/CD ownership for frontend (GitHub Actions, preview deploys, automated lighthouse runs)
+- Error monitoring integration (Sentry or equivalent — source maps, alert thresholds, release tracking)
 
 ## Complexity Threshold
 
