@@ -4,6 +4,8 @@ An open-source MCP server that evaluates candidates by what they've actually bui
 
 > **Why "Screw U, ATS"?** ATS systems filter on keywords. A candidate who writes "React" gets through. A candidate with 12 React repos but no CV keyword doesn't. CodeScreen fixes that by reading the code instead.
 
+> **Decision helper, not maker.** CodeScreen tells you what to ask about, what's proven, and what's missing — then gets out of the way. The interview is where the real signal is. The moment a tool makes the hiring decision for you, it becomes the thing it's trying to replace.
+
 ---
 
 ## How it works
