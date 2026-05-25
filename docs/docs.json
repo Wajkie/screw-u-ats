@@ -188,7 +188,7 @@
   ],
   "audiences": {
     "developer": {
-      "nav": ["Overview", "Quick Start", "Configuration", "Tools"],
+      "nav": ["Overview", "Quick Start", "Configuration", "MCP Client Config", "Tools"],
       "sections": [
         {
           "id": "overview",
@@ -361,6 +361,39 @@
                     { "name": "CHECK_RATE_LIMIT", "required": false, "default": "20", "description": "Max requests per IP per rate-limit window for /check/:githubName.", "example": "10" },
                     { "name": "CHECK_RATE_WINDOW_MS", "required": false, "default": "60000", "description": "Rate limit window size in milliseconds for /check/:githubName.", "example": "60000" }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mcp-client-config",
+          "title": "MCP Client Config",
+          "pages": [
+            {
+              "id": "client-config",
+              "title": "Connecting an MCP client",
+              "content": [
+                {
+                  "type": "prose",
+                  "body": "Once deployed, point any MCP client at the /mcp endpoint. Set x-mcp-secret to match the MCP_SECRET you configured on the server — omit the headers block if you did not set one."
+                },
+                {
+                  "type": "code",
+                  "lang": "json",
+                  "label": "Claude Desktop — claude_desktop_config.json",
+                  "body": "{\n  \"mcpServers\": {\n    \"codescreener\": {\n      \"type\": \"http\",\n      \"url\": \"https://your-deployment.railway.app/mcp\",\n      \"headers\": {\n        \"x-mcp-secret\": \"your-mcp-secret-here\"\n      }\n    }\n  }\n}"
+                },
+                {
+                  "type": "code",
+                  "lang": "json",
+                  "label": "Claude Code — .mcp.json (project or ~/.claude/mcp.json globally)",
+                  "body": "{\n  \"mcpServers\": {\n    \"codescreener\": {\n      \"type\": \"http\",\n      \"url\": \"https://your-deployment.railway.app/mcp\",\n      \"headers\": {\n        \"x-mcp-secret\": \"your-mcp-secret-here\"\n      }\n    }\n  }\n}"
+                },
+                {
+                  "type": "callout",
+                  "variant": "info",
+                  "body": "Generate a strong secret with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
                 }
               ]
             }
