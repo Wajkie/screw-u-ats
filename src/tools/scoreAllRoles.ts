@@ -6,8 +6,17 @@ import { parseRoleDefinition, matchConcepts } from "../scoring/conceptMatch.js";
 import { scoreTrajectory } from "../scoring/trajectoryScore.js";
 import type { GitHubRepo } from "../github/fetchRepos.js";
 
-export const ALL_ROLES = ["junior-frontend", "junior-fullstack", "junior-backend", "junior-csharp"] as const;
+export const ALL_ROLES = [
+  "junior-frontend", "junior-fullstack", "junior-backend", "junior-csharp",
+  "mid-frontend", "mid-fullstack", "mid-backend", "mid-csharp",
+  "senior-frontend", "senior-fullstack", "senior-backend", "senior-csharp",
+] as const;
 export type RoleSlug = (typeof ALL_ROLES)[number];
+export type Track = "frontend" | "fullstack" | "backend" | "csharp";
+export type Tier = "junior" | "mid" | "senior";
+
+export const TRACKS: Track[] = ["frontend", "fullstack", "backend", "csharp"];
+export const TIERS: Tier[] = ["junior", "mid", "senior"];
 
 export interface RoleScore {
   role: RoleSlug;
@@ -19,11 +28,17 @@ export interface RoleScore {
   missing_concepts: string[];
 }
 
+export interface TrackGroup {
+  track: Track;
+  tiers: RoleScore[];
+}
+
 export interface AllRolesResult {
   candidate: string;
   best_fit: RoleSlug;
   chart: string;
   roles: RoleScore[];
+  tracks: TrackGroup[];
 }
 
 function avgComplexity(repos: GitHubRepo[]): number {
@@ -37,24 +52,67 @@ function bar(score: number, width = 20): string {
   return "█".repeat(filled) + "░".repeat(width - filled);
 }
 
-function buildChart(candidate: string, scores: RoleScore[]): string {
-  const best = scores.reduce((a, b) => (b.fit_score > a.fit_score ? b : a));
-  const labelWidth = Math.max(...scores.map((s) => s.role_name.length));
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
+function buildChart(candidate: string, trackGroups: TrackGroup[], best: RoleScore): string {
   const header = `Role Fit — github.com/${candidate}`;
-  const divider = "─".repeat(header.length + 10);
+  const divider = "─".repeat(Math.max(header.length + 10, 52));
 
-  const rows = scores.map((s) => {
-    const label = s.role_name.padEnd(labelWidth);
-    const pct = String(s.fit_score).padStart(3) + "%";
-    const rec = s.recommendation === "Interview" ? "Interview" : "Pass     ";
-    const marker = s.role === best.role ? "  ← best fit" : "";
-    return `${label}  [${bar(s.fit_score)}]  ${pct}  ${rec}${marker}`;
-  });
+  const lines: string[] = [header, divider];
 
-  return [header, divider, ...rows, divider, `Top match: ${best.role_name} (${best.fit_score}%)`].join(
-    "\n",
+  for (const group of trackGroups) {
+    if (group.tiers.length === 0) continue;
+    lines.push(capitalize(group.track));
+    for (const s of group.tiers) {
+      const tierLabel = ("  " + capitalize(s.role.split("-")[0])).padEnd(10);
+      const pct = String(s.fit_score).padStart(3) + "%";
+      const rec = s.recommendation === "Interview" ? "Interview" : "Pass     ";
+      const marker = s.role === best.role ? "  ← best fit" : "";
+      lines.push(`${tierLabel}  [${bar(s.fit_score)}]  ${pct}  ${rec}${marker}`);
+    }
+    lines.push("");
+  }
+
+  if (lines[lines.length - 1] === "") lines.pop();
+
+  lines.push(divider);
+  lines.push(`Best fit: ${best.role_name} (${best.fit_score}%)`);
+
+  return lines.join("\n");
+}
+
+function tryScoreRole(
+  slug: RoleSlug,
+  scoringRepos: GitHubRepo[],
+  trajectoryScore: number,
+  complexityScore: number,
+  rolesDir: string,
+): RoleScore | null {
+  const rolePath = resolve(rolesDir, `${slug}.md`);
+  let roleMarkdown: string;
+  try {
+    roleMarkdown = readFileSync(rolePath, "utf-8");
+  } catch {
+    return null;
+  }
+  const roleDef = parseRoleDefinition(roleMarkdown);
+  // Skip stub role files — no concepts defined means the role isn't ready for scoring
+  if (roleDef.requiredConcepts.length === 0 && roleDef.bonusConcepts.length === 0) return null;
+  const conceptResult = matchConcepts(scoringRepos, roleDef);
+  const fit_score = Math.round(
+    trajectoryScore * 0.45 + conceptResult.score * 0.35 + complexityScore * 0.2,
   );
+  return {
+    role: slug,
+    role_name: roleDef.name,
+    fit_score,
+    recommendation: fit_score >= 50 ? "Interview" : "Pass",
+    breakdown: { trajectory: trajectoryScore, concept_match: conceptResult.score, complexity: complexityScore },
+    matched_concepts: conceptResult.matchedConcepts,
+    missing_concepts: conceptResult.missingConcepts,
+  };
 }
 
 export async function scoreAllRoles(
@@ -68,37 +126,34 @@ export async function scoreAllRoles(
   const trajectoryResult = scoreTrajectory(scoringRepos, Date.now(), graduationDate);
   const complexityScore = avgComplexity(scoringRepos);
 
-  const scores: RoleScore[] = ALL_ROLES.map((slug) => {
-    const rolePath = resolve(rolesDir, `${slug}.md`);
-    const roleMarkdown = readFileSync(rolePath, "utf-8");
-    const roleDef = parseRoleDefinition(roleMarkdown);
-    const conceptResult = matchConcepts(scoringRepos, roleDef);
+  const trackGroups: TrackGroup[] = TRACKS.map((track) => ({
+    track,
+    tiers: TIERS.flatMap((tier) => {
+      const slug = `${tier}-${track}` as RoleSlug;
+      const score = tryScoreRole(slug, scoringRepos, trajectoryResult.score, complexityScore, rolesDir);
+      return score ? [score] : [];
+    }),
+  }));
 
-    const fit_score = Math.round(
-      trajectoryResult.score * 0.45 + conceptResult.score * 0.35 + complexityScore * 0.2,
-    );
+  const roles: RoleScore[] = trackGroups.flatMap((g) => g.tiers);
 
+  if (roles.length === 0) {
     return {
-      role: slug,
-      role_name: roleDef.name,
-      fit_score,
-      recommendation: fit_score >= 50 ? "Interview" : "Pass",
-      breakdown: {
-        trajectory: trajectoryResult.score,
-        concept_match: conceptResult.score,
-        complexity: complexityScore,
-      },
-      matched_concepts: conceptResult.matchedConcepts,
-      missing_concepts: conceptResult.missingConcepts,
+      candidate: githubUsername,
+      best_fit: "junior-frontend",
+      chart: `Role Fit — github.com/${githubUsername}\nNo role definitions available.`,
+      roles: [],
+      tracks: trackGroups,
     };
-  });
+  }
 
-  const best = scores.reduce((a, b) => (b.fit_score > a.fit_score ? b : a));
+  const best = roles.reduce((a, b) => (b.fit_score > a.fit_score ? b : a));
 
   return {
     candidate: githubUsername,
     best_fit: best.role,
-    chart: buildChart(githubUsername, scores),
-    roles: scores,
+    chart: buildChart(githubUsername, trackGroups, best),
+    roles,
+    tracks: trackGroups,
   };
 }

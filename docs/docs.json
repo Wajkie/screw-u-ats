@@ -15,7 +15,7 @@
       "description": "Fetches the candidate's public GitHub repos, runs trajectory, concept-match, and complexity scoring against the specified role definition, and returns a structured hiring signal. fit_score (0–100) is the weighted combination of all three signals (trajectory 45%, concept match 35%, complexity 20%). A fit_score of 50 or higher yields a recommendation of Interview.",
       "inputs": [
         { "name": "github_username", "type": "string", "required": true, "description": "GitHub username of the candidate to evaluate" },
-        { "name": "role", "type": "string", "required": true, "description": "Role to evaluate against. Accepted values: junior-frontend, junior-fullstack, junior-csharp" },
+        { "name": "role", "type": "string", "required": true, "description": "Role to evaluate against. Three tiers (junior / mid / senior) × four tracks (frontend / fullstack / backend / csharp). E.g. junior-frontend, mid-backend, senior-fullstack." },
         { "name": "include_lighthouse", "type": "boolean", "required": false, "description": "Run Lighthouse audits on live project URLs found in the candidate's repos. Default: false. Results appear in enrichment.lighthouse and have no effect on fit_score." }
       ],
       "returns": {
@@ -99,6 +99,70 @@
             { "name": "uitool", "complexity_score": 67, "repo_url": "https://github.com/johndoe/uitool", "highlights": [{ "signal": "ci", "url": "https://github.com/johndoe/uitool/tree/main/.github/workflows" }] }
           ],
           "suggested_roles": ["mid-frontend"]
+        }
+      }
+    },
+    {
+      "id": "score_all_roles",
+      "name": "score_all_roles",
+      "category": "candidate-scoring",
+      "requiresWrites": false,
+      "summary": "Score a GitHub user against all available roles at once and return a grouped ASCII chart with fit scores per tier and track.",
+      "description": "Fetches the candidate's public GitHub repos once, then scores them against every role file in knowledge/roles/ and returns results grouped by track (frontend / fullstack / backend / csharp) with a tier row per track (junior → mid → senior). Role files with no concept definitions (stubs) are omitted. The best_fit field and flat roles array are preserved for backwards compatibility.",
+      "inputs": [
+        { "name": "github_username", "type": "string", "required": true, "description": "GitHub username to evaluate" },
+        { "name": "graduation_date", "type": "string", "required": false, "description": "ISO date (YYYY-MM-DD) when the candidate graduated. Repos before this date are weighted lower in trajectory scoring." }
+      ],
+      "returns": {
+        "description": "Grouped role-fit results with ASCII chart, best_fit slug, flat roles array, and tracks grouping.",
+        "shape": {
+          "candidate": "string",
+          "best_fit": "RoleSlug",
+          "chart": "string",
+          "roles": "RoleScore[]",
+          "tracks": "[{ track: string, tiers: RoleScore[] }]"
+        }
+      },
+      "example": {
+        "input": { "github_username": "johndoe" },
+        "output": {
+          "candidate": "johndoe",
+          "best_fit": "mid-frontend",
+          "chart": "Role Fit — github.com/johndoe\n────────────────────────────────────────────\nFrontend\n  Junior    [████████████░░░░░░░░]   61%  Interview\n  Mid       [█████████████░░░░░░░]   68%  Interview  ← best fit\n...\nBest fit: Mid Frontend Engineer (68%)",
+          "roles": [],
+          "tracks": [{ "track": "frontend", "tiers": [] }]
+        }
+      }
+    },
+    {
+      "id": "score_batch",
+      "name": "score_batch",
+      "category": "candidate-scoring",
+      "requiresWrites": false,
+      "summary": "Score multiple GitHub users against a single role and return them ranked by fit_score with an ASCII comparison table.",
+      "description": "Evaluates up to N candidates (max concurrency 5) against one role and returns a ranked list with per-candidate fit scores, recommendations, and an ASCII comparison table. Useful for side-by-side comparison of a shortlist.",
+      "inputs": [
+        { "name": "github_usernames", "type": "string[]", "required": true, "description": "GitHub usernames to evaluate (at least one)" },
+        { "name": "role", "type": "string", "required": true, "description": "Role to evaluate all candidates against" },
+        { "name": "graduation_date", "type": "string", "required": false, "description": "ISO date (YYYY-MM-DD) graduation cutoff applied to all candidates" }
+      ],
+      "returns": {
+        "description": "Ranked candidate list with fit scores and an ASCII comparison table.",
+        "shape": {
+          "role": "string",
+          "ranked": "[{ candidate, fit_score, recommendation, breakdown, matched_concepts, missing_concepts }]",
+          "chart": "string"
+        }
+      },
+      "example": {
+        "input": { "github_usernames": ["alice", "bob"], "role": "junior-frontend" },
+        "output": {
+          "role": "junior-frontend",
+          "ranked": [
+            { "candidate": "alice", "fit_score": 72, "recommendation": "Interview" },
+            { "candidate": "bob", "fit_score": 41, "recommendation": "Pass" }
+          ],
+          "chart": "Candidate Comparison — junior-frontend\n..."
         }
       }
     },
@@ -275,7 +339,7 @@
             {
               "id": "candidate-scoring",
               "title": "Candidate Scoring",
-              "toolRefs": ["candidate_profile", "score_candidate"]
+              "toolRefs": ["candidate_profile", "score_candidate", "score_all_roles", "score_batch"]
             },
             {
               "id": "knowledge-tools",
