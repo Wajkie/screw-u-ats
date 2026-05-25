@@ -63,11 +63,11 @@ describe("extractLiveUrls", () => {
     expect(extractLiveUrls(repos)).toHaveLength(0);
   });
 
-  it("caps results at 5 URLs", () => {
-    const repos = Array.from({ length: 8 }, (_, i) =>
+  it("caps results at 10 URLs", () => {
+    const repos = Array.from({ length: 12 }, (_, i) =>
       makeRepo({ name: `repo-${i}`, homepage: `https://project-${i}.example.com` }),
     );
-    expect(extractLiveUrls(repos)).toHaveLength(5);
+    expect(extractLiveUrls(repos)).toHaveLength(10);
   });
 
   it("returns empty array when repos list is empty", () => {

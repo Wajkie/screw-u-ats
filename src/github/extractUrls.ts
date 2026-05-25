@@ -17,5 +17,5 @@ export function extractLiveUrls(repos: GitHubRepo[]): string[] {
     }
   }
 
-  return [...seen].slice(0, 5);
+  return [...seen].slice(0, 10);
 }
