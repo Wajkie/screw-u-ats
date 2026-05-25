@@ -9,6 +9,8 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ci-placeholder
     steps:
       - uses: actions/checkout@v4
 
