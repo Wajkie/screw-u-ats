@@ -53,8 +53,13 @@ describe("extractLiveUrls", () => {
     expect(extractLiveUrls(repos)).toHaveLength(0);
   });
 
-  it("skips non-http homepage values", () => {
-    const repos = [makeRepo({ homepage: "github.com/user/repo" })];
+  it("accepts bare domain homepage values by prepending https://", () => {
+    const repos = [makeRepo({ homepage: "wajkiedevelopment.vercel.app" })];
+    expect(extractLiveUrls(repos)).toEqual(["https://wajkiedevelopment.vercel.app"]);
+  });
+
+  it("skips values that are not parseable as URLs", () => {
+    const repos = [makeRepo({ homepage: "not a url at all" })];
     expect(extractLiveUrls(repos)).toHaveLength(0);
   });
 
