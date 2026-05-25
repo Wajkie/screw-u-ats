@@ -88,7 +88,7 @@ export async function runLighthouseAudits(
   urls: string[],
   apiKey: string,
 ): Promise<LighthouseEnrichment> {
-  const capped = urls.slice(0, 3);
+  const capped = urls.slice(0, 10);
   const results = await Promise.all(
     capped.map((url) => auditUrl(url, apiKey).catch(() => null)),
   );

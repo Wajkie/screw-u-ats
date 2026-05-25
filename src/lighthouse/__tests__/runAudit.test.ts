@@ -92,21 +92,16 @@ describe("runLighthouseAudits", () => {
     expect(result.live_projects_found).toBe(1);
   });
 
-  it("caps audits at 3 URLs even when more are provided", async () => {
+  it("caps audits at 10 URLs even when more are provided", async () => {
     fetchMock.mockResolvedValue({
       ok: true,
       json: async () => makePageSpeedResponse(),
     });
 
-    const urls = [
-      "https://a.vercel.app",
-      "https://b.vercel.app",
-      "https://c.vercel.app",
-      "https://d.vercel.app",
-    ];
+    const urls = Array.from({ length: 12 }, (_, i) => `https://repo-${i}.vercel.app`);
     const result = await runLighthouseAudits(urls, "");
-    expect(fetchMock).toHaveBeenCalledTimes(3);
-    expect(result.audits.length).toBeLessThanOrEqual(3);
+    expect(fetchMock).toHaveBeenCalledTimes(10);
+    expect(result.audits.length).toBeLessThanOrEqual(10);
   });
 
   it("includes the api key in the request when provided", async () => {
