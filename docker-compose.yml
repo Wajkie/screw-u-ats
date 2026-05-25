@@ -1,0 +1,17 @@
+services:
+  mcp:
+    build: .
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    environment:
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      SERVER_NAME: ${SERVER_NAME:-screw-u-ats}
+      ALLOW_WRITES: ${ALLOW_WRITES:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      PORT: ${PORT:-3000}
+      CHECK_PORT: ${CHECK_PORT:-}
+      MCP_SECRET: ${MCP_SECRET:-}
+      DATABASE_URL: ${DATABASE_URL:-}
+      REDIS_URL: ${REDIS_URL:-}
+      PAGESPEED_API_KEY: ${PAGESPEED_API_KEY:-}
+    restart: unless-stopped
