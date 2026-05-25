@@ -113,8 +113,8 @@ function buildAIPrompt(r: AllRolesResult): string {
   }
 
   lines.push('--- Trajectory curve ---');
-  lines.push(r.trajectory.summary);
-  for (const pt of r.trajectory.curve) {
+  lines.push(r.trajectory?.summary ?? '');
+  for (const pt of r.trajectory?.curve ?? []) {
     const label = PERIOD_LABELS[pt.period] ?? pt.period;
     lines.push(`  ${label}: avg complexity ${pt.avgComplexity}, ${pt.repoCount} repo(s)`);
   }
@@ -285,11 +285,11 @@ function downloadAsPDF(r: AllRolesResult): void {
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  const summaryLines = doc.splitTextToSize(r.trajectory.summary, CW);
+  const summaryLines = doc.splitTextToSize(r.trajectory?.summary ?? '', CW);
   doc.text(summaryLines, M, y);
   y += summaryLines.length * 5 + 2;
 
-  for (const pt of r.trajectory.curve) {
+  for (const pt of r.trajectory?.curve ?? []) {
     newPageIfNeeded(5);
     const label = PERIOD_LABELS[pt.period] ?? pt.period;
     doc.setFontSize(8);
@@ -472,10 +472,13 @@ function lhColor(score: number): string {
 
 function LighthousePanel({ lighthouse }: { lighthouse: LighthouseEnrichment }) {
   if (lighthouse.audits.length === 0) {
+    const msg = lighthouse.live_projects_found > 0
+      ? 'Lighthouse audits failed — check your PAGESPEED_API_KEY.'
+      : 'No live project URLs found to audit.';
     return (
       <div className="screener-section">
         <p className="screener-section-title">Lighthouse</p>
-        <p className="screener-section-empty">No live project URLs found to audit.</p>
+        <p className="screener-section-empty">{msg}</p>
       </div>
     );
   }
@@ -678,7 +681,7 @@ export default function Screener() {
                 </div>
               ))}
           </div>
-          <TrajectoryCurve trajectory={result.trajectory} />
+          {result.trajectory && <TrajectoryCurve trajectory={result.trajectory} />}
           {result.lighthouse && <LighthousePanel lighthouse={result.lighthouse} />}
         </div>
       )}

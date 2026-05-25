@@ -67,6 +67,11 @@ export function registerScoreCandidateTools(runtime: ToolRuntime): void {
     sideEffect: "read",
     inputSchema: {
       github_username: z.string().describe("GitHub username to evaluate"),
+      include_lighthouse: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe("Run Lighthouse audits on live project URLs found in repos (default: false)"),
       graduation_date: z
         .string()
         .optional()
@@ -74,13 +79,13 @@ export function registerScoreCandidateTools(runtime: ToolRuntime): void {
           "ISO date (YYYY-MM-DD) when the candidate graduated. Repos before this date are treated as school work and weighted lower in trajectory scoring.",
         ),
     },
-    handler: async ({ github_username, graduation_date }, ctx) => {
+    handler: async ({ github_username, graduation_date, include_lighthouse }, ctx) => {
       const gradDate = graduation_date ? new Date(graduation_date) : null;
       return withCache(
         ctx.cache,
-        `score_all_roles:${github_username}:grad${graduation_date ?? ""}`,
+        `score_all_roles:${github_username}:lh${include_lighthouse ? "1" : "0"}:grad${graduation_date ?? ""}`,
         600,
-        () => scoreAllRoles(github_username, ctx.config.githubToken, rolesDir, gradDate),
+        () => scoreAllRoles(github_username, ctx.config.githubToken, rolesDir, gradDate, include_lighthouse, ctx.config.pagespeedApiKey),
       );
     },
   });

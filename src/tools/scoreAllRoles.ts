@@ -157,12 +157,6 @@ export async function scoreAllRoles(
     curve: trajectoryResult.curve,
   };
 
-  let lighthouse: LighthouseEnrichment | undefined;
-  if (includeLighthouse) {
-    const urls = extractLiveUrls(repos);
-    lighthouse = await runLighthouseAudits(urls, lighthouseApiKey);
-  }
-
   if (roles.length === 0) {
     return {
       candidate: githubUsername,
@@ -171,8 +165,13 @@ export async function scoreAllRoles(
       roles: [],
       tracks: trackGroups,
       trajectory,
-      lighthouse,
     };
+  }
+
+  let lighthouse: LighthouseEnrichment | undefined;
+  if (includeLighthouse) {
+    const urls = extractLiveUrls(repos);
+    lighthouse = await runLighthouseAudits(urls, lighthouseApiKey);
   }
 
   const best = roles.reduce((a, b) => {

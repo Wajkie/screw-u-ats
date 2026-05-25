@@ -95,7 +95,7 @@ export async function runLighthouseAudits(
   const successful = results.filter((r): r is UrlAuditResult => r !== null);
 
   return {
-    live_projects_found: successful.length,
+    live_projects_found: capped.length,
     audits: successful,
   };
 }

@@ -81,7 +81,7 @@ describe("runLighthouseAudits", () => {
     fetchMock.mockResolvedValue({ ok: false });
 
     const result = await runLighthouseAudits(["https://myapp.vercel.app"], "");
-    expect(result.live_projects_found).toBe(0);
+    expect(result.live_projects_found).toBe(1);
     expect(result.audits).toHaveLength(0);
   });
 
@@ -89,7 +89,7 @@ describe("runLighthouseAudits", () => {
     fetchMock.mockRejectedValue(new Error("network error"));
 
     const result = await runLighthouseAudits(["https://myapp.vercel.app"], "");
-    expect(result.live_projects_found).toBe(0);
+    expect(result.live_projects_found).toBe(1);
   });
 
   it("caps audits at 3 URLs even when more are provided", async () => {

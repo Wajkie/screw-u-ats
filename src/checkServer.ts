@@ -77,6 +77,9 @@ export function createCheckApp(githubToken: string, rateLimit = 20, rateWindowMs
     const graduationParam = c.req.query("graduation_date");
     let gradDate: Date | null = null;
     if (graduationParam) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(graduationParam)) {
+        return c.json({ error: "Invalid graduation_date — expected YYYY-MM-DD" }, 400);
+      }
       gradDate = new Date(graduationParam);
       if (isNaN(gradDate.getTime())) {
         return c.json({ error: "Invalid graduation_date — expected YYYY-MM-DD" }, 400);

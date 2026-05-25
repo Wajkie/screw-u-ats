@@ -17,6 +17,7 @@ const fakeResult: AllRolesResult = {
   chart: "Role Fit — github.com/testuser\n─────\nBest fit: Junior Frontend Engineer (55%)",
   roles: [],
   tracks: [],
+  trajectory: { score: 0, summary: "No repos found.", curve: [] },
 };
 
 describe("createCheckApp", () => {
