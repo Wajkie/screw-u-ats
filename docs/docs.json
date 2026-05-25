@@ -357,7 +357,9 @@
                     { "name": "CACHE_TTL_DEFAULT", "required": false, "default": "300", "description": "Default cache TTL in seconds. GitHub profiles are cached for this duration.", "example": "600" },
                     { "name": "PAGESPEED_API_KEY", "required": false, "default": null, "description": "Google PageSpeed Insights API key — enables authenticated requests for higher rate limits when include_lighthouse is used. Works without a key at low volume.", "example": "AIzaSy..." },
                     { "name": "METRICS_INTERVAL", "required": false, "default": "100", "description": "Emit a metrics summary log every N tool calls", "example": "50" },
-                    { "name": "CHECK_PORT", "required": false, "default": null, "description": "Enables the public REST /check/:githubName endpoint on this port (Hono, CORS-open). Useful for the docssite screener UI.", "example": "4000" }
+                    { "name": "CHECK_PORT", "required": false, "default": null, "description": "Enables the public REST /check/:githubName endpoint on this port (Hono, CORS-open). Useful for the docssite screener UI.", "example": "4000" },
+                    { "name": "CHECK_RATE_LIMIT", "required": false, "default": "20", "description": "Max requests per IP per rate-limit window for /check/:githubName.", "example": "10" },
+                    { "name": "CHECK_RATE_WINDOW_MS", "required": false, "default": "60000", "description": "Rate limit window size in milliseconds for /check/:githubName.", "example": "60000" }
                   ]
                 }
               ]

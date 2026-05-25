@@ -74,7 +74,7 @@ async function main() {
   }
 
   if (config.checkPort !== undefined) {
-    await startCheckServer(config.checkPort, config.githubToken);
+    await startCheckServer(config.checkPort, config.githubToken, config.checkRateLimit, config.checkRateWindowMs);
   }
 
   const stdioTransport = new StdioServerTransport();

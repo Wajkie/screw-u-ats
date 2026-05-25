@@ -21,6 +21,8 @@ export const config = {
   logLevel: optional("LOG_LEVEL", "info"),
   port: process.env["PORT"] ? parseInt(process.env["PORT"], 10) : undefined,
   checkPort: process.env["CHECK_PORT"] ? parseInt(process.env["CHECK_PORT"], 10) : undefined,
+  checkRateLimit: parseInt(process.env["CHECK_RATE_LIMIT"] ?? "20", 10),
+  checkRateWindowMs: parseInt(process.env["CHECK_RATE_WINDOW_MS"] ?? "60000", 10),
   databaseUrl: process.env["DATABASE_URL"],
   redisUrl: process.env["REDIS_URL"],
   cacheTtl: {

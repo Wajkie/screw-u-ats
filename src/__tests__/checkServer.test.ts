@@ -5,7 +5,7 @@ vi.mock("../logger.js", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
-import { createCheckApp } from "../checkServer.js";
+import { createCheckApp, createRateLimiter } from "../checkServer.js";
 import { scoreAllRoles } from "../tools/scoreAllRoles.js";
 import type { AllRolesResult } from "../tools/scoreAllRoles.js";
 
@@ -87,5 +87,60 @@ describe("createCheckApp", () => {
     await app.request("/check/testuser");
     const [, , , gradDate] = mockScoreAllRoles.mock.calls[0]!;
     expect(gradDate).toBeNull();
+  });
+});
+
+describe("createRateLimiter", () => {
+  it("sets X-RateLimit-* headers on successful requests", async () => {
+    mockScoreAllRoles.mockResolvedValue(fakeResult);
+    const app = createCheckApp("fake-token", 5, 60_000);
+    const res = await app.request("/check/testuser", {
+      headers: { "x-forwarded-for": "1.2.3.4" },
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get("x-ratelimit-limit")).toBe("5");
+    expect(res.headers.get("x-ratelimit-remaining")).toBe("4");
+  });
+
+  it("returns 429 after limit is exceeded", async () => {
+    mockScoreAllRoles.mockResolvedValue(fakeResult);
+    const app = createCheckApp("fake-token", 2, 60_000);
+    const ip = { headers: { "x-forwarded-for": "10.0.0.1" } };
+    await app.request("/check/testuser", ip);
+    await app.request("/check/testuser", ip);
+    const res = await app.request("/check/testuser", ip);
+    expect(res.status).toBe(429);
+    const data = await res.json() as { error: string };
+    expect(data.error).toContain("Rate limit exceeded");
+    expect(res.headers.get("retry-after")).toBeTruthy();
+  });
+
+  it("counts IPs independently", async () => {
+    mockScoreAllRoles.mockResolvedValue(fakeResult);
+    const app = createCheckApp("fake-token", 1, 60_000);
+    await app.request("/check/testuser", { headers: { "x-forwarded-for": "11.0.0.1" } });
+    // First request from a different IP should still be allowed
+    const res = await app.request("/check/testuser", { headers: { "x-forwarded-for": "11.0.0.2" } });
+    expect(res.status).toBe(200);
+  });
+
+  it("resets the counter after the window expires", async () => {
+    mockScoreAllRoles.mockResolvedValue(fakeResult);
+    // 1-request limit with a 1 ms window — window expires immediately
+    const app = createCheckApp("fake-token", 1, 1);
+    const ip = { headers: { "x-forwarded-for": "12.0.0.1" } };
+    await app.request("/check/testuser", ip);
+    await new Promise((r) => setTimeout(r, 10));
+    const res = await app.request("/check/testuser", ip);
+    expect(res.status).toBe(200);
+  });
+
+  it("uses X-Forwarded-For first IP when multiple are present", async () => {
+    mockScoreAllRoles.mockResolvedValue(fakeResult);
+    const app = createCheckApp("fake-token", 1, 60_000);
+    // Exhaust quota for the first IP in the list
+    await app.request("/check/testuser", { headers: { "x-forwarded-for": "13.0.0.1, 99.99.99.99" } });
+    const res = await app.request("/check/testuser", { headers: { "x-forwarded-for": "13.0.0.1, 99.99.99.99" } });
+    expect(res.status).toBe(429);
   });
 });
