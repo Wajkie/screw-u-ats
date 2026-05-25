@@ -838,6 +838,190 @@ a:hover { text-decoration: underline; }
   gap: 0.1rem;
 }
 
+/* ── Screener: checkbox option ── */
+.screener-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.screener-checkbox-row input[type="checkbox"] {
+  flex-shrink: 0;
+  accent-color: var(--color-accent);
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+/* ── Screener: section panels (trajectory / Lighthouse) ── */
+.screener-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.screener-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.screener-section-summary {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.screener-section-empty {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ── Trajectory chart ── */
+.traj-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.traj-row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr 2.2rem 4rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+}
+
+.traj-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+.traj-bar-wrap {
+  height: 10px;
+  background: var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.traj-bar {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 999px;
+  transition: width 400ms ease;
+  min-width: 2px;
+}
+
+.traj-value {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-text);
+  text-align: right;
+}
+
+.traj-repos {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Lighthouse panel ── */
+.lh-audits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lh-audit-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.lh-url {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lh-url a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.lh-url a:hover { text-decoration: underline; }
+
+.lh-scores {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.lh-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  min-width: 4rem;
+}
+
+.lh-score-value {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.lh-score-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.lh-score--good  { background: rgba(91, 173, 117, 0.1);  border-color: rgba(91, 173, 117, 0.3); }
+.lh-score--good .lh-score-value  { color: #3a8a56; }
+.lh-score--ok    { background: rgba(232, 168, 74, 0.1);  border-color: rgba(232, 168, 74, 0.3); }
+.lh-score--ok .lh-score-value    { color: #a06020; }
+.lh-score--poor  { background: rgba(220, 80, 80, 0.1);   border-color: rgba(220, 80, 80, 0.3); }
+.lh-score--poor .lh-score-value  { color: #b03030; }
+
+.lh-violations {
+  font-size: 0.78rem;
+}
+
+.lh-violations-summary {
+  cursor: pointer;
+  color: var(--color-accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.lh-audit-card + .lh-audit-card {
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.75rem;
+}
+
 /* ── Footer ── */
 .site-footer {
   margin-top: 4rem;

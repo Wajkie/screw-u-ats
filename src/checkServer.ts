@@ -5,6 +5,7 @@ import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import { scoreAllRoles } from "./tools/scoreAllRoles.js";
 import { logger } from "./logger.js";
+import { config } from "./config.js";
 import type { AddressInfo } from "node:net";
 import type { MiddlewareHandler } from "hono";
 
@@ -82,8 +83,17 @@ export function createCheckApp(githubToken: string, rateLimit = 20, rateWindowMs
       }
     }
 
+    const includeLighthouse = c.req.query("include_lighthouse") === "true";
+
     try {
-      const result = await scoreAllRoles(githubName, githubToken, rolesDir, gradDate);
+      const result = await scoreAllRoles(
+        githubName,
+        githubToken,
+        rolesDir,
+        gradDate,
+        includeLighthouse,
+        config.pagespeedApiKey,
+      );
       return c.json(result);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unexpected error";

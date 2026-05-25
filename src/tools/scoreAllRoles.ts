@@ -1,10 +1,14 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { fetchRepos } from "../github/fetchRepos.js";
+import { extractLiveUrls } from "../github/extractUrls.js";
 import { scoreComplexity, filterNoise } from "../scoring/complexitySignals.js";
 import { parseRoleDefinition, matchConcepts } from "../scoring/conceptMatch.js";
 import { scoreTrajectory } from "../scoring/trajectoryScore.js";
+import { runLighthouseAudits } from "../lighthouse/runAudit.js";
 import type { GitHubRepo } from "../github/fetchRepos.js";
+import type { CurvePoint } from "../scoring/trajectoryScore.js";
+import type { LighthouseEnrichment } from "../lighthouse/runAudit.js";
 
 export const ALL_ROLES = [
   "junior-frontend", "junior-fullstack", "junior-backend", "junior-csharp",
@@ -33,12 +37,20 @@ export interface TrackGroup {
   tiers: RoleScore[];
 }
 
+export interface TrajectoryInfo {
+  score: number;
+  summary: string;
+  curve: CurvePoint[];
+}
+
 export interface AllRolesResult {
   candidate: string;
   best_fit: RoleSlug;
   chart: string;
   roles: RoleScore[];
   tracks: TrackGroup[];
+  trajectory: TrajectoryInfo;
+  lighthouse?: LighthouseEnrichment;
 }
 
 function avgComplexity(repos: GitHubRepo[]): number {
@@ -120,6 +132,8 @@ export async function scoreAllRoles(
   githubToken: string,
   rolesDir: string,
   graduationDate?: Date | null,
+  includeLighthouse = false,
+  lighthouseApiKey = "",
 ): Promise<AllRolesResult> {
   const repos = await fetchRepos(githubUsername, githubToken);
   const scoringRepos = filterNoise(repos);
@@ -137,6 +151,18 @@ export async function scoreAllRoles(
 
   const roles: RoleScore[] = trackGroups.flatMap((g) => g.tiers);
 
+  const trajectory: TrajectoryInfo = {
+    score: trajectoryResult.score,
+    summary: trajectoryResult.summary,
+    curve: trajectoryResult.curve,
+  };
+
+  let lighthouse: LighthouseEnrichment | undefined;
+  if (includeLighthouse) {
+    const urls = extractLiveUrls(repos);
+    lighthouse = await runLighthouseAudits(urls, lighthouseApiKey);
+  }
+
   if (roles.length === 0) {
     return {
       candidate: githubUsername,
@@ -144,6 +170,8 @@ export async function scoreAllRoles(
       chart: `Role Fit — github.com/${githubUsername}\nNo role definitions available.`,
       roles: [],
       tracks: trackGroups,
+      trajectory,
+      lighthouse,
     };
   }
 
@@ -155,5 +183,7 @@ export async function scoreAllRoles(
     chart: buildChart(githubUsername, trackGroups, best),
     roles,
     tracks: trackGroups,
+    trajectory,
+    lighthouse,
   };
 }

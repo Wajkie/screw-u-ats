@@ -21,11 +21,43 @@ interface TrackGroup {
   tiers: RoleScore[];
 }
 
+interface CurvePoint {
+  period: string;
+  repoCount: number;
+  avgComplexity: number;
+}
+
+interface TrajectoryInfo {
+  score: number;
+  summary: string;
+  curve: CurvePoint[];
+}
+
+interface LighthouseScores {
+  performance: number;
+  accessibility: number;
+  best_practices: number;
+  seo: number;
+}
+
+interface UrlAuditResult {
+  url: string;
+  scores: LighthouseScores;
+  wcag_violations: string[];
+}
+
+interface LighthouseEnrichment {
+  live_projects_found: number;
+  audits: UrlAuditResult[];
+}
+
 interface AllRolesResult {
   candidate: string;
   best_fit: string;
   roles: RoleScore[];
   tracks: TrackGroup[];
+  trajectory: TrajectoryInfo;
+  lighthouse?: LighthouseEnrichment;
 }
 
 function capitalize(s: string): string {
@@ -95,10 +127,101 @@ function RoleRow({ role, bestFit }: { role: RoleScore; bestFit: string }) {
   );
 }
 
+const PERIOD_LABELS: Record<string, string> = {
+  'pre-grad': 'Pre-grad',
+  '12m+': '12m+',
+  '6-12m': '6–12m',
+  '3-6m': '3–6m',
+  '0-3m': '0–3m',
+};
+
+function TrajectoryCurve({ trajectory }: { trajectory: TrajectoryInfo }) {
+  if (trajectory.curve.length === 0) {
+    return (
+      <div className="screener-section">
+        <p className="screener-section-title">Trajectory</p>
+        <p className="screener-section-empty">{trajectory.summary}</p>
+      </div>
+    );
+  }
+  return (
+    <div className="screener-section">
+      <p className="screener-section-title">Trajectory</p>
+      <p className="screener-section-summary">{trajectory.summary}</p>
+      <div className="traj-chart">
+        {trajectory.curve.map(pt => (
+          <div key={pt.period} className="traj-row">
+            <span className="traj-label">{PERIOD_LABELS[pt.period] ?? pt.period}</span>
+            <div className="traj-bar-wrap">
+              <div
+                className="traj-bar"
+                style={{ width: `${pt.avgComplexity}%` }}
+                title={`${pt.avgComplexity} avg complexity`}
+              />
+            </div>
+            <span className="traj-value">{pt.avgComplexity}</span>
+            <span className="traj-repos">{pt.repoCount} repo{pt.repoCount !== 1 ? 's' : ''}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function lhColor(score: number): string {
+  if (score >= 90) return 'lh-score--good';
+  if (score >= 50) return 'lh-score--ok';
+  return 'lh-score--poor';
+}
+
+function LighthousePanel({ lighthouse }: { lighthouse: LighthouseEnrichment }) {
+  if (lighthouse.audits.length === 0) {
+    return (
+      <div className="screener-section">
+        <p className="screener-section-title">Lighthouse</p>
+        <p className="screener-section-empty">No live project URLs found to audit.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="screener-section">
+      <p className="screener-section-title">Lighthouse</p>
+      <div className="lh-audits">
+        {lighthouse.audits.map(audit => (
+          <div key={audit.url} className="lh-audit-card">
+            <p className="lh-url">
+              <a href={audit.url} target="_blank" rel="noreferrer">{audit.url.replace(/^https?:\/\//, '')}</a>
+            </p>
+            <div className="lh-scores">
+              {(['performance', 'accessibility', 'best_practices', 'seo'] as const).map(key => (
+                <div key={key} className={`lh-score ${lhColor(audit.scores[key])}`}>
+                  <span className="lh-score-value">{audit.scores[key]}</span>
+                  <span className="lh-score-label">{key === 'best_practices' ? 'Best Practices' : capitalize(key)}</span>
+                </div>
+              ))}
+            </div>
+            {audit.wcag_violations.length > 0 && (
+              <details className="lh-violations">
+                <summary className="lh-violations-summary">
+                  {audit.wcag_violations.length} accessibility issue{audit.wcag_violations.length !== 1 ? 's' : ''}
+                </summary>
+                <ul className="screener-concept-list">
+                  {audit.wcag_violations.map((v, i) => <li key={i}>{v}</li>)}
+                </ul>
+              </details>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Screener() {
   const [username, setUsername] = useState('');
   const [graduationDate, setGraduationDate] = useState('');
   const [apiUrl, setApiUrl] = useState('http://localhost:3001');
+  const [includeLighthouse, setIncludeLighthouse] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AllRolesResult | null>(null);
@@ -117,6 +240,7 @@ export default function Screener() {
       const base = apiUrl.replace(/\/$/, '');
       const params = new URLSearchParams();
       if (graduationDate) params.set('graduation_date', graduationDate);
+      if (includeLighthouse) params.set('include_lighthouse', 'true');
       const qs = params.toString() ? `?${params.toString()}` : '';
       const res = await fetch(`${base}/check/${encodeURIComponent(name)}${qs}`);
       const data = await res.json() as Record<string, unknown>;
@@ -203,6 +327,16 @@ export default function Screener() {
                 Repos before this date are weighted lower in trajectory scoring.
               </p>
             </div>
+            <label className="screener-checkbox-row">
+              <input
+                type="checkbox"
+                checked={includeLighthouse}
+                onChange={e => setIncludeLighthouse(e.target.checked)}
+                disabled={loading}
+              />
+              <span>Run Lighthouse audit on live project URLs</span>
+              <span className="screener-optional">(requires PAGESPEED_API_KEY — adds ~30s)</span>
+            </label>
           </div>
         )}
       </form>
@@ -240,6 +374,8 @@ export default function Screener() {
                 </div>
               ))}
           </div>
+          <TrajectoryCurve trajectory={result.trajectory} />
+          {result.lighthouse && <LighthousePanel lighthouse={result.lighthouse} />}
         </div>
       )}
     </div>
