@@ -5,6 +5,7 @@ import { useActiveSection } from './hooks/useActiveSection';
 import Nav from './components/Nav';
 import SectionWrapper from './components/SectionWrapper';
 import CopyButton from './components/CopyButton';
+import Screener from './components/Screener';
 
 const data = rawData as unknown as DocsData;
 const { meta, tools, audiences } = data;
@@ -145,9 +146,12 @@ function ToolsGroup({ group }: { group: ToolGroup }): React.ReactElement {
 function App(): React.ReactElement {
   const [audience, setAudience] = useState<'developer' | 'business'>('developer');
   const activeSections = audiences[audience].sections;
-  const activeSectionIds = activeSections.map((s) => s.id);
+  const activeSectionIds = [...activeSections.map((s) => s.id), 'screener'];
   const activeId = useActiveSection(activeSectionIds);
-  const navItems = activeSections.map((s) => ({ key: s.id, title: s.title }));
+  const navItems = [
+    ...activeSections.map((s) => ({ key: s.id, title: s.title })),
+    { key: 'screener', title: 'Try It' },
+  ];
 
   return (
     <div className="layout">
@@ -188,6 +192,15 @@ function App(): React.ReactElement {
             ))}
           </SectionWrapper>
         ))}
+
+        <SectionWrapper
+          id="screener"
+          title="Try It"
+          description="Enter a GitHub username to run all role-fit scores against the live check server."
+          index={activeSections.length}
+        >
+          <Screener />
+        </SectionWrapper>
 
         <footer className="site-footer">
           {meta.title} — Documentation
