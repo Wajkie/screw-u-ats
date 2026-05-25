@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CopyButton from './CopyButton';
 
 interface Breakdown {
   trajectory: number;
@@ -58,6 +59,83 @@ interface AllRolesResult {
   tracks: TrackGroup[];
   trajectory: TrajectoryInfo;
   lighthouse?: LighthouseEnrichment;
+}
+
+function buildAIPrompt(r: AllRolesResult): string {
+  const best = r.roles.find(ro => ro.role === r.best_fit) ?? r.roles[0];
+  const lines: string[] = [];
+
+  lines.push('=== CANDIDATE SCREENING REPORT ===');
+  lines.push(`Candidate: github.com/${r.candidate}`);
+  lines.push(`Best-fit role: ${best?.role_name ?? r.best_fit}`);
+  lines.push(`Fit score: ${best?.fit_score ?? '—'}%`);
+  lines.push(`Recommendation: ${best?.recommendation ?? '—'}`);
+  lines.push('');
+
+  lines.push('--- Pillar Breakdown ---');
+  if (best) {
+    lines.push(`  Trajectory:     ${best.breakdown.trajectory}%`);
+    lines.push(`  Concept match:  ${best.breakdown.concept_match}%`);
+    lines.push(`  Complexity:     ${best.breakdown.complexity}%`);
+  }
+  lines.push('');
+
+  lines.push('--- Skill Map (all roles) ---');
+  for (const group of r.tracks) {
+    if (group.tiers.length === 0) continue;
+    lines.push(`${group.track.toUpperCase()}`);
+    for (const role of group.tiers) {
+      const marker = role.role === r.best_fit ? ' ◀ best fit' : '';
+      lines.push(`  ${role.role_name}: ${role.fit_score}% (${role.recommendation})${marker}`);
+    }
+  }
+  lines.push('');
+
+  if (best && best.matched_concepts.length > 0) {
+    lines.push('--- Matched concepts ---');
+    lines.push(best.matched_concepts.join(', '));
+    lines.push('');
+  }
+
+  if (best && best.missing_concepts.length > 0) {
+    lines.push('--- Missing concepts ---');
+    lines.push(best.missing_concepts.join(', '));
+    lines.push('');
+  }
+
+  lines.push('--- Trajectory curve ---');
+  lines.push(r.trajectory.summary);
+  const PERIOD_MAP: Record<string, string> = {
+    'pre-grad': 'Pre-grad', '12m+': '12m+', '6-12m': '6–12m', '3-6m': '3–6m', '0-3m': '0–3m',
+  };
+  for (const pt of r.trajectory.curve) {
+    const label = PERIOD_MAP[pt.period] ?? pt.period;
+    lines.push(`  ${label}: avg complexity ${pt.avgComplexity}, ${pt.repoCount} repo(s)`);
+  }
+  lines.push('');
+
+  if (r.lighthouse && r.lighthouse.audits.length > 0) {
+    lines.push('--- Lighthouse scores ---');
+    for (const audit of r.lighthouse.audits) {
+      lines.push(`  ${audit.url}`);
+      const s = audit.scores;
+      lines.push(`    Performance ${s.performance}  Accessibility ${s.accessibility}  Best Practices ${s.best_practices}  SEO ${s.seo}`);
+      if (audit.wcag_violations.length > 0) {
+        lines.push(`    WCAG issues: ${audit.wcag_violations.join('; ')}`);
+      }
+    }
+    lines.push('');
+  }
+
+  lines.push('=== AI INSTRUCTIONS ===');
+  lines.push('You are a technical recruiter assistant. Using the screening report above:');
+  lines.push('1. Summarise the candidate\'s strengths in 2–3 sentences.');
+  lines.push('2. Identify the most significant skill gaps and explain their practical impact.');
+  lines.push('3. Suggest 3–5 targeted interview questions that probe the gap areas.');
+  lines.push('4. Give a plain-language verdict: should the recruiter proceed to interview? Why or why not?');
+  lines.push('Keep the response concise and recruiter-friendly — avoid jargon.');
+
+  return lines.join('\n');
 }
 
 function capitalize(s: string): string {
@@ -356,12 +434,15 @@ export default function Screener() {
 
       {result && (
         <div className="screener-results" aria-live="polite">
-          <p className="screener-candidate-link">
-            Results for{' '}
-            <a href={`https://github.com/${result.candidate}`} target="_blank" rel="noreferrer">
-              github.com/{result.candidate}
-            </a>
-          </p>
+          <div className="screener-results-header">
+            <p className="screener-candidate-link">
+              Results for{' '}
+              <a href={`https://github.com/${result.candidate}`} target="_blank" rel="noreferrer">
+                github.com/{result.candidate}
+              </a>
+            </p>
+            <CopyButton text={buildAIPrompt(result)} label="Copy prompt" copiedLabel="Copied!" />
+          </div>
           <div className="screener-tracks">
             {result.tracks
               .filter(g => g.tiers.length > 0)

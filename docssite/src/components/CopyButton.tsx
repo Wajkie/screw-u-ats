@@ -2,9 +2,11 @@ import { useState } from 'react';
 
 interface Props {
   text: string;
+  label?: string;
+  copiedLabel?: string;
 }
 
-const CopyButton: React.FC<Props> = ({ text }) => {
+const CopyButton: React.FC<Props> = ({ text, label = 'Copy', copiedLabel = 'Copied!' }) => {
   const [copied, setCopied] = useState<boolean>(false);
 
   const handleClick: React.MouseEventHandler<HTMLButtonElement> = () => {
@@ -16,7 +18,7 @@ const CopyButton: React.FC<Props> = ({ text }) => {
 
   return (
     <button type="button" className="copy-btn" onClick={handleClick}>
-      {copied ? 'Copied!' : 'Copy'}
+      {copied ? copiedLabel : label}
     </button>
   );
 };
