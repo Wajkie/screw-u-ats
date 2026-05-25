@@ -20,6 +20,55 @@ Minimum 50% fit score to recommend **Interview**. Ties between equal fit scores 
 
 ---
 
+## Repo structure
+
+```
+codescreen/
+├── src/
+│   ├── server.ts               # MCP server entry point
+│   ├── checkServer.ts          # Hono REST server (/check/:githubName)
+│   ├── config.ts               # Env var loading
+│   ├── toolRuntime.ts          # ToolRuntime / ToolDefinition contract
+│   ├── github/
+│   │   ├── fetchRepos.ts       # GitHub API — repo list + metadata
+│   │   ├── fetchProfile.ts     # GitHub API — user profile
+│   │   └── extractUrls.ts      # Pull live URLs from READMEs / package.json
+│   ├── scoring/
+│   │   ├── trajectoryScore.ts  # Complexity growth over time buckets
+│   │   ├── conceptMatch.ts     # Role definition concept matcher
+│   │   ├── complexitySignals.ts# Per-repo complexity heuristics
+│   │   └── skillMap.ts         # Concept → language/dep mapping
+│   ├── lighthouse/
+│   │   └── runAudit.ts         # PageSpeed Insights + WCAG runner
+│   └── tools/
+│       ├── scoreCandidate.ts   # score_candidate tool
+│       ├── scoreBatch.ts       # score_batch tool
+│       ├── scoreAllRoles.ts    # score_all_roles tool
+│       └── candidateProfile.ts # candidate_profile tool
+├── knowledge/
+│   ├── roles/
+│   │   ├── junior-frontend.md
+│   │   ├── junior-fullstack.md
+│   │   ├── junior-backend.md
+│   │   ├── junior-csharp.md
+│   │   ├── mid-frontend.md
+│   │   ├── mid-fullstack.md
+│   │   ├── mid-backend.md
+│   │   ├── mid-csharp.md
+│   │   └── ...                 # add more; server picks them up on restart
+│   └── getting-started.md
+├── docssite/                   # Vite + React docs site + screener UI
+│   └── src/components/
+│       └── Screener.tsx        # Visual screener + PDF export
+├── docs/
+│   └── docs.json               # Single source of truth for all docs content
+├── scripts/
+│   └── dev-screener.ps1        # Launches check server + docssite together
+└── .env.example
+```
+
+---
+
 ## Quick start
 
 ```bash
