@@ -48,14 +48,14 @@ describe("parseRoleDefinition - junior-frontend.md", () => {
     expect(role.name).toBe("Junior Frontend Engineer");
   });
 
-  it("parses all required concepts (9 expected)", () => {
+  it("parses all required concepts (10 expected)", () => {
     const role = parseRoleDefinition(frontendMd);
-    expect(role.requiredConcepts).toHaveLength(9);
+    expect(role.requiredConcepts).toHaveLength(10);
   });
 
-  it("parses all bonus concepts (8 expected)", () => {
+  it("parses all bonus concepts (9 expected)", () => {
     const role = parseRoleDefinition(frontendMd);
-    expect(role.bonusConcepts).toHaveLength(8);
+    expect(role.bonusConcepts).toHaveLength(9);
   });
 
   it("parses minimum_complexity_score: 35", () => {
