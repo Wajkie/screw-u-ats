@@ -1,11 +1,8 @@
-import { Hono } from 'hono';
-import { serve } from '@hono/node-server';
-
-const app = new Hono();
-
-app.get('/health', (c) => c.json({ status: 'ok' }));
+import 'dotenv/config';
+import { startApiServer } from './apiServer.js';
 
 const port = Number(process.env.API_PORT ?? 4001);
-serve({ fetch: app.fetch, port }, () => {
-  console.log(`screener-api listening on port ${port}`);
+startApiServer(port).catch((err) => {
+  console.error('Failed to start screener-api:', err);
+  process.exit(1);
 });
