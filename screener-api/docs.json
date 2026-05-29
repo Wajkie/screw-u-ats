@@ -1,0 +1,9 @@
+{
+  "meta": {
+    "title": "screener-api",
+    "description": "REST API for the fullstack screener app — candidate management, async analysis jobs, and historical report snapshots.",
+    "version": "0.1.0",
+    "repo": "https://github.com/Wajkie/screw-u-ats"
+  },
+  "endpoints": []
+}
