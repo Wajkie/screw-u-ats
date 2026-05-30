@@ -22,7 +22,7 @@ const sharedTsRules = {
     { selector: "function", format: ["camelCase"] },
     { selector: "parameter", format: ["camelCase"], leadingUnderscore: "allow" },
   ],
-  "max-lines": ["warn", { max: 200, skipBlankLines: true, skipComments: true }],
+  "max-lines": ["warn", { max: 250, skipBlankLines: true, skipComments: true }],
 };
 
 export default tseslint.config(

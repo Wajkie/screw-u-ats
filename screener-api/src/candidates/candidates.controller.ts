@@ -1,11 +1,11 @@
 import type { Context } from 'hono';
 import * as repo from './candidates.repository.js';
-import { CreateCandidateSchema, UpdateCandidateSchema } from './candidates.schemas.js';
+import { createCandidateSchema, updateCandidateSchema } from './candidates.schemas.js';
 import { parseBody } from '../lib/validate.js';
 import { ConflictError, NotFoundError } from '../errors.js';
 
 export async function createCandidate(c: Context) {
-  const input = await parseBody(c, CreateCandidateSchema);
+  const input = await parseBody(c, createCandidateSchema);
 
   try {
     const candidate = await repo.createCandidate(input);
@@ -33,7 +33,7 @@ export async function getCandidate(c: Context) {
 
 export async function updateCandidate(c: Context) {
   const id = c.req.param('id')!;
-  const input = await parseBody(c, UpdateCandidateSchema);
+  const input = await parseBody(c, updateCandidateSchema);
 
   const candidate = await repo.updateCandidate(id, input);
   if (!candidate) throw new NotFoundError('Candidate');

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ValidationError } from '../errors.js';
 
 export async function parseBody<T>(c: Context, schema: z.ZodType<T>): Promise<T> {
-  const raw = await c.req.json().catch(() => null);
+  const raw: unknown = await c.req.json().catch(() => null);
   if (raw === null) throw new ValidationError('Invalid JSON body');
 
   const result = schema.safeParse(raw);
