@@ -263,6 +263,65 @@
       }
     },
     {
+      "id": "list-candidate-reports",
+      "method": "GET",
+      "path": "/candidates/:id/reports",
+      "summary": "List all reports for a candidate, newest first. Returns a summary shape — no full data blob.",
+      "params": {
+        "id": { "type": "string", "description": "Candidate nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Array of report summaries, newest first. Empty array when candidate exists but has no reports.",
+          "shape": [
+            {
+              "id": "string",
+              "job_id": "string",
+              "best_fit": "string",
+              "fit_score": "number",
+              "created_at": "string"
+            }
+          ]
+        },
+        "404": { "description": "Candidate not found" }
+      },
+      "example": {
+        "response": [
+          {
+            "id": "rpt_def456",
+            "job_id": "job_xyz789",
+            "best_fit": "junior-frontend",
+            "fit_score": 72,
+            "created_at": "2026-05-30T10:10:45.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "id": "get-report",
+      "method": "GET",
+      "path": "/reports/:id",
+      "summary": "Get a full report including the parsed AllRolesResult in the data field.",
+      "params": {
+        "id": { "type": "string", "description": "Report nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Full report row. data is the parsed AllRolesResult object.",
+          "shape": {
+            "id": "string",
+            "candidate_id": "string",
+            "job_id": "string",
+            "best_fit": "string",
+            "fit_score": "number",
+            "data": "AllRolesResult",
+            "created_at": "string"
+          }
+        },
+        "404": { "description": "Report not found" }
+      }
+    },
+    {
       "id": "get-job",
       "method": "GET",
       "path": "/jobs/:id",
