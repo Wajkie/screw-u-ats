@@ -2,13 +2,27 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
 import { candidates } from './candidates/candidates.routes.js';
+import { createAuthMiddleware } from './middleware/auth.js';
+import { AppError } from './errors.js';
 import type { AddressInfo } from 'node:net';
 
 export function createApiApp(): Hono {
   const app = new Hono();
+
   app.use('*', cors());
+  app.use('*', createAuthMiddleware());
 
   app.route('/candidates', candidates);
+
+  app.notFound((c) => c.json({ error: 'Not found' }, 404));
+
+  app.onError((err, c) => {
+    if (err instanceof AppError) {
+      return c.json({ error: err.message }, err.statusCode as Parameters<typeof c.json>[1]);
+    }
+    console.error(err);
+    return c.json({ error: 'Internal server error' }, 500);
+  });
 
   return app;
 }
