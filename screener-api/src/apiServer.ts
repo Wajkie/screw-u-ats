@@ -1,7 +1,9 @@
 import { Hono } from 'hono';
+import { secureHeaders } from 'hono/secure-headers';
 import { serve } from '@hono/node-server';
 import { candidates } from './candidates/candidates.routes.js';
 import { createCorsMiddleware } from './middleware/cors.js';
+import { createBodyLimitFromEnv } from './middleware/bodyLimit.js';
 import { createRateLimiterFromEnv } from './middleware/rateLimit.js';
 import { createAuthMiddleware } from './middleware/auth.js';
 import { AppError } from './errors.js';
@@ -10,7 +12,9 @@ import type { AddressInfo } from 'node:net';
 export function createApiApp(): Hono {
   const app = new Hono();
 
+  app.use('*', secureHeaders());
   app.use('*', createCorsMiddleware());
+  app.use('*', createBodyLimitFromEnv());
   app.use('*', createRateLimiterFromEnv());
   app.use('*', createAuthMiddleware());
 

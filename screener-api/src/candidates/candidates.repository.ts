@@ -1,18 +1,8 @@
 import { nanoid } from 'nanoid';
 import { db } from '../db/client.js';
+import type { CreateCandidateInput, UpdateCandidateInput } from './candidates.schemas.js';
 
-export interface CreateCandidateInput {
-  github_username: string;
-  display_name?: string | null;
-  graduation_date?: string | null;
-  notes?: string | null;
-}
-
-export interface UpdateCandidateInput {
-  display_name?: string | null;
-  graduation_date?: string | null;
-  notes?: string | null;
-}
+export type { CreateCandidateInput, UpdateCandidateInput };
 
 export interface LatestReportSummary {
   id: string;

@@ -1,24 +1,14 @@
 import type { Context } from 'hono';
 import * as repo from './candidates.repository.js';
-import { ConflictError, NotFoundError, ValidationError } from '../errors.js';
-
-const GRAD_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-
-function assertValidGradDate(value: unknown) {
-  if (value != null && (typeof value !== 'string' || !GRAD_DATE_RE.test(value))) {
-    throw new ValidationError('graduation_date must be YYYY-MM-DD');
-  }
-}
+import { CreateCandidateSchema, UpdateCandidateSchema } from './candidates.schemas.js';
+import { parseBody } from '../lib/validate.js';
+import { ConflictError, NotFoundError } from '../errors.js';
 
 export async function createCandidate(c: Context) {
-  const body = await c.req.json().catch(() => null);
-  if (!body || typeof body.github_username !== 'string' || !body.github_username) {
-    throw new ValidationError('github_username is required');
-  }
-  assertValidGradDate(body.graduation_date);
+  const input = await parseBody(c, CreateCandidateSchema);
 
   try {
-    const candidate = await repo.createCandidate(body);
+    const candidate = await repo.createCandidate(input);
     return c.json(candidate, 201);
   } catch (err) {
     if (err instanceof Error && err.message.includes('UNIQUE')) {
@@ -43,12 +33,9 @@ export async function getCandidate(c: Context) {
 
 export async function updateCandidate(c: Context) {
   const id = c.req.param('id')!;
-  const body = await c.req.json().catch(() => null);
-  if (!body) throw new ValidationError('Invalid JSON body');
+  const input = await parseBody(c, UpdateCandidateSchema);
 
-  if ('graduation_date' in body) assertValidGradDate(body.graduation_date);
-
-  const candidate = await repo.updateCandidate(id, body);
+  const candidate = await repo.updateCandidate(id, input);
   if (!candidate) throw new NotFoundError('Candidate');
   return c.json(candidate);
 }
