@@ -1,5 +1,8 @@
 import { Hono } from 'hono';
 import * as controller from './candidates.controller.js';
+import { findCandidateById } from './candidates.repository.js';
+import { createJob } from '../jobs/jobs.repository.js';
+import { enqueueJob } from '../jobs/jobs.runner.js';
 
 const candidates = new Hono();
 
@@ -8,5 +11,14 @@ candidates.get('/', controller.listCandidates);
 candidates.get('/:id', controller.getCandidate);
 candidates.patch('/:id', controller.updateCandidate);
 candidates.delete('/:id', controller.deleteCandidate);
+
+candidates.post('/:id/jobs', async (c) => {
+  const candidate = await findCandidateById(c.req.param('id'));
+  if (!candidate) return c.json({ error: 'Candidate not found' }, 404);
+
+  const job = await createJob(candidate.id);
+  enqueueJob(job.id, candidate.id, candidate.github_username, candidate.graduation_date);
+  return c.json(job, 202);
+});
 
 export { candidates };
