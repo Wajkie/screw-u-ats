@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
-import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
 import { candidates } from './candidates/candidates.routes.js';
+import { createCorsMiddleware } from './middleware/cors.js';
+import { createRateLimiterFromEnv } from './middleware/rateLimit.js';
 import { createAuthMiddleware } from './middleware/auth.js';
 import { AppError } from './errors.js';
 import type { AddressInfo } from 'node:net';
@@ -9,7 +10,8 @@ import type { AddressInfo } from 'node:net';
 export function createApiApp(): Hono {
   const app = new Hono();
 
-  app.use('*', cors());
+  app.use('*', createCorsMiddleware());
+  app.use('*', createRateLimiterFromEnv());
   app.use('*', createAuthMiddleware());
 
   app.route('/candidates', candidates);
