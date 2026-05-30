@@ -235,6 +235,34 @@
       }
     },
     {
+      "id": "stream-job",
+      "method": "GET",
+      "path": "/jobs/:id/stream",
+      "summary": "Server-Sent Events stream for a job. Emits the current status immediately on connect, then pushes an event on each state transition, and closes after a terminal event.",
+      "params": {
+        "id": { "type": "string", "description": "Job nanoid" }
+      },
+      "headers": {
+        "response": { "Content-Type": "text/event-stream" }
+      },
+      "eventShape": {
+        "status": "'pending' | 'running' | 'done' | 'failed'",
+        "report_id": "string (only on 'done')",
+        "error": "string (only on 'failed')"
+      },
+      "responses": {
+        "200": { "description": "SSE stream — closes after terminal event ('done' or 'failed')" },
+        "404": { "description": "Job not found" }
+      },
+      "example": {
+        "events": [
+          "data: {\"status\":\"pending\"}",
+          "data: {\"status\":\"running\"}",
+          "data: {\"status\":\"done\",\"report_id\":\"rpt_def456\"}"
+        ]
+      }
+    },
+    {
       "id": "get-job",
       "method": "GET",
       "path": "/jobs/:id",
