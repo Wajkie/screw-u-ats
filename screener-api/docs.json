@@ -5,5 +5,162 @@
     "version": "0.1.0",
     "repo": "https://github.com/Wajkie/screw-u-ats"
   },
-  "endpoints": []
+  "endpoints": [
+    {
+      "id": "create-candidate",
+      "method": "POST",
+      "path": "/candidates",
+      "summary": "Create a new candidate",
+      "body": {
+        "github_username": { "type": "string", "required": true, "description": "GitHub username — must be unique" },
+        "display_name": { "type": "string", "required": false, "description": "Human-readable name shown in the UI" },
+        "graduation_date": { "type": "string", "required": false, "description": "ISO date (YYYY-MM-DD). Pre-graduation repos are weighted lower in trajectory scoring." },
+        "notes": { "type": "string", "required": false, "description": "Free-text recruiter notes" }
+      },
+      "responses": {
+        "201": {
+          "description": "Candidate created",
+          "shape": {
+            "id": "string",
+            "github_username": "string",
+            "display_name": "string | null",
+            "graduation_date": "string | null",
+            "notes": "string | null",
+            "created_at": "string",
+            "updated_at": "string"
+          }
+        },
+        "400": { "description": "Missing or invalid fields" },
+        "409": { "description": "github_username already exists" }
+      },
+      "example": {
+        "request": {
+          "github_username": "johndoe",
+          "display_name": "John Doe",
+          "graduation_date": "2024-06-01",
+          "notes": "Strong trajectory, referred by Alice"
+        },
+        "response": {
+          "id": "yEvCFU6MFw75wOfbzQFXP",
+          "github_username": "johndoe",
+          "display_name": "John Doe",
+          "graduation_date": "2024-06-01",
+          "notes": "Strong trajectory, referred by Alice",
+          "created_at": "2026-05-30T10:00:00.000Z",
+          "updated_at": "2026-05-30T10:00:00.000Z"
+        }
+      }
+    },
+    {
+      "id": "list-candidates",
+      "method": "GET",
+      "path": "/candidates",
+      "summary": "List all candidates with their latest report summary",
+      "responses": {
+        "200": {
+          "description": "Array of candidates, newest first. latest_report is null if no analysis has run yet.",
+          "shape": [
+            {
+              "id": "string",
+              "github_username": "string",
+              "display_name": "string | null",
+              "graduation_date": "string | null",
+              "notes": "string | null",
+              "created_at": "string",
+              "updated_at": "string",
+              "latest_report": "{ id, best_fit, fit_score, created_at } | null"
+            }
+          ]
+        }
+      },
+      "example": {
+        "response": [
+          {
+            "id": "yEvCFU6MFw75wOfbzQFXP",
+            "github_username": "johndoe",
+            "display_name": "John Doe",
+            "graduation_date": "2024-06-01",
+            "notes": null,
+            "created_at": "2026-05-30T10:00:00.000Z",
+            "updated_at": "2026-05-30T10:00:00.000Z",
+            "latest_report": {
+              "id": "rpt_abc123",
+              "best_fit": "junior-frontend",
+              "fit_score": 72,
+              "created_at": "2026-05-30T10:05:00.000Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "get-candidate",
+      "method": "GET",
+      "path": "/candidates/:id",
+      "summary": "Get a single candidate with their latest report summary",
+      "params": {
+        "id": { "type": "string", "description": "Candidate nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Candidate with latest_report summary (null if no analysis run yet)",
+          "shape": {
+            "id": "string",
+            "github_username": "string",
+            "display_name": "string | null",
+            "graduation_date": "string | null",
+            "notes": "string | null",
+            "created_at": "string",
+            "updated_at": "string",
+            "latest_report": "{ id, best_fit, fit_score, created_at } | null"
+          }
+        },
+        "404": { "description": "Candidate not found" }
+      }
+    },
+    {
+      "id": "update-candidate",
+      "method": "PATCH",
+      "path": "/candidates/:id",
+      "summary": "Update display_name, graduation_date, or notes",
+      "params": {
+        "id": { "type": "string", "description": "Candidate nanoid" }
+      },
+      "body": {
+        "display_name": { "type": "string | null", "required": false },
+        "graduation_date": { "type": "string | null", "required": false, "description": "ISO date YYYY-MM-DD, or null to clear" },
+        "notes": { "type": "string | null", "required": false }
+      },
+      "responses": {
+        "200": { "description": "Updated candidate row" },
+        "400": { "description": "Invalid graduation_date format" },
+        "404": { "description": "Candidate not found" }
+      },
+      "example": {
+        "request": { "notes": "Moved to top of shortlist after technical screen" },
+        "response": {
+          "id": "yEvCFU6MFw75wOfbzQFXP",
+          "github_username": "johndoe",
+          "display_name": "John Doe",
+          "graduation_date": "2024-06-01",
+          "notes": "Moved to top of shortlist after technical screen",
+          "created_at": "2026-05-30T10:00:00.000Z",
+          "updated_at": "2026-05-30T11:00:00.000Z"
+        }
+      }
+    },
+    {
+      "id": "delete-candidate",
+      "method": "DELETE",
+      "path": "/candidates/:id",
+      "summary": "Delete a candidate and cascade to their analysis jobs and reports",
+      "params": {
+        "id": { "type": "string", "description": "Candidate nanoid" }
+      },
+      "responses": {
+        "204": { "description": "Deleted — no body" },
+        "404": { "description": "Candidate not found" }
+      }
+    }
+  ]
 }
