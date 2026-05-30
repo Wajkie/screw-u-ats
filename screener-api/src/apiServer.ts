@@ -4,6 +4,7 @@ import { serve } from '@hono/node-server';
 import { candidates } from './candidates/candidates.routes.js';
 import { jobs } from './jobs/jobs.routes.js';
 import { reports } from './reports/reports.routes.js';
+import { roles } from './roles/roles.routes.js';
 import { createCorsMiddleware } from './middleware/cors.js';
 import { createBodyLimitFromEnv } from './middleware/bodyLimit.js';
 import { createRateLimiterFromEnv } from './middleware/rateLimit.js';
@@ -23,6 +24,7 @@ export function createApiApp(): Hono {
   app.route('/candidates', candidates);
   app.route('/jobs', jobs);
   app.route('/reports', reports);
+  app.route('/roles', roles);
 
   app.notFound((c) => c.json({ error: 'Not found' }, 404));
 
