@@ -5,6 +5,43 @@
     "version": "0.1.0",
     "repo": "https://github.com/Wajkie/screw-u-ats"
   },
+  "middleware": {
+    "stack": ["secureHeaders", "cors", "bodyLimit", "rateLimit", "auth"],
+    "description": "All middleware runs on every request in this order before routes are matched.",
+    "layers": [
+      {
+        "id": "secureHeaders",
+        "summary": "Sets security-related HTTP response headers",
+        "headers": ["X-Content-Type-Options: nosniff", "X-Frame-Options: SAMEORIGIN", "Strict-Transport-Security", "Content-Security-Policy"],
+        "config": "No env var — always on"
+      },
+      {
+        "id": "cors",
+        "summary": "Cross-origin resource sharing",
+        "config": "CORS_ORIGIN — comma-separated allowed origins, or * for open. Defaults to *."
+      },
+      {
+        "id": "bodyLimit",
+        "summary": "Rejects requests whose Content-Length exceeds the configured limit",
+        "responses": { "413": "Request body exceeds limit" },
+        "config": "BODY_LIMIT_BYTES — default 65536 (64 KB)"
+      },
+      {
+        "id": "rateLimit",
+        "summary": "Sliding-window per-IP rate limiter",
+        "headers": ["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset", "Retry-After (on 429)"],
+        "responses": { "429": "Rate limit exceeded — try again later" },
+        "config": "RATE_LIMIT (default 100), RATE_WINDOW_MS (default 60000)"
+      },
+      {
+        "id": "auth",
+        "summary": "JWT Bearer token validation via hono/jwt (HS256). No-op when JWT_SECRET is unset.",
+        "responses": { "401": "Unauthorized — invalid or missing token (only when JWT_SECRET is set)" },
+        "config": "JWT_SECRET — leave unset in local dev to skip auth"
+      }
+    ],
+    "errorShape": { "error": "string" }
+  },
   "endpoints": [
     {
       "id": "create-candidate",
