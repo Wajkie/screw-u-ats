@@ -342,7 +342,8 @@
               "roles": "{ role, role_name, fit_score, recommendation, breakdown, matched_concepts: { concept: string; occurrences: number }[], missing_concepts: string[] }[]",
               "tracks": "{ track: string, tiers: RoleScore[] }[]",
               "trajectory": "{ score: number, summary: string, curve: { period, repoCount, avgComplexity }[] }",
-              "lighthouse": "(optional) LighthouseEnrichment"
+              "lighthouse": "(optional) LighthouseEnrichment",
+              "activity": "(optional) ActivitySignal — { last_pushed_at: string, repos_last_90d: number, repos_last_180d: number, total_original_repos: number, account_age_months: number, is_recently_active: boolean }"
             },
             "created_at": "string"
           }
