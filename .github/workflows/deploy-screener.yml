@@ -5,33 +5,11 @@ on:
     branches: [main]
     paths:
       - 'screener-api/**'
-      - 'screener-ui/**'
       - 'src/**'
       - 'knowledge/**'
 
 jobs:
-  # Detect which packages actually changed so each deploy job is independent.
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      api: ${{ steps.filter.outputs.api }}
-      ui: ${{ steps.filter.outputs.ui }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            api:
-              - 'screener-api/**'
-              - 'src/**'
-              - 'knowledge/**'
-            ui:
-              - 'screener-ui/**'
-
   deploy-api:
-    needs: changes
-    if: needs.changes.outputs.api == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,33 +19,3 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_SERVICE: ${{ secrets.RAILWAY_SERVICE_ID }}
-
-  deploy-ui:
-    needs: changes
-    if: needs.changes.outputs.ui == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: screener-ui/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-        working-directory: screener-ui
-
-      - name: Build
-        run: npm run build
-        working-directory: screener-ui
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-
-      - name: Deploy to Netlify
-        run: npx --yes netlify-cli deploy --prod --dir dist --message "Deploy from ${{ github.sha }}"
-        working-directory: screener-ui
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
