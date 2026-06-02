@@ -4,8 +4,10 @@ import {
   getCandidate,
   listReports,
   createJob,
+  getFitHistory,
   candidatesKeys,
 } from '../api/candidates';
+import FitHistoryChart from '../components/FitHistoryChart';
 import styles from './CandidateDetail.module.scss';
 
 function RecommendationBadge({ score }: { score: number }) {
@@ -29,6 +31,11 @@ export default function CandidateDetail() {
   const reportsQuery = useQuery({
     queryKey: candidatesKeys.reports(id!),
     queryFn: () => listReports(id!),
+  });
+
+  const fitHistoryQuery = useQuery({
+    queryKey: candidatesKeys.fitHistory(id!),
+    queryFn: () => getFitHistory(id!),
   });
 
   const jobMutation = useMutation({
@@ -92,6 +99,13 @@ export default function CandidateDetail() {
           <p className={styles.empty}>No reports yet. Click Re-analyze to run the first analysis.</p>
         )}
       </section>
+
+      {fitHistoryQuery.data && fitHistoryQuery.data.length > 1 && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionHeading}>Score over time</h2>
+          <FitHistoryChart history={fitHistoryQuery.data} />
+        </section>
+      )}
 
       <section className={styles.section}>
         <h2 className={styles.sectionHeading}>History</h2>

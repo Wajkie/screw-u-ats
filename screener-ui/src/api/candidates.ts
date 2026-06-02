@@ -133,11 +133,18 @@ export interface RoleLeaderboardEntry {
   fit_score: number;
 }
 
+export interface FitHistoryEntry {
+  created_at: string;
+  fit_score: number;
+  best_fit: string;
+}
+
 export const candidatesKeys = {
   all: ['candidates'] as const,
   detail: (id: string) => ['candidates', id] as const,
   reports: (id: string) => ['candidates', id, 'reports'] as const,
   report: (id: string) => ['reports', id] as const,
+  fitHistory: (id: string) => ['candidates', id, 'fit-history'] as const,
 };
 
 export const rolesKeys = {
@@ -170,4 +177,8 @@ export function getReport(reportId: string): Promise<Report> {
 
 export function listRoleLeaderboard(role: string): Promise<RoleLeaderboardEntry[]> {
   return get<RoleLeaderboardEntry[]>(`/roles/${role}/candidates`);
+}
+
+export function getFitHistory(candidateId: string): Promise<FitHistoryEntry[]> {
+  return get<FitHistoryEntry[]>(`/candidates/${candidateId}/fit-history`);
 }
