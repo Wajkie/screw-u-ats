@@ -12,6 +12,7 @@ export default function Layout() {
         <ul className={styles.navList}>
           <li><NavLink to="/" end className={linkClass}>Dashboard</NavLink></li>
           <li><NavLink to="/candidates/new" className={linkClass}>New Candidate</NavLink></li>
+          <li><NavLink to="/openings" className={linkClass}>Openings</NavLink></li>
         </ul>
       </nav>
       <main className={styles.main}>

@@ -7,6 +7,8 @@ import CandidateDetail from './pages/CandidateDetail';
 import JobStatus from './pages/JobStatus';
 import ReportDetail from './pages/ReportDetail';
 import RoleLeaderboard from './pages/RoleLeaderboard';
+import Openings from './pages/Openings';
+import NewOpening from './pages/NewOpening';
 
 export const router = createBrowserRouter([
   {
@@ -20,6 +22,8 @@ export const router = createBrowserRouter([
       { path: 'candidates/:id/jobs/:jobId', element: <JobStatus /> },
       { path: 'candidates/:id/reports/:reportId', element: <ReportDetail /> },
       { path: 'roles/:role', element: <RoleLeaderboard /> },
+      { path: 'openings', element: <Openings /> },
+      { path: 'openings/new', element: <NewOpening /> },
       { path: '*', element: <NotFound /> },
     ],
   },

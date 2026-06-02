@@ -18,7 +18,18 @@ export async function createOpening(input: CreateOpeningInput) {
 }
 
 export async function listOpenings() {
-  return db.selectFrom('openings').selectAll().orderBy('created_at', 'desc').execute();
+  return db
+    .selectFrom('openings')
+    .selectAll()
+    .select((eb) =>
+      eb
+        .selectFrom('candidates')
+        .select((eb2) => eb2.fn.countAll<number>().as('n'))
+        .whereRef('candidates.sourced_from_opening_id', '=', 'openings.id')
+        .as('candidate_count'),
+    )
+    .orderBy('created_at', 'desc')
+    .execute();
 }
 
 export async function findOpeningById(id: string) {
