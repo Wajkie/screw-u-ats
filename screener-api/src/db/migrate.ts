@@ -65,14 +65,37 @@ async function migrate() {
 
   // Postgres supports IF NOT EXISTS; SQLite does not — swallow duplicate-column errors.
   const isPostgres = process.env.DATABASE_URL?.startsWith('postgres');
+
+  const addColumnSafe = async (ddl: string) => {
+    if (isPostgres) {
+      await sql.raw(ddl.replace('ADD COLUMN', 'ADD COLUMN IF NOT EXISTS')).execute(db);
+    } else {
+      try {
+        await sql.raw(ddl).execute(db);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (!msg.includes('duplicate column')) throw err;
+      }
+    }
+  };
+
+  await addColumnSafe('ALTER TABLE candidates ADD COLUMN sourced_from_opening_id text REFERENCES openings(id)');
+  await addColumnSafe('ALTER TABLE candidates ADD COLUMN location text');
+  await addColumnSafe('ALTER TABLE candidates ADD COLUMN work_type_preference text');
+  await addColumnSafe('ALTER TABLE openings ADD COLUMN location text');
+  await addColumnSafe('ALTER TABLE openings ADD COLUMN work_type text');
+  await addColumnSafe('ALTER TABLE openings ADD COLUMN source_url text');
+  await addColumnSafe('ALTER TABLE openings ADD COLUMN external_id text');
+
+  // UNIQUE constraint on openings.external_id — idempotency key for batch ingest
   if (isPostgres) {
-    await sql`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS sourced_from_opening_id text REFERENCES openings(id)`.execute(db);
+    await sql`CREATE UNIQUE INDEX IF NOT EXISTS openings_external_id_unique ON openings(external_id) WHERE external_id IS NOT NULL`.execute(db);
   } else {
     try {
-      await sql`ALTER TABLE candidates ADD COLUMN sourced_from_opening_id text REFERENCES openings(id)`.execute(db);
+      await sql`CREATE UNIQUE INDEX openings_external_id_unique ON openings(external_id) WHERE external_id IS NOT NULL`.execute(db);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (!msg.includes('duplicate column')) throw err;
+      if (!msg.includes('already exists')) throw err;
     }
   }
 

@@ -86,6 +86,10 @@ describe('runSourcingJob', () => {
       description: null,
       role_slug: 'junior-frontend',
       status: 'open',
+      location: null,
+      work_type: null,
+      source_url: null,
+      external_id: null,
       created_at: '2024-01-01T00:00:00.000Z',
     });
     vi.mocked(searchGitHubUsers).mockResolvedValue(['alice', 'bob']);
@@ -167,6 +171,10 @@ describe('runSourcingJob', () => {
       description: null,
       role_slug: 'junior-frontend',
       status: 'open',
+      location: null,
+      work_type: null,
+      source_url: null,
+      external_id: null,
       created_at: '2024-01-01T00:00:00.000Z',
     });
     vi.mocked(searchGitHubUsers).mockResolvedValue(['alice']);

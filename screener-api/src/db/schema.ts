@@ -1,3 +1,5 @@
+export type WorkType = 'remote' | 'hybrid' | 'onsite';
+
 export interface CandidatesTable {
   id: string;
   github_username: string;
@@ -5,6 +7,8 @@ export interface CandidatesTable {
   graduation_date: string | null;
   notes: string | null;
   sourced_from_opening_id: string | null;
+  location: string | null;
+  work_type_preference: WorkType | null;
   created_at: string;
   updated_at: string;
 }
@@ -15,6 +19,10 @@ export interface OpeningsTable {
   description: string | null;
   role_slug: string;
   status: 'open' | 'closed';
+  location: string | null;
+  work_type: WorkType | null;
+  source_url: string | null;
+  external_id: string | null;
   created_at: string;
 }
 

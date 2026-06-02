@@ -1,0 +1,38 @@
+[
+  {
+    "label": "openings.location column exists",
+    "status": "PASS"
+  },
+  {
+    "label": "openings.work_type column exists",
+    "status": "PASS"
+  },
+  {
+    "label": "openings.source_url column exists",
+    "status": "PASS"
+  },
+  {
+    "label": "openings.external_id column exists",
+    "status": "PASS"
+  },
+  {
+    "label": "candidates.location column exists",
+    "status": "PASS"
+  },
+  {
+    "label": "candidates.work_type_preference column exists",
+    "status": "PASS"
+  },
+  {
+    "label": "openings.external_id has UNIQUE index",
+    "status": "PASS"
+  },
+  {
+    "label": "INSERT + SELECT opening with new fields round-trips correctly",
+    "status": "PASS"
+  },
+  {
+    "label": "INSERT + SELECT candidate with location + work_type_preference round-trips correctly",
+    "status": "PASS"
+  }
+]
