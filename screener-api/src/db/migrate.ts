@@ -1,42 +1,41 @@
-import { sql } from 'kysely';
 import { db } from './client.js';
 
 async function migrate() {
-  await sql`
-    CREATE TABLE IF NOT EXISTS candidates (
-      id              TEXT PRIMARY KEY,
-      github_username TEXT NOT NULL UNIQUE,
-      display_name    TEXT,
-      graduation_date TEXT,
-      notes           TEXT,
-      created_at      TEXT NOT NULL,
-      updated_at      TEXT NOT NULL
-    )
-  `.execute(db);
+  await db.schema
+    .createTable('candidates')
+    .ifNotExists()
+    .addColumn('id', 'text', (col) => col.primaryKey())
+    .addColumn('github_username', 'text', (col) => col.notNull().unique())
+    .addColumn('display_name', 'text')
+    .addColumn('graduation_date', 'text')
+    .addColumn('notes', 'text')
+    .addColumn('created_at', 'text', (col) => col.notNull())
+    .addColumn('updated_at', 'text', (col) => col.notNull())
+    .execute();
 
-  await sql`
-    CREATE TABLE IF NOT EXISTS analysis_jobs (
-      id           TEXT PRIMARY KEY,
-      candidate_id TEXT NOT NULL REFERENCES candidates(id),
-      status       TEXT NOT NULL DEFAULT 'pending',
-      error        TEXT,
-      created_at   TEXT NOT NULL,
-      started_at   TEXT,
-      completed_at TEXT
-    )
-  `.execute(db);
+  await db.schema
+    .createTable('analysis_jobs')
+    .ifNotExists()
+    .addColumn('id', 'text', (col) => col.primaryKey())
+    .addColumn('candidate_id', 'text', (col) => col.notNull().references('candidates.id'))
+    .addColumn('status', 'text', (col) => col.notNull().defaultTo('pending'))
+    .addColumn('error', 'text')
+    .addColumn('created_at', 'text', (col) => col.notNull())
+    .addColumn('started_at', 'text')
+    .addColumn('completed_at', 'text')
+    .execute();
 
-  await sql`
-    CREATE TABLE IF NOT EXISTS reports (
-      id           TEXT PRIMARY KEY,
-      candidate_id TEXT NOT NULL REFERENCES candidates(id),
-      job_id       TEXT NOT NULL UNIQUE REFERENCES analysis_jobs(id),
-      best_fit     TEXT NOT NULL,
-      fit_score    INTEGER NOT NULL,
-      data         TEXT NOT NULL,
-      created_at   TEXT NOT NULL
-    )
-  `.execute(db);
+  await db.schema
+    .createTable('reports')
+    .ifNotExists()
+    .addColumn('id', 'text', (col) => col.primaryKey())
+    .addColumn('candidate_id', 'text', (col) => col.notNull().references('candidates.id'))
+    .addColumn('job_id', 'text', (col) => col.notNull().unique().references('analysis_jobs.id'))
+    .addColumn('best_fit', 'text', (col) => col.notNull())
+    .addColumn('fit_score', 'integer', (col) => col.notNull())
+    .addColumn('data', 'text', (col) => col.notNull())
+    .addColumn('created_at', 'text', (col) => col.notNull())
+    .execute();
 
   console.log('Migration complete.');
 }
