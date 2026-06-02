@@ -401,6 +401,98 @@
       }
     },
     {
+      "id": "create-opening",
+      "method": "POST",
+      "path": "/openings",
+      "summary": "Create a new job opening",
+      "body": {
+        "title": { "type": "string", "required": true, "description": "Human-readable opening title" },
+        "description": { "type": "string | null", "required": false, "description": "Optional longer description" },
+        "role_slug": { "type": "string", "required": true, "description": "One of the ALL_ROLES values (e.g. junior-frontend, mid-backend)" },
+        "status": { "type": "'open' | 'closed'", "required": false, "description": "Defaults to 'open'" }
+      },
+      "responses": {
+        "201": {
+          "description": "Opening created",
+          "shape": {
+            "id": "string",
+            "title": "string",
+            "description": "string | null",
+            "role_slug": "string",
+            "status": "'open' | 'closed'",
+            "created_at": "string"
+          }
+        },
+        "400": { "description": "Missing or invalid fields, or unknown role_slug" }
+      },
+      "example": {
+        "request": { "title": "Junior Frontend Engineer", "role_slug": "junior-frontend" },
+        "response": {
+          "id": "op_abc123",
+          "title": "Junior Frontend Engineer",
+          "description": null,
+          "role_slug": "junior-frontend",
+          "status": "open",
+          "created_at": "2026-06-02T09:00:00.000Z"
+        }
+      }
+    },
+    {
+      "id": "list-openings",
+      "method": "GET",
+      "path": "/openings",
+      "summary": "List all openings, newest first",
+      "responses": {
+        "200": {
+          "description": "Array of openings",
+          "shape": [{ "id": "string", "title": "string", "description": "string | null", "role_slug": "string", "status": "'open' | 'closed'", "created_at": "string" }]
+        }
+      }
+    },
+    {
+      "id": "get-opening",
+      "method": "GET",
+      "path": "/openings/:id",
+      "summary": "Get a single opening by id",
+      "params": { "id": { "type": "string", "description": "Opening nanoid" } },
+      "responses": {
+        "200": { "description": "Opening row", "shape": { "id": "string", "title": "string", "description": "string | null", "role_slug": "string", "status": "'open' | 'closed'", "created_at": "string" } },
+        "404": { "description": "Opening not found" }
+      }
+    },
+    {
+      "id": "update-opening",
+      "method": "PATCH",
+      "path": "/openings/:id",
+      "summary": "Update title, description, or status. At least one field required.",
+      "params": { "id": { "type": "string", "description": "Opening nanoid" } },
+      "body": {
+        "title": { "type": "string", "required": false },
+        "description": { "type": "string | null", "required": false },
+        "status": { "type": "'open' | 'closed'", "required": false }
+      },
+      "responses": {
+        "200": { "description": "Updated opening row" },
+        "400": { "description": "No fields provided or invalid value" },
+        "404": { "description": "Opening not found" }
+      },
+      "example": {
+        "request": { "status": "closed" },
+        "response": { "id": "op_abc123", "title": "Junior Frontend Engineer", "description": null, "role_slug": "junior-frontend", "status": "closed", "created_at": "2026-06-02T09:00:00.000Z" }
+      }
+    },
+    {
+      "id": "delete-opening",
+      "method": "DELETE",
+      "path": "/openings/:id",
+      "summary": "Delete an opening",
+      "params": { "id": { "type": "string", "description": "Opening nanoid" } },
+      "responses": {
+        "204": { "description": "Deleted — no body" },
+        "404": { "description": "Opening not found" }
+      }
+    },
+    {
       "id": "get-job",
       "method": "GET",
       "path": "/jobs/:id",
