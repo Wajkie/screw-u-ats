@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createCandidate, candidatesKeys } from '../api/candidates';
 import { ApiError } from '../api/client';
-import styles from './NewCandidate.module.css';
+import styles from './NewCandidate.module.scss';
 
 export default function NewCandidate() {
   const navigate = useNavigate();

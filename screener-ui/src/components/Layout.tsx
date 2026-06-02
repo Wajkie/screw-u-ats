@@ -1,15 +1,22 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import styles from './Layout.module.scss';
 
 export default function Layout() {
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`;
+
   return (
-    <>
-      <nav>
-        <NavLink to="/">Dashboard</NavLink>
-        <NavLink to="/candidates/new">New Candidate</NavLink>
+    <div className={styles.layout}>
+      <nav className={styles.nav}>
+        <NavLink to="/" className={styles.brand}>Screener</NavLink>
+        <ul className={styles.navList}>
+          <li><NavLink to="/" end className={linkClass}>Dashboard</NavLink></li>
+          <li><NavLink to="/candidates/new" className={linkClass}>New Candidate</NavLink></li>
+        </ul>
       </nav>
-      <main>
+      <main className={styles.main}>
         <Outlet />
       </main>
-    </>
+    </div>
   );
 }

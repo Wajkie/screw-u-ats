@@ -1,0 +1,123 @@
+@use '../styles/tokens' as *;
+@use '../styles/mixins' as *;
+
+.page {
+  max-width: 860px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: $text;
+}
+
+.roleSelect {
+  @include input-base;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    @include section-label;
+    border-bottom: 2px solid $border;
+  }
+}
+
+.row {
+  border-bottom: 1px solid rgba($border, 0.6);
+  transition: background 100ms ease;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: rgba($accent, 0.04); }
+}
+
+.rankCell {
+  width: 2.5rem;
+  padding: 0.75rem;
+  color: $text-muted;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.nameCell {
+  padding: 0.75rem;
+  min-width: 160px;
+}
+
+.nameLink {
+  font-weight: 600;
+  color: $text;
+  text-decoration: none;
+
+  &:hover { color: $accent; text-decoration: underline; }
+}
+
+.username {
+  display: block;
+  font-size: 0.78rem;
+  color: $text-muted;
+  margin-top: 0.1rem;
+}
+
+.barCell {
+  padding: 0.75rem;
+  width: 220px;
+}
+
+.scoreBar {
+  @include score-bar(8px);
+}
+
+.scoreFill {
+  height: 100%;
+  background: $text-muted;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.scoreFillInterview {
+  background: $success;
+}
+
+.scoreCell {
+  padding: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 3.5rem;
+  color: $text;
+}
+
+.badgeCell {
+  padding: 0.75rem;
+  min-width: 110px;
+}
+
+.badgeInterview { @include badge-interview; }
+.badgePass      { @include badge-pass; }
+
+.emptyState { @include empty-state; }
+
+.errorState {
+  padding: 1rem 1.25rem;
+  background: $error-bg;
+  border: 1px solid $error-border;
+  border-radius: $radius;
+  color: $error-text;
+}

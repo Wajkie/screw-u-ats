@@ -1,0 +1,102 @@
+@use 'tokens' as *;
+
+@mixin card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+}
+
+@mixin badge-interview {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: $success-bg;
+  color: $success-text;
+}
+
+@mixin badge-pass {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: $surface;
+  color: $text-muted;
+  border: 1px solid $border;
+}
+
+@mixin btn-primary {
+  padding: 0.5rem 1.1rem;
+  background: $accent;
+  color: #fff;
+  border: none;
+  border-radius: $radius;
+  font-family: $font-sans;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+
+  &:hover:not(:disabled) { opacity: 0.88; }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+@mixin input-base {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  background: $surface;
+  color: $text;
+  font-family: $font-sans;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 120ms ease;
+
+  &:focus { border-color: $accent; }
+}
+
+@mixin empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: $text-muted;
+  border: 2px dashed $border;
+  border-radius: $radius;
+  font-size: 0.9rem;
+
+  p { margin-bottom: 0.4rem; }
+  a { color: $accent; }
+}
+
+@mixin section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $text-muted;
+}
+
+@mixin score-bar($h: 7px) {
+  height: $h;
+  background: $border;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+@mixin score-fill {
+  height: 100%;
+  background: $text-muted;
+  border-radius: 999px;
+  transition: width 300ms ease;
+
+  &--interview { background: $success; }
+}
+
+@mixin back-link {
+  font-size: 0.85rem;
+  color: $text-muted;
+  text-decoration: none;
+
+  &:hover { color: $accent; text-decoration: none; }
+}

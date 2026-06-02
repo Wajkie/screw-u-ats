@@ -7,7 +7,7 @@ import {
   type RoleLeaderboardEntry,
 } from '../api/candidates';
 import { ApiError } from '../api/client';
-import styles from './RoleLeaderboard.module.css';
+import styles from './RoleLeaderboard.module.scss';
 
 function ScoreBar({ score }: { score: number }) {
   return (

@@ -10,7 +10,7 @@ import {
   type LighthouseEnrichment,
   type MatchedConcept,
 } from '../api/candidates';
-import styles from './ReportDetail.module.css';
+import styles from './ReportDetail.module.scss';
 
 const PERIOD_LABELS: Record<string, string> = {
   'pre-grad': 'Pre-grad',

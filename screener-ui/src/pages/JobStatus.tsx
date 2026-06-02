@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useJobStream } from '../hooks/useJobStream';
-import styles from './JobStatus.module.css';
+import styles from './JobStatus.module.scss';
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'Queued',

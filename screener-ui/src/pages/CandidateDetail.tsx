@@ -6,7 +6,7 @@ import {
   createJob,
   candidatesKeys,
 } from '../api/candidates';
-import styles from './CandidateDetail.module.css';
+import styles from './CandidateDetail.module.scss';
 
 function RecommendationBadge({ score }: { score: number }) {
   return (

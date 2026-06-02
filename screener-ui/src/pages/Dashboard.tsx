@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { listCandidates, candidatesKeys, type Candidate } from '../api/candidates';
-import styles from './Dashboard.module.css';
+import styles from './Dashboard.module.scss';
 
 function RecommendationBadge({ score }: { score: number }) {
   return (

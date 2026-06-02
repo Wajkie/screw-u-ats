@@ -1,0 +1,51 @@
+@use '../styles/tokens' as *;
+@use '../styles/mixins' as *;
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: $text;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 480px;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $text;
+}
+
+.input {
+  @include input-base;
+}
+
+.textarea {
+  @include input-base;
+  min-height: 80px;
+  resize: vertical;
+}
+
+.fieldError {
+  color: $error-text;
+  font-size: 0.8rem;
+}
+
+.apiError {
+  color: $error-text;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.submit {
+  @include btn-primary;
+  align-self: flex-start;
+}
