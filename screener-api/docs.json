@@ -322,6 +322,72 @@
       }
     },
     {
+      "id": "role-leaderboard",
+      "method": "GET",
+      "path": "/roles/:role/candidates",
+      "summary": "List all candidates that have a stored score for this role, ranked by fit_score descending. Only candidates with at least one report containing a score for the requested role are included.",
+      "params": {
+        "role": { "type": "string", "description": "Role slug — must be one of the values in ALL_ROLES (e.g. junior-frontend, mid-backend). Returns 400 for unknown slugs." }
+      },
+      "responses": {
+        "200": {
+          "description": "Candidates ranked by fit_score descending for the requested role. Empty array when no stored data exists for this role.",
+          "shape": [
+            {
+              "candidate_id": "string",
+              "github_username": "string",
+              "display_name": "string | null",
+              "report_id": "string",
+              "report_created_at": "string",
+              "fit_score": "number"
+            }
+          ]
+        },
+        "400": { "description": "Unknown role slug" }
+      },
+      "example": {
+        "response": [
+          {
+            "candidate_id": "yEvCFU6MFw75wOfbzQFXP",
+            "github_username": "johndoe",
+            "display_name": "John Doe",
+            "report_id": "rpt_def456",
+            "report_created_at": "2026-05-30T10:10:45.000Z",
+            "fit_score": 72
+          }
+        ]
+      }
+    },
+    {
+      "id": "fit-history",
+      "method": "GET",
+      "path": "/candidates/:id/fit-history",
+      "summary": "Return all reports for a candidate ordered oldest-first, each with created_at, fit_score, and best_fit. Useful for plotting score over time.",
+      "params": {
+        "id": { "type": "string", "description": "Candidate nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Reports ordered oldest-first. Empty array when the candidate has no reports yet.",
+          "shape": [
+            {
+              "id": "string",
+              "created_at": "string",
+              "fit_score": "number",
+              "best_fit": "string"
+            }
+          ]
+        },
+        "404": { "description": "Candidate not found" }
+      },
+      "example": {
+        "response": [
+          { "id": "rpt_aaa111", "created_at": "2026-05-28T09:00:00.000Z", "fit_score": 58, "best_fit": "junior-frontend" },
+          { "id": "rpt_def456", "created_at": "2026-05-30T10:10:45.000Z", "fit_score": 72, "best_fit": "junior-frontend" }
+        ]
+      }
+    },
+    {
       "id": "get-job",
       "method": "GET",
       "path": "/jobs/:id",
