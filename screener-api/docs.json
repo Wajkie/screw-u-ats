@@ -445,7 +445,7 @@
       "responses": {
         "200": {
           "description": "Array of openings",
-          "shape": [{ "id": "string", "title": "string", "description": "string | null", "role_slug": "string", "status": "'open' | 'closed'", "created_at": "string" }]
+          "shape": [{ "id": "string", "title": "string", "description": "string | null", "role_slug": "string", "status": "'open' | 'closed'", "created_at": "string", "candidate_count": "number" }]
         }
       }
     },
