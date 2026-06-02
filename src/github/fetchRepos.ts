@@ -71,6 +71,7 @@ async function enrichRepo(owner: string, raw: RawRepo, token: string): Promise<G
   return {
     name: raw.name,
     language: raw.language,
+    isFork: raw.fork,
     createdAt: raw.created_at,
     pushedAt: raw.pushed_at,
     topics: raw.topics ?? [],

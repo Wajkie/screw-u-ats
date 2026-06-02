@@ -6,9 +6,11 @@ import { scoreComplexity, filterNoise } from "../scoring/complexitySignals.js";
 import { parseRoleDefinition, matchConcepts, type ConceptOccurrence } from "../scoring/conceptMatch.js";
 import { scoreTrajectory } from "../scoring/trajectoryScore.js";
 import { runLighthouseAudits } from "../lighthouse/runAudit.js";
+import { computeActivitySignal } from "../scoring/activitySignal.js";
 import type { GitHubRepo } from "../github/fetchRepos.js";
 import type { CurvePoint } from "../scoring/trajectoryScore.js";
 import type { LighthouseEnrichment } from "../lighthouse/runAudit.js";
+import type { ActivitySignal } from "../scoring/activitySignal.js";
 
 export const ALL_ROLES = [
   "junior-frontend", "junior-fullstack", "junior-backend", "junior-csharp",
@@ -51,6 +53,7 @@ export interface AllRolesResult {
   tracks: TrackGroup[];
   trajectory: TrajectoryInfo;
   lighthouse?: LighthouseEnrichment;
+  activity?: ActivitySignal;
 }
 
 function avgComplexity(repos: GitHubRepo[]): number {
@@ -157,6 +160,8 @@ export async function scoreAllRoles(
     curve: trajectoryResult.curve,
   };
 
+  const activity = computeActivitySignal(repos);
+
   if (roles.length === 0) {
     return {
       candidate: githubUsername,
@@ -165,6 +170,7 @@ export async function scoreAllRoles(
       roles: [],
       tracks: trackGroups,
       trajectory,
+      activity,
     };
   }
 
@@ -187,5 +193,6 @@ export async function scoreAllRoles(
     tracks: trackGroups,
     trajectory,
     lighthouse,
+    activity,
   };
 }
