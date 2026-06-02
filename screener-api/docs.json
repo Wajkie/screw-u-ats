@@ -493,6 +493,122 @@
       }
     },
     {
+      "id": "trigger-sourcing",
+      "method": "POST",
+      "path": "/openings/:id/source",
+      "summary": "Trigger a sourcing job for an opening. Searches GitHub for candidates matching the opening's role, creates candidate rows, and enqueues an analysis job for each. Returns immediately with the sourcing job id.",
+      "params": {
+        "id": { "type": "string", "description": "Opening nanoid" }
+      },
+      "responses": {
+        "201": {
+          "description": "Sourcing job started",
+          "shape": { "jobId": "string" }
+        },
+        "404": { "description": "Opening not found" }
+      },
+      "example": {
+        "response": { "jobId": "sj_abc123" }
+      }
+    },
+    {
+      "id": "get-sourcing-job",
+      "method": "GET",
+      "path": "/sourcing-jobs/:id",
+      "summary": "Get the current status and progress counters of a sourcing job.",
+      "params": {
+        "id": { "type": "string", "description": "Sourcing job nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Sourcing job row",
+          "shape": {
+            "id": "string",
+            "opening_id": "string",
+            "status": "'pending' | 'running' | 'done' | 'failed'",
+            "error": "string | null",
+            "usernames_found": "number",
+            "usernames_scored": "number",
+            "created_at": "string",
+            "started_at": "string | null",
+            "completed_at": "string | null"
+          }
+        },
+        "404": { "description": "Sourcing job not found" }
+      }
+    },
+    {
+      "id": "stream-sourcing-job",
+      "method": "GET",
+      "path": "/sourcing-jobs/:id/stream",
+      "summary": "SSE stream for a sourcing job. Emits current state on connect, then pushes an event on each progress update. Closes after a terminal event ('done' or 'failed').",
+      "params": {
+        "id": { "type": "string", "description": "Sourcing job nanoid" }
+      },
+      "headers": {
+        "response": { "Content-Type": "text/event-stream" }
+      },
+      "eventShape": {
+        "status": "'running' | 'done' | 'failed'",
+        "usernames_found": "number (emitted when GitHub search completes)",
+        "usernames_scored": "number (increments as each candidate is enqueued)",
+        "error": "string (only on 'failed')"
+      },
+      "responses": {
+        "200": { "description": "SSE stream — closes after terminal event" },
+        "404": { "description": "Sourcing job not found" }
+      },
+      "example": {
+        "events": [
+          "data: {\"status\":\"running\"}",
+          "data: {\"status\":\"running\",\"usernames_found\":12}",
+          "data: {\"status\":\"running\",\"usernames_scored\":1}",
+          "data: {\"status\":\"done\",\"usernames_found\":12,\"usernames_scored\":12}"
+        ]
+      }
+    },
+    {
+      "id": "list-opening-candidates",
+      "method": "GET",
+      "path": "/openings/:id/candidates",
+      "summary": "List candidates sourced from this opening, each joined with their latest report. Sorted by fit_score descending. Returns an empty array if sourcing hasn't run or no reports exist yet.",
+      "params": {
+        "id": { "type": "string", "description": "Opening nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Candidates ranked by fit_score descending. Empty array if none yet.",
+          "shape": [
+            {
+              "id": "string",
+              "github_username": "string",
+              "display_name": "string | null",
+              "created_at": "string",
+              "report_id": "string",
+              "best_fit": "string",
+              "fit_score": "number",
+              "scored_at": "string"
+            }
+          ]
+        },
+        "404": { "description": "Opening not found" }
+      },
+      "example": {
+        "response": [
+          {
+            "id": "cnd_xyz",
+            "github_username": "alice",
+            "display_name": null,
+            "created_at": "2026-06-02T10:00:00.000Z",
+            "report_id": "rpt_xyz",
+            "best_fit": "junior-frontend",
+            "fit_score": 68,
+            "scored_at": "2026-06-02T10:02:00.000Z"
+          }
+        ]
+      }
+    },
+    {
       "id": "get-job",
       "method": "GET",
       "path": "/jobs/:id",
