@@ -116,14 +116,6 @@ export interface Report {
   created_at: string;
 }
 
-export const ALL_ROLES = [
-  'junior-frontend', 'junior-fullstack', 'junior-backend', 'junior-csharp',
-  'mid-frontend', 'mid-fullstack', 'mid-backend', 'mid-csharp',
-  'senior-frontend', 'senior-fullstack', 'senior-backend', 'senior-csharp',
-] as const;
-
-export type RoleSlug = (typeof ALL_ROLES)[number];
-
 export interface RoleLeaderboardEntry {
   candidate_id: string;
   github_username: string;
@@ -148,6 +140,7 @@ export const candidatesKeys = {
 };
 
 export const rolesKeys = {
+  list: ['roles'] as const,
   leaderboard: (role: string) => ['roles', role, 'candidates'] as const,
 };
 
@@ -181,4 +174,8 @@ export function listRoleLeaderboard(role: string): Promise<RoleLeaderboardEntry[
 
 export function getFitHistory(candidateId: string): Promise<FitHistoryEntry[]> {
   return get<FitHistoryEntry[]>(`/candidates/${candidateId}/fit-history`);
+}
+
+export function getRoles(): Promise<string[]> {
+  return get<string[]>('/roles');
 }

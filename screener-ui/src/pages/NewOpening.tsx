@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createOpening, openingsKeys, ALL_ROLES } from '../api/openings';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createOpening, openingsKeys } from '../api/openings';
+import { getRoles, rolesKeys } from '../api/candidates';
 import styles from './NewCandidate.module.scss';
 
 export default function NewOpening() {
@@ -10,8 +11,16 @@ export default function NewOpening() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [roleSlug, setRoleSlug] = useState<string>(ALL_ROLES[0]);
+  const [roleSlug, setRoleSlug] = useState('');
   const [fieldError, setFieldError] = useState('');
+
+  const rolesQuery = useQuery({ queryKey: rolesKeys.list, queryFn: getRoles });
+
+  useEffect(() => {
+    if (rolesQuery.data && rolesQuery.data.length > 0 && !roleSlug) {
+      setRoleSlug(rolesQuery.data[0]);
+    }
+  }, [rolesQuery.data, roleSlug]);
 
   const mutation = useMutation({
     mutationFn: createOpening,
@@ -36,6 +45,7 @@ export default function NewOpening() {
   }
 
   const apiError = mutation.isError ? 'Something went wrong. Please try again.' : null;
+  const roles = rolesQuery.data ?? [];
 
   return (
     <div>
@@ -69,8 +79,9 @@ export default function NewOpening() {
             className={styles.input}
             value={roleSlug}
             onChange={(e) => setRoleSlug(e.target.value)}
+            disabled={roles.length === 0}
           >
-            {ALL_ROLES.map((r) => (
+            {roles.map((r) => (
               <option key={r} value={r}>{r}</option>
             ))}
           </select>
@@ -78,7 +89,7 @@ export default function NewOpening() {
 
         {apiError && <p className={styles.apiError}>{apiError}</p>}
 
-        <button type="submit" disabled={mutation.isPending} className={styles.submit}>
+        <button type="submit" disabled={mutation.isPending || roles.length === 0} className={styles.submit}>
           {mutation.isPending ? 'Creating…' : 'Create Opening'}
         </button>
       </form>

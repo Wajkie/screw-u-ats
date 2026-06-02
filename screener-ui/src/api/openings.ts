@@ -1,8 +1,4 @@
 import { get, post } from './client';
-import { ALL_ROLES } from './candidates';
-
-export type { RoleSlug } from './candidates';
-export { ALL_ROLES };
 
 export interface Opening {
   id: string;

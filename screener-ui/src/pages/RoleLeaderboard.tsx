@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
-  ALL_ROLES,
+  getRoles,
   listRoleLeaderboard,
   rolesKeys,
   type RoleLeaderboardEntry,
@@ -63,16 +63,23 @@ export default function RoleLeaderboard() {
   const { role } = useParams<{ role: string }>();
   const navigate = useNavigate();
 
-  const isValidRole = ALL_ROLES.includes(role as (typeof ALL_ROLES)[number]);
+  const rolesQuery = useQuery({
+    queryKey: rolesKeys.list,
+    queryFn: getRoles,
+  });
+
+  const knownRoles = rolesQuery.data ?? [];
+  const isValidRole = knownRoles.length === 0 || knownRoles.includes(role ?? '');
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: rolesKeys.leaderboard(role ?? ''),
     queryFn: () => listRoleLeaderboard(role!),
-    enabled: isValidRole,
+    enabled: knownRoles.length > 0 && isValidRole,
     retry: false,
   });
 
-  const is400 = !isValidRole || (isError && error instanceof ApiError && error.status === 400);
+  const is400 = knownRoles.length > 0 && !isValidRole
+    || (isError && error instanceof ApiError && error.status === 400);
 
   return (
     <div className={styles.page}>
@@ -83,8 +90,9 @@ export default function RoleLeaderboard() {
           value={role}
           onChange={e => navigate(`/roles/${e.target.value}`)}
           aria-label="Select role"
+          disabled={knownRoles.length === 0}
         >
-          {ALL_ROLES.map(r => (
+          {knownRoles.map(r => (
             <option key={r} value={r}>{r}</option>
           ))}
         </select>

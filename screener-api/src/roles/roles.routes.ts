@@ -1,13 +1,17 @@
 import { Hono } from 'hono';
-import { ALL_ROLES } from '../../../src/tools/scoreAllRoles.js';
+import { loadRoleSlugs } from './roles.repository.js';
 import { listLatestReportsAllCandidates } from '../reports/reports.repository.js';
 import type { AllRolesResult, RoleSlug } from '../../../src/tools/scoreAllRoles.js';
 
 const roles = new Hono();
 
+roles.get('/', (c) => {
+  return c.json(loadRoleSlugs());
+});
+
 roles.get('/:role/candidates', async (c) => {
   const role = c.req.param('role');
-  if (!(ALL_ROLES as readonly string[]).includes(role)) {
+  if (!loadRoleSlugs().includes(role)) {
     return c.json({ error: 'Unknown role' }, 400);
   }
 

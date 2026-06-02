@@ -1,10 +1,13 @@
 import { z } from 'zod';
-import { ALL_ROLES } from '../../../src/tools/scoreAllRoles.js';
+import { loadRoleSlugs } from '../roles/roles.repository.js';
 
 export const createOpeningSchema = z.object({
   title: z.string().min(1, 'title is required'),
   description: z.string().nullish(),
-  role_slug: z.enum(ALL_ROLES as unknown as [string, ...string[]], { message: 'Unknown role_slug' }),
+  role_slug: z.string().refine(
+    (v) => loadRoleSlugs().includes(v),
+    { message: 'Unknown role_slug' },
+  ),
   status: z.enum(['open', 'closed']).default('open'),
 });
 
