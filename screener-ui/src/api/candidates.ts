@@ -44,10 +44,83 @@ export interface CreateCandidateInput {
   notes?: string;
 }
 
+export type MatchedConcept = string | { concept: string; occurrences: number };
+
+export interface Breakdown {
+  trajectory: number;
+  concept_match: number;
+  complexity: number;
+}
+
+export interface RoleScore {
+  role: string;
+  role_name: string;
+  fit_score: number;
+  recommendation: 'Interview' | 'Pass';
+  breakdown: Breakdown;
+  matched_concepts: MatchedConcept[];
+  missing_concepts: string[];
+}
+
+export interface TrackGroup {
+  track: string;
+  tiers: RoleScore[];
+}
+
+export interface CurvePoint {
+  period: string;
+  repoCount: number;
+  avgComplexity: number;
+}
+
+export interface TrajectoryInfo {
+  score: number;
+  summary: string;
+  curve: CurvePoint[];
+}
+
+export interface LighthouseScores {
+  performance: number;
+  accessibility: number;
+  best_practices: number;
+  seo: number;
+}
+
+export interface UrlAuditResult {
+  url: string;
+  scores: LighthouseScores;
+  wcag_violations: string[];
+}
+
+export interface LighthouseEnrichment {
+  live_projects_found: number;
+  audits: UrlAuditResult[];
+}
+
+export interface AllRolesResult {
+  candidate: string;
+  best_fit: string;
+  roles: RoleScore[];
+  tracks: TrackGroup[];
+  trajectory: TrajectoryInfo;
+  lighthouse?: LighthouseEnrichment;
+}
+
+export interface Report {
+  id: string;
+  candidate_id: string;
+  job_id: string;
+  best_fit: string;
+  fit_score: number;
+  data: AllRolesResult;
+  created_at: string;
+}
+
 export const candidatesKeys = {
   all: ['candidates'] as const,
   detail: (id: string) => ['candidates', id] as const,
   reports: (id: string) => ['candidates', id, 'reports'] as const,
+  report: (id: string) => ['reports', id] as const,
 };
 
 export function listCandidates(): Promise<Candidate[]> {
@@ -68,4 +141,8 @@ export function listReports(candidateId: string): Promise<ReportSummary[]> {
 
 export function createJob(candidateId: string): Promise<Job> {
   return post<Job>(`/candidates/${candidateId}/jobs`);
+}
+
+export function getReport(reportId: string): Promise<Report> {
+  return get<Report>(`/reports/${reportId}`);
 }

@@ -1,0 +1,416 @@
+.page {
+  max-width: 860px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.backLink a {
+  color: #6b7280;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.backLink a:hover {
+  color: #374151;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.ghLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ghLink:hover {
+  text-decoration: underline;
+}
+
+.meta {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* Badges */
+.badgeInterview {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #d1fae5;
+  color: #065f46;
+  white-space: nowrap;
+}
+
+.badgePass {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #fee2e2;
+  color: #991b1b;
+  white-space: nowrap;
+}
+
+.badgeBest {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #ede9fe;
+  color: #4f46e5;
+  white-space: nowrap;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 2rem;
+}
+
+.sectionHeading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.75rem;
+}
+
+.empty {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+/* Tracks */
+.tracks {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.trackCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.trackTitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  padding: 0.5rem 1rem;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  margin: 0;
+}
+
+/* Role rows */
+.roleRow {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.roleRow:last-child {
+  border-bottom: none;
+}
+
+.roleRowBest {
+  background: #faf5ff;
+}
+
+.roleSummary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.875rem;
+  color: #111827;
+  transition: background 0.1s;
+}
+
+.roleSummary:hover {
+  background: #f9fafb;
+}
+
+.roleRowBest .roleSummary:hover {
+  background: #f3e8ff;
+}
+
+.tier {
+  width: 3.5rem;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.roleName {
+  min-width: 0;
+  flex: 1;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scoreBar {
+  flex-shrink: 0;
+  width: 80px;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.scoreFill {
+  height: 100%;
+  background: #9ca3af;
+  border-radius: 4px;
+  transition: width 0.2s;
+}
+
+.scoreFillInterview {
+  background: #10b981;
+}
+
+.pct {
+  flex-shrink: 0;
+  width: 2.5rem;
+  text-align: right;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.chevron {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  color: #9ca3af;
+  margin-left: auto;
+}
+
+/* Role detail (expanded) */
+.roleDetail {
+  padding: 0.75rem 1rem 1rem;
+  border-top: 1px solid #f3f4f6;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.breakdown {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Concepts */
+.conceptsGrid {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.conceptGroup {
+  flex: 1;
+  min-width: 200px;
+}
+
+.conceptLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.375rem;
+}
+
+.conceptLabelMatched {
+  color: #065f46;
+}
+
+.conceptLabelMissing {
+  color: #991b1b;
+}
+
+.conceptList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.conceptItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.occurrenceBadge {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #ddd6fe;
+  color: #4f46e5;
+}
+
+/* Trajectory */
+.trajSummary {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 0.75rem;
+}
+
+.trajChart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.trajRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.trajLabel {
+  width: 5rem;
+  flex-shrink: 0;
+  color: #6b7280;
+  text-align: right;
+}
+
+.trajBarWrap {
+  flex: 1;
+  height: 14px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.trajBar {
+  height: 100%;
+  background: #6366f1;
+  border-radius: 4px;
+}
+
+.trajValue {
+  width: 2.5rem;
+  flex-shrink: 0;
+  font-weight: 600;
+  color: #374151;
+  text-align: right;
+}
+
+.trajRepos {
+  width: 5rem;
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+/* Lighthouse */
+.lhAudits {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lhCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.875rem 1rem;
+  background: #fff;
+}
+
+.lhUrl {
+  font-size: 0.8rem;
+  margin: 0 0 0.625rem;
+  word-break: break-all;
+}
+
+.lhUrl a {
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.lhUrl a:hover {
+  text-decoration: underline;
+}
+
+.lhScores {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.lhScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 68px;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.lhGood { background: #d1fae5; color: #065f46; }
+.lhOk   { background: #fef3c7; color: #92400e; }
+.lhPoor { background: #fee2e2; color: #991b1b; }
+
+.lhScoreValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.lhScoreLabel {
+  font-size: 0.65rem;
+  text-align: center;
+  margin-top: 0.2rem;
+  font-weight: 500;
+}
+
+.lhViolations {
+  margin-top: 0.5rem;
+}
+
+.lhViolationsSummary {
+  font-size: 0.8rem;
+  color: #991b1b;
+  cursor: pointer;
+}
