@@ -1,12 +1,11 @@
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4001';
+export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4001';
 
 export class ApiError extends Error {
-  constructor(
-    public readonly status: number,
-    message: string,
-  ) {
+  readonly status: number;
+  constructor(status: number, message: string) {
     super(message);
     this.name = 'ApiError';
+    this.status = status;
   }
 }
 
