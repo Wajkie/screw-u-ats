@@ -1,0 +1,21 @@
+name: Deploy Screener
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'screener-api/**'
+      - 'src/**'
+      - 'knowledge/**'
+
+jobs:
+  deploy-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Railway
+        run: npx --yes @railway/cli up --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SERVICE: ${{ secrets.RAILWAY_SERVICE_ID }}

@@ -7,11 +7,16 @@ export interface RoleDefinition {
   minimumComplexityScore: number;
 }
 
+export interface ConceptOccurrence {
+  concept: string;
+  occurrences: number;
+}
+
 export interface ConceptMatchResult {
   score: number;
-  matchedConcepts: string[];
+  matchedConcepts: ConceptOccurrence[];
   missingConcepts: string[];
-  bonusMatched: string[];
+  bonusMatched: ConceptOccurrence[];
 }
 
 const STOPWORDS = new Set([
@@ -98,17 +103,32 @@ export function parseRoleDefinition(markdown: string): RoleDefinition {
   return { name, requiredConcepts, bonusConcepts, minimumComplexityScore };
 }
 
-export function matchConcepts(repos: GitHubRepo[], role: RoleDefinition): ConceptMatchResult {
-  const haystack = buildHaystack(repos);
+export function scoreRepoConceptExposure(repo: GitHubRepo, role: RoleDefinition): { score: number; matched: string[] } {
+  const haystack = buildHaystack([repo]);
+  const allConcepts = [...role.requiredConcepts, ...role.bonusConcepts];
+  const matched: string[] = [];
 
-  const matchedConcepts: string[] = [];
+  for (const concept of allConcepts) {
+    const { matchKey, display } = splitConcept(concept);
+    if (conceptMatches(matchKey, haystack)) matched.push(display);
+  }
+
+  const score = allConcepts.length === 0 ? 0 : Math.round((matched.length / allConcepts.length) * 100);
+  return { score, matched };
+}
+
+export function matchConcepts(repos: GitHubRepo[], role: RoleDefinition): ConceptMatchResult {
+  const repoHaystacks = repos.map(repo => buildHaystack([repo]));
+
+  const matchedConcepts: ConceptOccurrence[] = [];
   const missingConcepts: string[] = [];
-  const bonusMatched: string[] = [];
+  const bonusMatched: ConceptOccurrence[] = [];
 
   for (const concept of role.requiredConcepts) {
     const { matchKey, display } = splitConcept(concept);
-    if (conceptMatches(matchKey, haystack)) {
-      matchedConcepts.push(display);
+    const occurrences = repoHaystacks.filter(h => conceptMatches(matchKey, h)).length;
+    if (occurrences > 0) {
+      matchedConcepts.push({ concept: display, occurrences });
     } else {
       missingConcepts.push(display);
     }
@@ -116,8 +136,9 @@ export function matchConcepts(repos: GitHubRepo[], role: RoleDefinition): Concep
 
   for (const concept of role.bonusConcepts) {
     const { matchKey, display } = splitConcept(concept);
-    if (conceptMatches(matchKey, haystack)) {
-      bonusMatched.push(display);
+    const occurrences = repoHaystacks.filter(h => conceptMatches(matchKey, h)).length;
+    if (occurrences > 0) {
+      bonusMatched.push({ concept: display, occurrences });
     }
   }
 

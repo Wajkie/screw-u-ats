@@ -3,7 +3,7 @@ import { resolve } from "path";
 import { fetchRepos } from "../github/fetchRepos.js";
 import { extractLiveUrls } from "../github/extractUrls.js";
 import { scoreComplexity, filterNoise } from "../scoring/complexitySignals.js";
-import { parseRoleDefinition, matchConcepts } from "../scoring/conceptMatch.js";
+import { parseRoleDefinition, matchConcepts, scoreRepoConceptExposure, type ConceptOccurrence } from "../scoring/conceptMatch.js";
 import { scoreTrajectory } from "../scoring/trajectoryScore.js";
 import { computeSkillMap } from "../scoring/skillMap.js";
 import { runLighthouseAudits } from "../lighthouse/runAudit.js";
@@ -18,6 +18,16 @@ export interface RepoSummary {
   highlights: Array<{ signal: string; url: string }>;
 }
 
+export interface RepoReviewCard {
+  name: string;
+  repo_url: string;
+  combined_score: number;
+  complexity_score: number;
+  concept_score: number;
+  matched_concepts: string[];
+  highlights: Array<{ signal: string; url: string }>;
+}
+
 export interface CandidateScoreResult {
   candidate: string;
   role: string;
@@ -28,11 +38,12 @@ export interface CandidateScoreResult {
     concept_match: number;
     complexity: number;
   };
-  matched_concepts: string[];
+  matched_concepts: ConceptOccurrence[];
   missing_concepts: string[];
   trajectory_summary: string;
   top_repos: RepoSummary[];
   weak_repos: RepoSummary[];
+  top_repos_for_review: RepoReviewCard[];
   skill_map: SkillMap;
   enrichment?: {
     lighthouse: LighthouseEnrichment;
@@ -73,6 +84,34 @@ export function buildRepoSummaries(repos: GitHubRepo[], username: string): { top
   };
 }
 
+export function buildTopReposForReview(
+  repos: GitHubRepo[],
+  username: string,
+  roleDef: import("../scoring/conceptMatch.js").RoleDefinition,
+  limit = 10,
+): RepoReviewCard[] {
+  return repos
+    .map((repo) => {
+      const complexity_score = scoreComplexity(repo);
+      const { score: concept_score, matched: matched_concepts } = scoreRepoConceptExposure(repo, roleDef);
+      const combined_score = Math.round(complexity_score * 0.5 + concept_score * 0.5);
+      return {
+        name: repo.name,
+        repo_url: `https://github.com/${username}/${repo.name}`,
+        combined_score,
+        complexity_score,
+        concept_score,
+        matched_concepts,
+        highlights: repo.highlights.map((h) => ({
+          signal: h.signal,
+          url: `https://github.com/${username}/${repo.name}/tree/${repo.defaultBranch}/${h.path}`,
+        })),
+      };
+    })
+    .sort((a, b) => b.combined_score - a.combined_score)
+    .slice(0, limit);
+}
+
 export async function scoreCandidate(
   githubUsername: string,
   role: string,
@@ -98,6 +137,7 @@ export async function scoreCandidate(
   const conceptResult = matchConcepts(scoringRepos, roleDef);
   const complexityScore = avgComplexity(scoringRepos);
   const { top, weak } = buildRepoSummaries(repos, githubUsername);
+  const top_repos_for_review = buildTopReposForReview(repos, githubUsername, roleDef);
   const skill_map = computeSkillMap(scoringRepos);
 
   const fit_score = Math.round(
@@ -121,6 +161,7 @@ export async function scoreCandidate(
     trajectory_summary: trajectoryResult.summary,
     top_repos: top,
     weak_repos: weak,
+    top_repos_for_review,
     skill_map,
   };
 

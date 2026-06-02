@@ -1,0 +1,532 @@
+@use '../styles/tokens' as *;
+@use '../styles/mixins' as *;
+
+.page {
+  max-width: 900px;
+}
+
+// ── Header ──
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid $border;
+}
+
+.headerLeft { flex: 1; min-width: 0; }
+
+.backLink {
+  @include back-link;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  color: $text;
+}
+
+.ghLink {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover { color: $accent; text-decoration: none; }
+}
+
+.meta {
+  font-size: 0.85rem;
+  color: $text-muted;
+}
+
+// ── Sections ──
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.sectionHeading {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: $text;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid $border;
+}
+
+.empty {
+  color: $text-muted;
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+// ── Track cards ──
+.tracks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.trackCard {
+  @include card;
+  overflow: hidden;
+}
+
+.trackTitle {
+  @include section-label;
+  padding: 0.5rem 0.75rem;
+  background: rgba($border, 0.35);
+  border-bottom: 1px solid $border;
+}
+
+// ── Role rows ──
+.roleRow {
+  border-bottom: 1px solid rgba($border, 0.6);
+
+  &:last-child { border-bottom: none; }
+}
+
+.roleRowBest {
+  background: rgba($accent, 0.05);
+}
+
+.roleSummary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: $font-sans;
+  font-size: 0.8rem;
+  color: $text;
+  transition: background 100ms ease;
+
+  &:hover { background: rgba($accent, 0.04); }
+}
+
+.tier {
+  width: 3.5rem;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.roleName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.scoreBar {
+  flex-shrink: 0;
+  width: 4rem;
+  @include score-bar(6px);
+}
+
+.scoreFill {
+  height: 100%;
+  background: $text-muted;
+  border-radius: 999px;
+  transition: width 300ms ease;
+}
+
+.scoreFillInterview {
+  background: $success;
+}
+
+.pct {
+  flex-shrink: 0;
+  width: 2.5rem;
+  text-align: right;
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  color: $text-muted;
+}
+
+.chevron {
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  color: $text-muted;
+}
+
+// ── Badges ──
+.badgeInterview { @include badge-interview; }
+.badgePass      { @include badge-pass; }
+
+.badgeBest {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: $accent;
+  color: #fff;
+}
+
+// ── Role detail (expanded) ──
+.roleDetail {
+  padding: 0.6rem 0.75rem 0.75rem;
+  border-top: 1px solid $border;
+  background: $bg;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.breakdown {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: $text-muted;
+
+  strong { color: $text; }
+}
+
+// ── Concept lists ──
+.conceptsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.conceptGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.conceptLabel {
+  @include section-label;
+  margin-bottom: 0.1rem;
+}
+
+.conceptLabelMatched { color: $success-text; }
+.conceptLabelMissing { color: $accent; }
+
+.conceptList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.conceptItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: $text-muted;
+}
+
+.occurrenceBadge {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: rgba($accent-2, 0.3);
+  color: $warn-text;
+  flex-shrink: 0;
+}
+
+// ── Trajectory ──
+.trajSummary {
+  font-size: 0.875rem;
+  color: $text-muted;
+  margin-bottom: 0.75rem;
+}
+
+.trajChart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.trajRow {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr 2.2rem 4rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+}
+
+.trajLabel {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  color: $text-muted;
+  text-align: right;
+}
+
+.trajBarWrap {
+  height: 10px;
+  background: $border;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.trajBar {
+  height: 100%;
+  background: $accent;
+  border-radius: 999px;
+  transition: width 400ms ease;
+  min-width: 2px;
+}
+
+.trajValue {
+  font-family: $font-mono;
+  font-size: 0.72rem;
+  color: $text;
+  text-align: right;
+}
+
+.trajRepos {
+  font-size: 0.72rem;
+  color: $text-muted;
+}
+
+// ── Lighthouse ──
+.lhAudits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lhCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  & + & {
+    border-top: 1px solid $border;
+    padding-top: 0.75rem;
+  }
+}
+
+.lhUrl {
+  font-size: 0.78rem;
+  color: $text-muted;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  a { color: $accent; text-decoration: none; &:hover { text-decoration: underline; } }
+}
+
+.lhScores {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.lhScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: $radius;
+  border: 1px solid $border;
+  min-width: 4rem;
+}
+
+.lhScoreValue {
+  font-family: $font-mono;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.lhScoreLabel {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: $text-muted;
+  text-align: center;
+}
+
+.lhGood { background: rgba(91, 173, 117, 0.1); border-color: rgba(91, 173, 117, 0.3); .lhScoreValue { color: $success-text; } }
+.lhOk   { background: rgba(232, 168, 74, 0.1);  border-color: rgba(232, 168, 74, 0.3);  .lhScoreValue { color: $warn-text; } }
+.lhPoor { background: rgba(220, 80, 80, 0.1);   border-color: rgba(220, 80, 80, 0.3);   .lhScoreValue { color: $error-text; } }
+
+.lhViolations {
+  font-size: 0.78rem;
+}
+
+.lhViolationsSummary {
+  cursor: pointer;
+  color: $accent;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+// ── Top repos for review ──
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.reviewCard {
+  @include card;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.reviewCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.reviewRepoName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $accent;
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:hover { text-decoration: underline; }
+}
+
+.reviewScores {
+  display: flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.reviewScoreChip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: $radius;
+  border: 1px solid $border;
+  background: $bg;
+  min-width: 3.5rem;
+}
+
+.reviewScoreChipCombined {
+  border-color: rgba($accent, 0.4);
+  background: rgba($accent, 0.05);
+}
+
+.reviewScoreVal {
+  font-family: $font-mono;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: $text;
+  line-height: 1.2;
+}
+
+.reviewScoreLabel {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: $text-muted;
+}
+
+.reviewConcepts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.reviewConceptTag {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba($accent-2, 0.15);
+  color: $warn-text;
+}
+
+.reviewHighlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.reviewHighlight {
+  font-size: 0.7rem;
+  color: $text-muted;
+
+  a { color: $text-muted; text-decoration: none; &:hover { color: $accent; } }
+
+  & + &::before {
+    content: '·';
+    margin-right: 0.3rem;
+    color: $border;
+  }
+}
+
+// ── Activity panel ──
+.activityGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.activityItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid $border;
+  border-radius: $radius;
+  background: $bg;
+}
+
+.activityLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: $text-muted;
+}
+
+.activityValue {
+  font-family: $font-mono;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text;
+}
+
+.activityBadgeActive {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $success-text;
+}
+
+.activityBadgeInactive {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $text-muted;
+}

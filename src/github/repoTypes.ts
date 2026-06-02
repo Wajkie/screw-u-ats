@@ -6,6 +6,7 @@ export interface RepoHighlight {
 export interface GitHubRepo {
   name: string;
   language: string | null;
+  isFork?: boolean;
   createdAt: string;
   pushedAt: string;
   topics: string[];
@@ -30,6 +31,7 @@ export interface GitHubRepo {
 export interface RawRepo {
   name: string;
   language: string | null;
+  fork: boolean;
   created_at: string;
   pushed_at: string;
   topics: string[];

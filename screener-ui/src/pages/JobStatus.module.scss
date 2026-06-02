@@ -1,0 +1,67 @@
+@use '../styles/tokens' as *;
+@use '../styles/mixins' as *;
+
+.page {
+  max-width: 480px;
+  margin: 4rem auto;
+  text-align: center;
+}
+
+.heading {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: $text;
+}
+
+.statusBox {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.step {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: $surface;
+  color: $text-muted;
+  border: 1px solid $border;
+
+  &:first-child { border-radius: $radius 0 0 $radius; }
+  &:last-child  { border-radius: 0 $radius $radius 0; }
+}
+
+.stepDone {
+  background: rgba($accent-2, 0.2);
+  color: $warn-text;
+  border-color: $accent-2;
+}
+
+.stepActive {
+  background: $accent;
+  color: #fff;
+  border-color: $accent;
+}
+
+.connecting {
+  color: $text-muted;
+  font-size: 0.875rem;
+}
+
+.errorBox {
+  background: $error-bg;
+  border: 1px solid $error-border;
+  border-radius: $radius;
+  padding: 1.25rem;
+}
+
+.errorMessage {
+  color: $error-text;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.backLink {
+  @include back-link;
+}

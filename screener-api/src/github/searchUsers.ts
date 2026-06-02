@@ -1,0 +1,41 @@
+import { GitHubError } from "../../../src/github/fetchProfile.js";
+
+interface SearchUsersResponse {
+  items: Array<{ login: string }>;
+}
+
+// GitHub's user search API interprets parentheses as boolean grouping operators,
+// so full concept strings like "React with hooks (useState, useEffect...)" cause 422.
+// Strip parenthetical content and cap term count to stay within query limits.
+function buildSearchQuery(concepts: string[]): string {
+  return concepts
+    .map(c => c.replace(/\s*\([^)]*\)/g, "").trim())
+    .filter(c => c.length > 0)
+    .slice(0, 6)
+    .join(" ");
+}
+
+export async function searchGitHubUsers(
+  keywords: string[],
+  token: string,
+  maxResults = 30,
+): Promise<string[]> {
+  const q = encodeURIComponent(buildSearchQuery(keywords));
+  const res = await fetch(`https://api.github.com/search/users?q=${q}&per_page=${maxResults}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+
+  if (res.status === 403 || res.status === 429) {
+    throw new GitHubError("GitHub API rate limit exceeded", res.status);
+  }
+  if (!res.ok) {
+    throw new GitHubError(`GitHub API error: ${res.status}`, res.status);
+  }
+
+  const data = (await res.json()) as SearchUsersResponse;
+  return data.items.map((item) => item.login);
+}

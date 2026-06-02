@@ -255,6 +255,59 @@ describe("scoreCandidate — noise filter", () => {
   });
 });
 
+describe("scoreCandidate — top_repos_for_review", () => {
+  it("returns an array in result shape", async () => {
+    mockFetchRepos.mockResolvedValue([makeRepo({ name: "repo-a", size: 500, hasTests: true, hasCi: true })]);
+    const result = await scoreCandidate("user", "junior-frontend", "token", rolesDir);
+    expect(Array.isArray(result.top_repos_for_review)).toBe(true);
+  });
+
+  it("returns empty array when there are no repos", async () => {
+    mockFetchRepos.mockResolvedValue([]);
+    const result = await scoreCandidate("user", "junior-frontend", "token", rolesDir);
+    expect(result.top_repos_for_review).toEqual([]);
+  });
+
+  it("each card has required fields", async () => {
+    mockFetchRepos.mockResolvedValue([makeRepo({ name: "my-proj", size: 500, hasTests: true })]);
+    const result = await scoreCandidate("alice", "junior-frontend", "token", rolesDir);
+    const card = result.top_repos_for_review[0]!;
+    expect(card.name).toBe("my-proj");
+    expect(card.repo_url).toBe("https://github.com/alice/my-proj");
+    expect(typeof card.combined_score).toBe("number");
+    expect(typeof card.complexity_score).toBe("number");
+    expect(typeof card.concept_score).toBe("number");
+    expect(Array.isArray(card.matched_concepts)).toBe(true);
+    expect(Array.isArray(card.highlights)).toBe(true);
+  });
+
+  it("is sorted by combined_score descending", async () => {
+    mockFetchRepos.mockResolvedValue([
+      makeRepo({ name: "weak", size: 0 }),
+      makeRepo({ name: "strong", size: 500, hasTests: true, hasCi: true, packageDeps: ["react", "typescript"] }),
+      makeRepo({ name: "mid", size: 50 }),
+    ]);
+    const result = await scoreCandidate("user", "junior-frontend", "token", rolesDir);
+    const scores = result.top_repos_for_review.map(r => r.combined_score);
+    expect(scores).toEqual([...scores].sort((a, b) => b - a));
+  });
+
+  it("returns at most 10 repos", async () => {
+    const repos = Array.from({ length: 15 }, (_, i) => makeRepo({ name: `repo-${i}`, size: 100 }));
+    mockFetchRepos.mockResolvedValue(repos);
+    const result = await scoreCandidate("user", "junior-frontend", "token", rolesDir);
+    expect(result.top_repos_for_review.length).toBeLessThanOrEqual(10);
+  });
+
+  it("combined_score is midpoint of complexity and concept scores", async () => {
+    mockFetchRepos.mockResolvedValue([makeRepo({ name: "r", size: 300, hasTests: true })]);
+    const result = await scoreCandidate("user", "junior-frontend", "token", rolesDir);
+    const card = result.top_repos_for_review[0]!;
+    const expected = Math.round(card.complexity_score * 0.5 + card.concept_score * 0.5);
+    expect(card.combined_score).toBe(expected);
+  });
+});
+
 describe("scoreCandidate — graduation_date", () => {
   it("accepts graduation_date and does not throw", async () => {
     mockFetchRepos.mockResolvedValue([

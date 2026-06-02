@@ -126,7 +126,7 @@ describe("matchConcepts - frontend concept detection", () => {
   it("detects React from topics", () => {
     const role = parseRoleDefinition(frontendMd);
     const result = matchConcepts([makeRepo({ topics: ["react", "vite"] })], role);
-    expect(result.matchedConcepts.some((c) => /react/i.test(c))).toBe(true);
+    expect(result.matchedConcepts.some((c) => /react/i.test(c.concept))).toBe(true);
   });
 
   it("detects JavaScript from README", () => {
@@ -135,13 +135,13 @@ describe("matchConcepts - frontend concept detection", () => {
       [makeRepo({ readmeContent: "Built with JavaScript ES6+ and modern tooling." })],
       role,
     );
-    expect(result.matchedConcepts.some((c) => /javascript/i.test(c))).toBe(true);
+    expect(result.matchedConcepts.some((c) => /javascript/i.test(c.concept))).toBe(true);
   });
 
   it("detects TypeScript from language field", () => {
     const role = parseRoleDefinition(frontendMd);
     const result = matchConcepts([makeRepo({ language: "TypeScript" })], role);
-    expect(result.matchedConcepts.some((c) => /typescript/i.test(c))).toBe(true);
+    expect(result.matchedConcepts.some((c) => /typescript/i.test(c.concept))).toBe(true);
   });
 
   it("detects signals across multiple repos", () => {
@@ -161,7 +161,7 @@ describe("matchConcepts - frontend concept detection", () => {
       [makeRepo({ description: "Feature branch workflow with pull requests" })],
       role,
     );
-    expect(result.matchedConcepts.some((c) => /git/i.test(c))).toBe(true);
+    expect(result.matchedConcepts.some((c) => /git/i.test(c.concept))).toBe(true);
   });
 });
 
@@ -169,7 +169,7 @@ describe("matchConcepts - fullstack concept detection", () => {
   it("detects Node.js from topics", () => {
     const role = parseRoleDefinition(fullstackMd);
     const result = matchConcepts([makeRepo({ topics: ["nodejs", "express"] })], role);
-    expect(result.matchedConcepts.some((c) => /node/i.test(c))).toBe(true);
+    expect(result.matchedConcepts.some((c) => /node/i.test(c.concept))).toBe(true);
   });
 
   it("detects database integration from README", () => {
@@ -178,7 +178,7 @@ describe("matchConcepts - fullstack concept detection", () => {
       [makeRepo({ readmeContent: "Uses PostgreSQL with parameterized queries and Prisma ORM." })],
       role,
     );
-    expect(result.matchedConcepts.some((c) => /relational database/i.test(c))).toBe(true);
+    expect(result.matchedConcepts.some((c) => /relational database/i.test(c.concept))).toBe(true);
   });
 
   it("detects Docker as a bonus concept", () => {
@@ -187,7 +187,7 @@ describe("matchConcepts - fullstack concept detection", () => {
       [makeRepo({ readmeContent: "Includes docker-compose for local development." })],
       role,
     );
-    expect(result.bonusMatched.some((c) => /docker/i.test(c))).toBe(true);
+    expect(result.bonusMatched.some((c) => /docker/i.test(c.concept))).toBe(true);
   });
 });
 
@@ -201,7 +201,7 @@ describe("matchConcepts - pipe format (key | display)", () => {
     };
     const repos = [makeRepo({ readmeContent: "This project uses csharp and linq queries." })];
     const result = matchConcepts(repos, role);
-    expect(result.matchedConcepts).toEqual(["C# fundamentals (OOP, LINQ, async/await)"]);
+    expect(result.matchedConcepts).toEqual([{ concept: "C# fundamentals (OOP, LINQ, async/await)", occurrences: 1 }]);
   });
 
   it("does not match when key tokens are absent even if display text appears in haystack", () => {

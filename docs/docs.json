@@ -26,9 +26,10 @@
           "fit_score": "number",
           "recommendation": "\"Interview\" | \"Pass\"",
           "breakdown": { "trajectory": "number", "concept_match": "number", "complexity": "number" },
-          "matched_concepts": "string[]",
+          "matched_concepts": "{ concept: string; occurrences: number }[]",
           "missing_concepts": "string[]",
           "trajectory_summary": "string",
+          "top_repos_for_review": "{ name: string, repo_url: string, combined_score: number, complexity_score: number, concept_score: number, matched_concepts: string[], highlights: { signal: string, url: string }[] }[] — up to 10 repos ranked by complexity (50%) + per-repo concept exposure (50%). Useful for staff engineers who want to manually inspect the candidate's strongest work.",
           "enrichment": "(optional) { lighthouse: { live_projects_found: number, audits: [{ url: string, scores: { performance: number, accessibility: number, best_practices: number, seo: number }, wcag_violations: string[] }] } }"
         }
       },
@@ -40,7 +41,11 @@
           "fit_score": 72,
           "recommendation": "Interview",
           "breakdown": { "trajectory": 81, "concept_match": 68, "complexity": 60 },
-          "matched_concepts": ["React with hooks", "TypeScript in React context", "REST API integration"],
+          "matched_concepts": [
+              { "concept": "React with hooks", "occurrences": 4 },
+              { "concept": "TypeScript in React context", "occurrences": 3 },
+              { "concept": "REST API integration", "occurrences": 2 }
+            ],
           "missing_concepts": ["Component testing", "Accessibility fundamentals"],
           "trajectory_summary": "Positive learning trajectory — recent projects are noticeably more complex than earlier ones.",
           "enrichment": {
@@ -114,13 +119,16 @@
         { "name": "graduation_date", "type": "string", "required": false, "description": "ISO date (YYYY-MM-DD) when the candidate graduated. Repos before this date are weighted lower in trajectory scoring." }
       ],
       "returns": {
-        "description": "Grouped role-fit results with ASCII chart, best_fit slug, flat roles array, and tracks grouping.",
+        "description": "Grouped role-fit results with ASCII chart, best_fit slug, flat roles array, tracks grouping, trajectory info, and optional activity signal.",
         "shape": {
           "candidate": "string",
           "best_fit": "RoleSlug",
           "chart": "string",
-          "roles": "RoleScore[]",
-          "tracks": "[{ track: string, tiers: RoleScore[] }]"
+          "roles": "RoleScore[] — each role has matched_concepts: { concept: string; occurrences: number }[]",
+          "tracks": "[{ track: string, tiers: RoleScore[] }]",
+          "trajectory": "{ score: number; summary: string; curve: CurvePoint[] }",
+          "lighthouse?": "LighthouseEnrichment — only present when lighthouse=true is passed",
+          "activity?": "{ last_pushed_at: string; repos_last_90d: number; repos_last_180d: number; total_original_repos: number; account_age_months: number; is_recently_active: boolean }"
         }
       },
       "example": {
@@ -150,7 +158,7 @@
         "description": "Ranked candidate list with fit scores and an ASCII comparison table.",
         "shape": {
           "role": "string",
-          "ranked": "[{ candidate, fit_score, recommendation, breakdown, matched_concepts, missing_concepts }]",
+          "ranked": "[{ candidate, fit_score, recommendation, breakdown, matched_concepts: { concept: string; occurrences: number }[], missing_concepts: string[] }]",
           "chart": "string"
         }
       },

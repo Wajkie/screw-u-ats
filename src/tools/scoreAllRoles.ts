@@ -3,12 +3,15 @@ import { resolve } from "path";
 import { fetchRepos } from "../github/fetchRepos.js";
 import { extractLiveUrls } from "../github/extractUrls.js";
 import { scoreComplexity, filterNoise } from "../scoring/complexitySignals.js";
-import { parseRoleDefinition, matchConcepts } from "../scoring/conceptMatch.js";
+import { parseRoleDefinition, matchConcepts, type ConceptOccurrence } from "../scoring/conceptMatch.js";
+import { buildTopReposForReview, type RepoReviewCard } from "./scoreCandidate.js";
 import { scoreTrajectory } from "../scoring/trajectoryScore.js";
 import { runLighthouseAudits } from "../lighthouse/runAudit.js";
+import { computeActivitySignal } from "../scoring/activitySignal.js";
 import type { GitHubRepo } from "../github/fetchRepos.js";
 import type { CurvePoint } from "../scoring/trajectoryScore.js";
 import type { LighthouseEnrichment } from "../lighthouse/runAudit.js";
+import type { ActivitySignal } from "../scoring/activitySignal.js";
 
 export const ALL_ROLES = [
   "junior-frontend", "junior-fullstack", "junior-backend", "junior-csharp",
@@ -28,7 +31,7 @@ export interface RoleScore {
   fit_score: number;
   recommendation: "Interview" | "Pass";
   breakdown: { trajectory: number; concept_match: number; complexity: number };
-  matched_concepts: string[];
+  matched_concepts: ConceptOccurrence[];
   missing_concepts: string[];
 }
 
@@ -51,6 +54,8 @@ export interface AllRolesResult {
   tracks: TrackGroup[];
   trajectory: TrajectoryInfo;
   lighthouse?: LighthouseEnrichment;
+  activity?: ActivitySignal;
+  top_repos_for_review?: RepoReviewCard[];
 }
 
 function avgComplexity(repos: GitHubRepo[]): number {
@@ -157,6 +162,8 @@ export async function scoreAllRoles(
     curve: trajectoryResult.curve,
   };
 
+  const activity = computeActivitySignal(repos);
+
   if (roles.length === 0) {
     return {
       candidate: githubUsername,
@@ -165,6 +172,7 @@ export async function scoreAllRoles(
       roles: [],
       tracks: trackGroups,
       trajectory,
+      activity,
     };
   }
 
@@ -179,6 +187,10 @@ export async function scoreAllRoles(
     return b.breakdown.concept_match > a.breakdown.concept_match ? b : a;
   });
 
+  const bestRoleMarkdown = readFileSync(resolve(rolesDir, `${best.role}.md`), "utf-8");
+  const bestRoleDef = parseRoleDefinition(bestRoleMarkdown);
+  const top_repos_for_review = buildTopReposForReview(repos, githubUsername, bestRoleDef);
+
   return {
     candidate: githubUsername,
     best_fit: best.role,
@@ -187,5 +199,7 @@ export async function scoreAllRoles(
     tracks: trackGroups,
     trajectory,
     lighthouse,
+    activity,
+    top_repos_for_review,
   };
 }

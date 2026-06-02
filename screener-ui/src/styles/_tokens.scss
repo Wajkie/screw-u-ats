@@ -1,0 +1,29 @@
+// Warm palette — mirrors docssite
+$bg:         #FFFBF5;
+$surface:    #FFF8EE;
+$border:     #F0D9B5;
+$accent:     #BF5119;
+$accent-2:   #F5C07A;
+$text:       #2D2016;
+$text-muted: #7A5C3A;
+
+// Status
+$success:      #5bad75;
+$success-text: #3a8a56;
+$success-bg:   rgba(91, 173, 117, 0.12);
+$warn-text:    #a06020;
+$error-text:   #b03030;
+$error-bg:     rgba(220, 80, 80, 0.08);
+$error-border: rgba(220, 80, 80, 0.3);
+
+// Typography
+$font-sans: 'Segoe UI', system-ui, sans-serif;
+$font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+
+// Shape
+$radius:    8px;
+$radius-sm: 5px;
+
+// Layout
+$sidebar-width: 220px;
+$content-max:   820px;

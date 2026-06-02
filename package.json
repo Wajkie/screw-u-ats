@@ -13,7 +13,8 @@
     "lint": "eslint src",
     "local": "powershell -ExecutionPolicy Bypass -File scripts/dev-screener.ps1",
     "lint:fix": "eslint src --fix",
-    "type-coverage": "type-coverage --atLeast 100"
+    "type-coverage": "type-coverage --atLeast 100",
+    "prepare": "husky"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.4",
@@ -28,6 +29,10 @@
     "@types/node": "^22.19.19",
     "@types/pg": "^8.20.0",
     "eslint": "^10.4.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
+    "husky": "^9.1.7",
     "playwright": "^1.60.0",
     "tsx": "^4.0.0",
     "type-coverage": "^2.29.7",

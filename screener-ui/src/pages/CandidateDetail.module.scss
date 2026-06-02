@@ -1,0 +1,137 @@
+@use '../styles/tokens' as *;
+@use '../styles/mixins' as *;
+
+.page {
+  max-width: 720px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  color: $text;
+}
+
+.username {
+  font-size: 0.875rem;
+  color: $text-muted;
+  margin-bottom: 0.2rem;
+}
+
+.meta {
+  font-size: 0.875rem;
+  color: $text-muted;
+  margin-bottom: 0.2rem;
+}
+
+.notes {
+  font-size: 0.875rem;
+  color: $text;
+  margin-top: 0.5rem;
+  white-space: pre-wrap;
+}
+
+.analyzeBtn {
+  @include btn-primary;
+  flex-shrink: 0;
+}
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.sectionHeading {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: $text-muted;
+  @include section-label;
+  font-size: 0.78rem;
+}
+
+.latestReport {
+  @include card;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.score {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text;
+}
+
+.role {
+  font-size: 0.875rem;
+  color: $text-muted;
+}
+
+.viewLink {
+  margin-left: auto;
+  font-size: 0.875rem;
+  text-decoration: none;
+  color: $accent;
+
+  &:hover { text-decoration: underline; }
+}
+
+.empty {
+  color: $text-muted;
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+.historyList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.historyItem {
+  @include card;
+}
+
+.historyLink {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.625rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  border-radius: $radius;
+  transition: background 100ms ease;
+
+  &:hover { background: rgba($accent, 0.04); text-decoration: none; }
+}
+
+.historyDate {
+  font-size: 0.8rem;
+  color: $text-muted;
+  flex: 1;
+}
+
+.historyScore {
+  font-weight: 600;
+  color: $text;
+}
+
+.historyRole {
+  font-size: 0.8rem;
+  color: $text-muted;
+}
+
+.badgeInterview { @include badge-interview; }
+.badgePass      { @include badge-pass; }

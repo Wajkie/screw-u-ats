@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+
+# Root (MCP server)
+npm run typecheck
+npm run type-coverage
+npm run lint -- --max-warnings 0
+
+# screener-api
+npm --prefix screener-api run typecheck
+npm --prefix screener-api run type-coverage
+npm --prefix screener-api run lint -- --max-warnings 0

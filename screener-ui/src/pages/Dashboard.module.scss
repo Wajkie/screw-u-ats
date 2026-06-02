@@ -1,0 +1,80 @@
+@use '../styles/tokens' as *;
+@use '../styles/mixins' as *;
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: $text;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.emptyState {
+  @include empty-state;
+}
+
+.card {
+  @include card;
+  display: block;
+  padding: 1rem 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 150ms ease, border-color 150ms ease;
+
+  &:hover {
+    border-color: $accent-2;
+    box-shadow: 0 2px 10px rgba($text, 0.06);
+    text-decoration: none;
+  }
+}
+
+.cardName {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
+  color: $text;
+}
+
+.cardUsername {
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin-bottom: 0.5rem;
+}
+
+.cardScore {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.scoreValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text;
+}
+
+.scoreRole {
+  font-size: 0.8rem;
+  color: $text-muted;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.noReport {
+  color: $text-muted;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  opacity: 0.7;
+}
+
+.badgeInterview { @include badge-interview; }
+.badgePass      { @include badge-pass; }
