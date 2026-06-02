@@ -52,7 +52,9 @@
         "github_username": { "type": "string", "required": true, "description": "GitHub username — must be unique" },
         "display_name": { "type": "string", "required": false, "description": "Human-readable name shown in the UI" },
         "graduation_date": { "type": "string", "required": false, "description": "ISO date (YYYY-MM-DD). Pre-graduation repos are weighted lower in trajectory scoring." },
-        "notes": { "type": "string", "required": false, "description": "Free-text recruiter notes" }
+        "notes": { "type": "string", "required": false, "description": "Free-text recruiter notes" },
+        "location": { "type": "string | null", "required": false, "description": "Candidate's current location (free text)" },
+        "work_type_preference": { "type": "'remote' | 'hybrid' | 'onsite' | null", "required": false, "description": "Candidate's preferred work arrangement" }
       },
       "responses": {
         "201": {
@@ -63,6 +65,8 @@
             "display_name": "string | null",
             "graduation_date": "string | null",
             "notes": "string | null",
+            "location": "string | null",
+            "work_type_preference": "'remote' | 'hybrid' | 'onsite' | null",
             "sourced_from_opening_id": "string | null",
             "created_at": "string",
             "updated_at": "string"
@@ -76,7 +80,9 @@
           "github_username": "johndoe",
           "display_name": "John Doe",
           "graduation_date": "2024-06-01",
-          "notes": "Strong trajectory, referred by Alice"
+          "notes": "Strong trajectory, referred by Alice",
+          "location": "Stockholm, Sweden",
+          "work_type_preference": "hybrid"
         },
         "response": {
           "id": "yEvCFU6MFw75wOfbzQFXP",
@@ -84,6 +90,8 @@
           "display_name": "John Doe",
           "graduation_date": "2024-06-01",
           "notes": "Strong trajectory, referred by Alice",
+          "location": "Stockholm, Sweden",
+          "work_type_preference": "hybrid",
           "sourced_from_opening_id": null,
           "created_at": "2026-05-30T10:00:00.000Z",
           "updated_at": "2026-05-30T10:00:00.000Z"
@@ -105,6 +113,8 @@
               "display_name": "string | null",
               "graduation_date": "string | null",
               "notes": "string | null",
+              "location": "string | null",
+              "work_type_preference": "'remote' | 'hybrid' | 'onsite' | null",
               "sourced_from_opening_id": "string | null",
               "created_at": "string",
               "updated_at": "string",
@@ -150,6 +160,8 @@
             "display_name": "string | null",
             "graduation_date": "string | null",
             "notes": "string | null",
+            "location": "string | null",
+            "work_type_preference": "'remote' | 'hybrid' | 'onsite' | null",
             "sourced_from_opening_id": "string | null",
             "created_at": "string",
             "updated_at": "string",
@@ -170,21 +182,25 @@
       "body": {
         "display_name": { "type": "string | null", "required": false },
         "graduation_date": { "type": "string | null", "required": false, "description": "ISO date YYYY-MM-DD, or null to clear" },
-        "notes": { "type": "string | null", "required": false }
+        "notes": { "type": "string | null", "required": false },
+        "location": { "type": "string | null", "required": false },
+        "work_type_preference": { "type": "'remote' | 'hybrid' | 'onsite' | null", "required": false }
       },
       "responses": {
         "200": { "description": "Updated candidate row" },
-        "400": { "description": "Invalid graduation_date format" },
+        "400": { "description": "Invalid field value or no fields provided" },
         "404": { "description": "Candidate not found" }
       },
       "example": {
-        "request": { "notes": "Moved to top of shortlist after technical screen" },
+        "request": { "notes": "Moved to top of shortlist after technical screen", "location": "Stockholm, Sweden", "work_type_preference": "hybrid" },
         "response": {
           "id": "yEvCFU6MFw75wOfbzQFXP",
           "github_username": "johndoe",
           "display_name": "John Doe",
           "graduation_date": "2024-06-01",
           "notes": "Moved to top of shortlist after technical screen",
+          "location": "Stockholm, Sweden",
+          "work_type_preference": "hybrid",
           "sourced_from_opening_id": null,
           "created_at": "2026-05-30T10:00:00.000Z",
           "updated_at": "2026-05-30T11:00:00.000Z"
@@ -409,7 +425,10 @@
         "title": { "type": "string", "required": true, "description": "Human-readable opening title" },
         "description": { "type": "string | null", "required": false, "description": "Optional longer description" },
         "role_slug": { "type": "string", "required": true, "description": "One of the ALL_ROLES values (e.g. junior-frontend, mid-backend)" },
-        "status": { "type": "'open' | 'closed'", "required": false, "description": "Defaults to 'open'" }
+        "status": { "type": "'open' | 'closed'", "required": false, "description": "Defaults to 'open'" },
+        "location": { "type": "string | null", "required": false, "description": "Location for the role (free text)" },
+        "work_type": { "type": "'remote' | 'hybrid' | 'onsite' | null", "required": false, "description": "Work arrangement for the role" },
+        "source_url": { "type": "string | null", "required": false, "description": "URL where the opening was originally posted (must be a valid URL)" }
       },
       "responses": {
         "201": {
@@ -420,19 +439,27 @@
             "description": "string | null",
             "role_slug": "string",
             "status": "'open' | 'closed'",
+            "location": "string | null",
+            "work_type": "'remote' | 'hybrid' | 'onsite' | null",
+            "source_url": "string | null",
+            "external_id": "string | null",
             "created_at": "string"
           }
         },
         "400": { "description": "Missing or invalid fields, or unknown role_slug" }
       },
       "example": {
-        "request": { "title": "Junior Frontend Engineer", "role_slug": "junior-frontend" },
+        "request": { "title": "Junior Frontend Engineer", "role_slug": "junior-frontend", "location": "Remote, EU", "work_type": "remote", "source_url": "https://example.com/jobs/1" },
         "response": {
           "id": "op_abc123",
           "title": "Junior Frontend Engineer",
           "description": null,
           "role_slug": "junior-frontend",
           "status": "open",
+          "location": "Remote, EU",
+          "work_type": "remote",
+          "source_url": "https://example.com/jobs/1",
+          "external_id": null,
           "created_at": "2026-06-02T09:00:00.000Z"
         }
       }
@@ -445,7 +472,7 @@
       "responses": {
         "200": {
           "description": "Array of openings",
-          "shape": [{ "id": "string", "title": "string", "description": "string | null", "role_slug": "string", "status": "'open' | 'closed'", "created_at": "string", "candidate_count": "number" }]
+          "shape": [{ "id": "string", "title": "string", "description": "string | null", "role_slug": "string", "status": "'open' | 'closed'", "location": "string | null", "work_type": "'remote' | 'hybrid' | 'onsite' | null", "source_url": "string | null", "external_id": "string | null", "created_at": "string", "candidate_count": "number" }]
         }
       }
     },
@@ -456,7 +483,7 @@
       "summary": "Get a single opening by id",
       "params": { "id": { "type": "string", "description": "Opening nanoid" } },
       "responses": {
-        "200": { "description": "Opening row", "shape": { "id": "string", "title": "string", "description": "string | null", "role_slug": "string", "status": "'open' | 'closed'", "created_at": "string" } },
+        "200": { "description": "Opening row", "shape": { "id": "string", "title": "string", "description": "string | null", "role_slug": "string", "status": "'open' | 'closed'", "location": "string | null", "work_type": "'remote' | 'hybrid' | 'onsite' | null", "source_url": "string | null", "external_id": "string | null", "created_at": "string" } },
         "404": { "description": "Opening not found" }
       }
     },
@@ -469,7 +496,10 @@
       "body": {
         "title": { "type": "string", "required": false },
         "description": { "type": "string | null", "required": false },
-        "status": { "type": "'open' | 'closed'", "required": false }
+        "status": { "type": "'open' | 'closed'", "required": false },
+        "location": { "type": "string | null", "required": false },
+        "work_type": { "type": "'remote' | 'hybrid' | 'onsite' | null", "required": false },
+        "source_url": { "type": "string | null", "required": false }
       },
       "responses": {
         "200": { "description": "Updated opening row" },
@@ -477,8 +507,8 @@
         "404": { "description": "Opening not found" }
       },
       "example": {
-        "request": { "status": "closed" },
-        "response": { "id": "op_abc123", "title": "Junior Frontend Engineer", "description": null, "role_slug": "junior-frontend", "status": "closed", "created_at": "2026-06-02T09:00:00.000Z" }
+        "request": { "status": "closed", "work_type": "hybrid" },
+        "response": { "id": "op_abc123", "title": "Junior Frontend Engineer", "description": null, "role_slug": "junior-frontend", "status": "closed", "location": null, "work_type": "hybrid", "source_url": null, "external_id": null, "created_at": "2026-06-02T09:00:00.000Z" }
       }
     },
     {
