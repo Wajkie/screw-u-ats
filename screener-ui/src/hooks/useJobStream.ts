@@ -34,8 +34,19 @@ export function useJobStream(jobId: string): UseJobStreamResult {
     };
 
     es.onerror = () => {
-      setError('Connection lost.');
       es.close();
+      // SSE stream closed before a terminal event — fall back to REST to get
+      // the current state (handles the race where the server closes the
+      // already-terminal stream before the browser's onmessage fires).
+      void fetch(`${API_URL}/jobs/${jobId}`)
+        .then((r) => (r.ok ? (r.json() as Promise<{ status: string; report_id?: string; error?: string }>) : null))
+        .then((job) => {
+          if (!job) { setError('Connection lost.'); return; }
+          setStatus(job.status as JobStatus);
+          if (job.report_id) setReportId(job.report_id);
+          if (job.error) setError(job.error);
+        })
+        .catch(() => setError('Connection lost.'));
     };
 
     return () => {
