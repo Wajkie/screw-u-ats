@@ -52,6 +52,30 @@ export default function NewCandidate() {
             />
           </label>
 
+          <label className={styles.label}>
+            Location
+            <input
+              className={styles.input}
+              value={fields.location}
+              onChange={(e) => setField('location', e.target.value)}
+              placeholder="Stockholm"
+            />
+          </label>
+
+          <label className={styles.label}>
+            Work type preference
+            <select
+              className={styles.input}
+              value={fields.workTypePreference}
+              onChange={(e) => setField('workTypePreference', e.target.value)}
+            >
+              <option value="">— not specified —</option>
+              <option value="remote">Remote</option>
+              <option value="hybrid">Hybrid</option>
+              <option value="onsite">Onsite</option>
+            </select>
+          </label>
+
           {apiError && <p className={styles.apiError}>{apiError}</p>}
 
           <button type="submit" disabled={isPending} className={styles.submit}>

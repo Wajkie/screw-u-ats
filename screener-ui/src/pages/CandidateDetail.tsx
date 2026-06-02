@@ -30,6 +30,15 @@ export default function CandidateDetail() {
           {candidate.graduation_date && (
             <div className={styles.meta}>Graduated: {candidate.graduation_date}</div>
           )}
+          {(candidate.location || candidate.work_type_preference) && (
+            <div className={styles.meta}>
+              {candidate.location && <span>{candidate.location}</span>}
+              {candidate.location && candidate.work_type_preference && <span> · </span>}
+              {candidate.work_type_preference && (
+                <span style={{ textTransform: 'capitalize' }}>{candidate.work_type_preference}</span>
+              )}
+            </div>
+          )}
           {candidate.notes && (
             <div className={styles.notes}>{candidate.notes}</div>
           )}

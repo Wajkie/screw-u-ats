@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createOpening, openingsKeys } from '../api/openings';
+import type { WorkType } from '../api/openings';
 import { getRoles, rolesKeys } from '../api/candidates';
 import { useApiQuery } from './useApiQuery';
 import { useApiMutation, useInvalidate } from './useApiMutation';
@@ -9,13 +10,15 @@ interface Fields {
   title: string;
   description: string;
   roleSlug: string;
+  location: string;
+  workType: string;
 }
 
 export function useNewOpeningForm() {
   const navigate = useNavigate();
   const invalidate = useInvalidate();
 
-  const [fields, setFields] = useState<Fields>({ title: '', description: '', roleSlug: '' });
+  const [fields, setFields] = useState<Fields>({ title: '', description: '', roleSlug: '', location: '', workType: '' });
   const [fieldError, setFieldError] = useState('');
 
   const { data: roles } = useApiQuery(rolesKeys.list, getRoles);
@@ -50,6 +53,8 @@ export function useNewOpeningForm() {
       title: fields.title.trim(),
       ...(fields.description.trim() ? { description: fields.description.trim() } : {}),
       role_slug: fields.roleSlug,
+      ...(fields.location.trim() ? { location: fields.location.trim() } : {}),
+      ...(fields.workType ? { work_type: fields.workType as WorkType } : {}),
     });
   }
 

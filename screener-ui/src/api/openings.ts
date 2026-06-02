@@ -1,11 +1,15 @@
 import { get, post } from './client';
 
+export type WorkType = 'remote' | 'hybrid' | 'onsite';
+
 export interface Opening {
   id: string;
   title: string;
   description: string | null;
   role_slug: string;
   status: 'open' | 'closed';
+  location: string | null;
+  work_type: WorkType | null;
   created_at: string;
   candidate_count: number;
 }
@@ -25,6 +29,8 @@ export interface CreateOpeningInput {
   title: string;
   description?: string;
   role_slug: string;
+  location?: string;
+  work_type?: WorkType;
 }
 
 export const openingsKeys = {

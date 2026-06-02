@@ -26,12 +26,16 @@ export interface LatestReport {
   created_at: string;
 }
 
+export type WorkType = 'remote' | 'hybrid' | 'onsite';
+
 export interface Candidate {
   id: string;
   github_username: string;
   display_name: string | null;
   graduation_date: string | null;
   notes: string | null;
+  location: string | null;
+  work_type_preference: WorkType | null;
   created_at: string;
   updated_at: string;
   latest_report: LatestReport | null;
@@ -42,6 +46,8 @@ export interface CreateCandidateInput {
   display_name?: string;
   graduation_date?: string;
   notes?: string;
+  location?: string;
+  work_type_preference?: WorkType;
 }
 
 export type MatchedConcept = string | { concept: string; occurrences: number };
@@ -97,6 +103,15 @@ export interface LighthouseEnrichment {
   audits: UrlAuditResult[];
 }
 
+export interface ActivitySignal {
+  last_pushed_at: string;
+  repos_last_90d: number;
+  repos_last_180d: number;
+  total_original_repos: number;
+  account_age_months: number;
+  is_recently_active: boolean;
+}
+
 export interface AllRolesResult {
   candidate: string;
   best_fit: string;
@@ -104,6 +119,7 @@ export interface AllRolesResult {
   tracks: TrackGroup[];
   trajectory: TrajectoryInfo;
   lighthouse?: LighthouseEnrichment;
+  activity?: ActivitySignal;
 }
 
 export interface Report {

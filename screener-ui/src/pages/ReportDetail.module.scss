@@ -380,3 +380,47 @@
   font-size: 0.78rem;
   font-weight: 600;
 }
+
+// ── Activity panel ──
+.activityGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.activityItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid $border;
+  border-radius: $radius;
+  background: $bg;
+}
+
+.activityLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: $text-muted;
+}
+
+.activityValue {
+  font-family: $font-mono;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text;
+}
+
+.activityBadgeActive {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $success-text;
+}
+
+.activityBadgeInactive {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $text-muted;
+}

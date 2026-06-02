@@ -25,6 +25,10 @@ export default function OpeningDetail() {
             <span className={opening.status === 'open' ? styles.badgeOpen : styles.badgeClosed}>
               {opening.status}
             </span>
+            {opening.location && <span>{opening.location}</span>}
+            {opening.work_type && (
+              <span style={{ textTransform: 'capitalize' }}>{opening.work_type}</span>
+            )}
           </div>
           {opening.description && <p className={styles.description}>{opening.description}</p>}
         </div>

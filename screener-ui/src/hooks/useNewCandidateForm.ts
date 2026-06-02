@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createCandidate, candidatesKeys } from '../api/candidates';
+import type { WorkType } from '../api/candidates';
 import { ApiError } from '../api/client';
 import { useApiMutation, useInvalidate } from './useApiMutation';
 
@@ -9,6 +10,8 @@ interface Fields {
   displayName: string;
   graduationDate: string;
   notes: string;
+  location: string;
+  workTypePreference: string;
 }
 
 export function useNewCandidateForm() {
@@ -20,6 +23,8 @@ export function useNewCandidateForm() {
     displayName: '',
     graduationDate: '',
     notes: '',
+    location: '',
+    workTypePreference: '',
   });
   const [fieldError, setFieldError] = useState('');
 
@@ -53,6 +58,8 @@ export function useNewCandidateForm() {
       ...(fields.displayName.trim() ? { display_name: fields.displayName.trim() } : {}),
       ...(fields.graduationDate ? { graduation_date: fields.graduationDate } : {}),
       ...(fields.notes.trim() ? { notes: fields.notes.trim() } : {}),
+      ...(fields.location.trim() ? { location: fields.location.trim() } : {}),
+      ...(fields.workTypePreference ? { work_type_preference: fields.workTypePreference as WorkType } : {}),
     });
   }
 
