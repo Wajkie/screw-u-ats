@@ -1,12 +1,5 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  getCandidate,
-  listReports,
-  createJob,
-  getFitHistory,
-  candidatesKeys,
-} from '../api/candidates';
+import { useParams, Link } from 'react-router-dom';
+import { useCandidateDetail } from '../hooks/useCandidateDetail';
 import FitHistoryChart from '../components/FitHistoryChart';
 import styles from './CandidateDetail.module.scss';
 
@@ -20,64 +13,33 @@ function RecommendationBadge({ score }: { score: number }) {
 
 export default function CandidateDetail() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const { candidate, reports, fitHistory, isLoading, isError, startAnalysis, isAnalyzing } =
+    useCandidateDetail(id!);
 
-  const candidateQuery = useQuery({
-    queryKey: candidatesKeys.detail(id!),
-    queryFn: () => getCandidate(id!),
-  });
+  if (isLoading) return <p>Loading…</p>;
+  if (isError) return <p>Failed to load candidate.</p>;
 
-  const reportsQuery = useQuery({
-    queryKey: candidatesKeys.reports(id!),
-    queryFn: () => listReports(id!),
-  });
-
-  const fitHistoryQuery = useQuery({
-    queryKey: candidatesKeys.fitHistory(id!),
-    queryFn: () => getFitHistory(id!),
-  });
-
-  const jobMutation = useMutation({
-    mutationFn: () => createJob(id!),
-    onSuccess: (job) => {
-      void queryClient.invalidateQueries({ queryKey: candidatesKeys.all });
-      void navigate(`/candidates/${id}/jobs/${job.id}`);
-    },
-  });
-
-  if (candidateQuery.isLoading) return <p>Loading…</p>;
-  if (candidateQuery.isError) return <p>Failed to load candidate.</p>;
-
-  const candidate = candidateQuery.data!;
-  const reports = reportsQuery.data ?? [];
-  const latest = candidate.latest_report;
+  const latest = candidate!.latest_report;
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
           <h1 className={styles.heading}>
-            {candidate.display_name ?? candidate.github_username}
+            {candidate!.display_name ?? candidate!.github_username}
           </h1>
-          {candidate.display_name && (
-            <div className={styles.username}>@{candidate.github_username}</div>
+          {candidate!.display_name && (
+            <div className={styles.username}>@{candidate!.github_username}</div>
           )}
-          {candidate.graduation_date && (
-            <div className={styles.meta}>
-              Graduated: {candidate.graduation_date}
-            </div>
+          {candidate!.graduation_date && (
+            <div className={styles.meta}>Graduated: {candidate!.graduation_date}</div>
           )}
-          {candidate.notes && (
-            <div className={styles.notes}>{candidate.notes}</div>
+          {candidate!.notes && (
+            <div className={styles.notes}>{candidate!.notes}</div>
           )}
         </div>
-        <button
-          className={styles.analyzeBtn}
-          onClick={() => jobMutation.mutate()}
-          disabled={jobMutation.isPending}
-        >
-          {jobMutation.isPending ? 'Starting…' : 'Re-analyze'}
+        <button className={styles.analyzeBtn} onClick={startAnalysis} disabled={isAnalyzing}>
+          {isAnalyzing ? 'Starting…' : 'Re-analyze'}
         </button>
       </div>
 
@@ -88,10 +50,7 @@ export default function CandidateDetail() {
             <span className={styles.score}>{latest.fit_score}</span>
             <span className={styles.role}>{latest.best_fit}</span>
             <RecommendationBadge score={latest.fit_score} />
-            <Link
-              to={`/candidates/${id}/reports/${latest.id}`}
-              className={styles.viewLink}
-            >
+            <Link to={`/candidates/${id}/reports/${latest.id}`} className={styles.viewLink}>
               View →
             </Link>
           </div>
@@ -100,10 +59,10 @@ export default function CandidateDetail() {
         )}
       </section>
 
-      {fitHistoryQuery.data && fitHistoryQuery.data.length > 1 && (
+      {fitHistory && fitHistory.length > 1 && (
         <section className={styles.section}>
           <h2 className={styles.sectionHeading}>Score over time</h2>
-          <FitHistoryChart history={fitHistoryQuery.data} />
+          <FitHistoryChart history={fitHistory} />
         </section>
       )}
 

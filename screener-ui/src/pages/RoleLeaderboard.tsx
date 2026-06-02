@@ -1,27 +1,12 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import {
-  getRoles,
-  listRoleLeaderboard,
-  rolesKeys,
-  type RoleLeaderboardEntry,
-} from '../api/candidates';
-import { ApiError } from '../api/client';
+import { useParams, Link } from 'react-router-dom';
+import { useRoleLeaderboard } from '../hooks/useRoleLeaderboard';
+import type { RoleLeaderboardEntry } from '../api/candidates';
 import styles from './RoleLeaderboard.module.scss';
 
 function ScoreBar({ score }: { score: number }) {
   return (
-    <div
-      className={styles.scoreBar}
-      role="progressbar"
-      aria-valuenow={score}
-      aria-valuemin={0}
-      aria-valuemax={100}
-    >
-      <div
-        className={`${styles.scoreFill} ${score >= 50 ? styles.scoreFillInterview : ''}`}
-        style={{ width: `${score}%` }}
-      />
+    <div className={styles.scoreBar} role="progressbar" aria-valuenow={score} aria-valuemin={0} aria-valuemax={100}>
+      <div className={`${styles.scoreFill} ${score >= 50 ? styles.scoreFillInterview : ''}`} style={{ width: `${score}%` }} />
     </div>
   );
 }
@@ -41,45 +26,19 @@ function LeaderboardRow({ entry, rank }: { entry: RoleLeaderboardEntry; rank: nu
     <tr className={styles.row}>
       <td className={styles.rankCell}>{rank}</td>
       <td className={styles.nameCell}>
-        <Link to={`/candidates/${entry.candidate_id}`} className={styles.nameLink}>
-          {name}
-        </Link>
-        {entry.display_name && (
-          <span className={styles.username}>@{entry.github_username}</span>
-        )}
+        <Link to={`/candidates/${entry.candidate_id}`} className={styles.nameLink}>{name}</Link>
+        {entry.display_name && <span className={styles.username}>@{entry.github_username}</span>}
       </td>
-      <td className={styles.barCell}>
-        <ScoreBar score={entry.fit_score} />
-      </td>
+      <td className={styles.barCell}><ScoreBar score={entry.fit_score} /></td>
       <td className={styles.scoreCell}>{entry.fit_score}%</td>
-      <td className={styles.badgeCell}>
-        <Badge score={entry.fit_score} />
-      </td>
+      <td className={styles.badgeCell}><Badge score={entry.fit_score} /></td>
     </tr>
   );
 }
 
 export default function RoleLeaderboard() {
   const { role } = useParams<{ role: string }>();
-  const navigate = useNavigate();
-
-  const rolesQuery = useQuery({
-    queryKey: rolesKeys.list,
-    queryFn: getRoles,
-  });
-
-  const knownRoles = rolesQuery.data ?? [];
-  const isValidRole = knownRoles.length === 0 || knownRoles.includes(role ?? '');
-
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: rolesKeys.leaderboard(role ?? ''),
-    queryFn: () => listRoleLeaderboard(role!),
-    enabled: knownRoles.length > 0 && isValidRole,
-    retry: false,
-  });
-
-  const is400 = knownRoles.length > 0 && !isValidRole
-    || (isError && error instanceof ApiError && error.status === 400);
+  const { roles, data, isLoading, isError, is400, navigateTo } = useRoleLeaderboard(role);
 
   return (
     <div className={styles.page}>
@@ -88,35 +47,23 @@ export default function RoleLeaderboard() {
         <select
           className={styles.roleSelect}
           value={role}
-          onChange={e => navigate(`/roles/${e.target.value}`)}
+          onChange={(e) => navigateTo(e.target.value)}
           aria-label="Select role"
-          disabled={knownRoles.length === 0}
+          disabled={roles.length === 0}
         >
-          {knownRoles.map(r => (
-            <option key={r} value={r}>{r}</option>
-          ))}
+          {roles.map((r) => <option key={r} value={r}>{r}</option>)}
         </select>
       </div>
 
-      {is400 && (
-        <div className={styles.errorState}>
-          <p>Unknown role: <strong>{role}</strong></p>
-        </div>
-      )}
-
+      {is400 && <div className={styles.errorState}><p>Unknown role: <strong>{role}</strong></p></div>}
       {!is400 && isLoading && <p>Loading…</p>}
-
-      {!is400 && isError && !is400 && (
-        <p className={styles.errorState}>Failed to load leaderboard.</p>
-      )}
-
-      {!is400 && data && data.length === 0 && (
+      {!is400 && isError && <p className={styles.errorState}>Failed to load leaderboard.</p>}
+      {!is400 && data?.length === 0 && (
         <div className={styles.emptyState}>
           <p>No candidates have been analyzed against <strong>{role}</strong> yet.</p>
           <Link to="/candidates/new">Add a candidate →</Link>
         </div>
       )}
-
       {!is400 && data && data.length > 0 && (
         <table className={styles.table}>
           <thead>
@@ -129,9 +76,7 @@ export default function RoleLeaderboard() {
             </tr>
           </thead>
           <tbody>
-            {data.map((entry, i) => (
-              <LeaderboardRow key={entry.candidate_id} entry={entry} rank={i + 1} />
-            ))}
+            {data.map((entry, i) => <LeaderboardRow key={entry.candidate_id} entry={entry} rank={i + 1} />)}
           </tbody>
         </table>
       )}

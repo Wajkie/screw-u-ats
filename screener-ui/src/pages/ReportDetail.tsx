@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import {
-  getReport,
-  candidatesKeys,
-  type RoleScore,
-  type TrackGroup,
-  type TrajectoryInfo,
-  type LighthouseEnrichment,
-  type MatchedConcept,
+import { useReportDetail } from '../hooks/useReportDetail';
+import type {
+  RoleScore,
+  TrackGroup,
+  TrajectoryInfo,
+  LighthouseEnrichment,
+  MatchedConcept,
 } from '../api/candidates';
 import styles from './ReportDetail.module.scss';
 
@@ -207,19 +205,12 @@ function LighthousePanel({ lighthouse }: { lighthouse: LighthouseEnrichment }) {
 
 export default function ReportDetail() {
   const { id, reportId } = useParams<{ id: string; reportId: string }>();
+  const { report, bestRole, recommendation, isLoading, isError } = useReportDetail(reportId!);
 
-  const reportQuery = useQuery({
-    queryKey: candidatesKeys.report(reportId!),
-    queryFn: () => getReport(reportId!),
-  });
+  if (isLoading) return <p>Loading…</p>;
+  if (isError) return <p>Failed to load report.</p>;
 
-  if (reportQuery.isLoading) return <p>Loading…</p>;
-  if (reportQuery.isError) return <p>Failed to load report.</p>;
-
-  const report = reportQuery.data!;
-  const data = report.data;
-  const bestRole = data.roles.find(r => r.role === data.best_fit);
-  const recommendation = bestRole?.recommendation ?? (bestRole && bestRole.fit_score >= 50 ? 'Interview' : 'Pass');
+  const data = report!.data;
 
   return (
     <div className={styles.page}>
@@ -239,7 +230,7 @@ export default function ReportDetail() {
             </a>
           </h1>
           <div className={styles.meta}>
-            {new Date(report.created_at).toLocaleString()} · Best fit: <strong>{data.best_fit}</strong>
+            {new Date(report!.created_at).toLocaleString()} · Best fit: <strong>{data.best_fit}</strong>
           </div>
         </div>
         {recommendation && (

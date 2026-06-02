@@ -1,11 +1,5 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  getOpening,
-  listOpeningCandidates,
-  triggerSourcing,
-  openingsKeys,
-} from '../api/openings';
+import { useParams, Link } from 'react-router-dom';
+import { useOpeningDetail } from '../hooks/useOpeningDetail';
 import styles from './OpeningDetail.module.scss';
 
 function ScoreBar({ score }: { score: number }) {
@@ -18,62 +12,35 @@ function ScoreBar({ score }: { score: number }) {
 
 export default function OpeningDetail() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const { opening, candidates, isLoading, isError, isCandidatesLoading, startSourcing, isSourcing } =
+    useOpeningDetail(id!);
 
-  const openingQuery = useQuery({
-    queryKey: openingsKeys.detail(id!),
-    queryFn: () => getOpening(id!),
-  });
-
-  const candidatesQuery = useQuery({
-    queryKey: openingsKeys.candidates(id!),
-    queryFn: () => listOpeningCandidates(id!),
-  });
-
-  const sourceMutation = useMutation({
-    mutationFn: () => triggerSourcing(id!),
-    onSuccess: ({ jobId }) => {
-      void queryClient.invalidateQueries({ queryKey: openingsKeys.all });
-      void navigate(`/openings/${id!}/source/${jobId}`);
-    },
-  });
-
-  if (openingQuery.isLoading) return <p>Loading…</p>;
-  if (openingQuery.isError) return <p>Failed to load opening.</p>;
-
-  const opening = openingQuery.data!;
-  const candidates = candidatesQuery.data ?? [];
+  if (isLoading) return <p>Loading…</p>;
+  if (isError) return <p>Failed to load opening.</p>;
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
           <Link to="/openings" className={styles.backLink}>← Openings</Link>
-          <h1 className={styles.heading}>{opening.title}</h1>
+          <h1 className={styles.heading}>{opening!.title}</h1>
           <div className={styles.meta}>
-            <span className={styles.role}>{opening.role_slug}</span>
-            <span className={opening.status === 'open' ? styles.badgeOpen : styles.badgeClosed}>
-              {opening.status}
+            <span className={styles.role}>{opening!.role_slug}</span>
+            <span className={opening!.status === 'open' ? styles.badgeOpen : styles.badgeClosed}>
+              {opening!.status}
             </span>
           </div>
-          {opening.description && (
-            <p className={styles.description}>{opening.description}</p>
-          )}
+          {opening!.description && <p className={styles.description}>{opening!.description}</p>}
         </div>
-        <button
-          className={styles.sourceBtn}
-          onClick={() => sourceMutation.mutate()}
-          disabled={sourceMutation.isPending}
-        >
-          {sourceMutation.isPending ? 'Starting…' : 'Start Sourcing'}
+        <button className={styles.sourceBtn} onClick={startSourcing} disabled={isSourcing}>
+          {isSourcing ? 'Starting…' : 'Start Sourcing'}
         </button>
       </div>
 
       <section className={styles.section}>
         <h2 className={styles.sectionHeading}>Sourced candidates</h2>
-        {candidatesQuery.isLoading && <p className={styles.empty}>Loading candidates…</p>}
-        {!candidatesQuery.isLoading && candidates.length === 0 && (
+        {isCandidatesLoading && <p className={styles.empty}>Loading candidates…</p>}
+        {!isCandidatesLoading && candidates.length === 0 && (
           <p className={styles.empty}>No candidates yet. Click "Start Sourcing" to find matches on GitHub.</p>
         )}
         {candidates.length > 0 && (
@@ -95,14 +62,10 @@ export default function OpeningDetail() {
                     <Link to={`/candidates/${c.id}`} className={styles.nameLink}>
                       {c.display_name ?? c.github_username}
                     </Link>
-                    {c.display_name && (
-                      <span className={styles.username}>@{c.github_username}</span>
-                    )}
+                    {c.display_name && <span className={styles.username}>@{c.github_username}</span>}
                   </td>
                   <td className={styles.roleCell}>{c.best_fit}</td>
-                  <td className={styles.barCell}>
-                    <ScoreBar score={c.fit_score} />
-                  </td>
+                  <td className={styles.barCell}><ScoreBar score={c.fit_score} /></td>
                   <td className={styles.scoreCell}>{c.fit_score}%</td>
                 </tr>
               ))}
