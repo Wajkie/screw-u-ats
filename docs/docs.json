@@ -26,7 +26,7 @@
           "fit_score": "number",
           "recommendation": "\"Interview\" | \"Pass\"",
           "breakdown": { "trajectory": "number", "concept_match": "number", "complexity": "number" },
-          "matched_concepts": "string[]",
+          "matched_concepts": "{ concept: string; occurrences: number }[]",
           "missing_concepts": "string[]",
           "trajectory_summary": "string",
           "enrichment": "(optional) { lighthouse: { live_projects_found: number, audits: [{ url: string, scores: { performance: number, accessibility: number, best_practices: number, seo: number }, wcag_violations: string[] }] } }"
@@ -40,7 +40,11 @@
           "fit_score": 72,
           "recommendation": "Interview",
           "breakdown": { "trajectory": 81, "concept_match": 68, "complexity": 60 },
-          "matched_concepts": ["React with hooks", "TypeScript in React context", "REST API integration"],
+          "matched_concepts": [
+              { "concept": "React with hooks", "occurrences": 4 },
+              { "concept": "TypeScript in React context", "occurrences": 3 },
+              { "concept": "REST API integration", "occurrences": 2 }
+            ],
           "missing_concepts": ["Component testing", "Accessibility fundamentals"],
           "trajectory_summary": "Positive learning trajectory — recent projects are noticeably more complex than earlier ones.",
           "enrichment": {
@@ -119,7 +123,7 @@
           "candidate": "string",
           "best_fit": "RoleSlug",
           "chart": "string",
-          "roles": "RoleScore[]",
+          "roles": "RoleScore[] — each role has matched_concepts: { concept: string; occurrences: number }[]",
           "tracks": "[{ track: string, tiers: RoleScore[] }]"
         }
       },
@@ -150,7 +154,7 @@
         "description": "Ranked candidate list with fit scores and an ASCII comparison table.",
         "shape": {
           "role": "string",
-          "ranked": "[{ candidate, fit_score, recommendation, breakdown, matched_concepts, missing_concepts }]",
+          "ranked": "[{ candidate, fit_score, recommendation, breakdown, matched_concepts: { concept: string; occurrences: number }[], missing_concepts: string[] }]",
           "chart": "string"
         }
       },

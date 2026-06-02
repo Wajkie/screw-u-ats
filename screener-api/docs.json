@@ -307,14 +307,22 @@
       },
       "responses": {
         "200": {
-          "description": "Full report row. data is the parsed AllRolesResult object.",
+          "description": "Full report row. data is the parsed AllRolesResult object. Each role in data.roles has matched_concepts as { concept: string; occurrences: number }[] — occurrences is the number of repos the concept was detected in.",
           "shape": {
             "id": "string",
             "candidate_id": "string",
             "job_id": "string",
             "best_fit": "string",
             "fit_score": "number",
-            "data": "AllRolesResult",
+            "data": {
+              "candidate": "string",
+              "best_fit": "string",
+              "chart": "string",
+              "roles": "{ role, role_name, fit_score, recommendation, breakdown, matched_concepts: { concept: string; occurrences: number }[], missing_concepts: string[] }[]",
+              "tracks": "{ track: string, tiers: RoleScore[] }[]",
+              "trajectory": "{ score: number, summary: string, curve: { period, repoCount, avgComplexity }[] }",
+              "lighthouse": "(optional) LighthouseEnrichment"
+            },
             "created_at": "string"
           }
         },
