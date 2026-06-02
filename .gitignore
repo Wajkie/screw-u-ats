@@ -4,3 +4,4 @@ dist/
 *.js.map
 scripts/analyze-activity.ts
 .mcp.json
+*.log

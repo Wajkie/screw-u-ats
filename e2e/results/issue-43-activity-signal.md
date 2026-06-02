@@ -1,6 +1,6 @@
 # Issue #43 E2E Results — MCP: activity signal computation
 
-**11/11 passed** — 2026-06-02T22:06:09.478Z
+**11/11 passed** — 2026-06-02T22:06:42.206Z
 
 ## Steps
 
