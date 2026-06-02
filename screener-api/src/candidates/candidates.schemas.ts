@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { workTypeSchema } from '../openings/openings.schemas.js';
 
 const graduationDate = z
   .string()
@@ -10,6 +11,8 @@ export const createCandidateSchema = z.object({
   display_name: z.string().nullish(),
   graduation_date: graduationDate,
   notes: z.string().nullish(),
+  location: z.string().nullish(),
+  work_type_preference: workTypeSchema.nullish(),
 });
 
 export const updateCandidateSchema = z
@@ -17,6 +20,8 @@ export const updateCandidateSchema = z
     display_name: z.string().nullish(),
     graduation_date: graduationDate,
     notes: z.string().nullish(),
+    location: z.string().nullish(),
+    work_type_preference: workTypeSchema.nullish(),
   })
   .refine((data) => Object.keys(data).length > 0, 'No fields to update');
 

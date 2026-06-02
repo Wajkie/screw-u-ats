@@ -21,6 +21,8 @@ export async function createCandidate(input: CreateCandidateInput) {
       display_name: input.display_name ?? null,
       graduation_date: input.graduation_date ?? null,
       notes: input.notes ?? null,
+      location: input.location ?? null,
+      work_type_preference: input.work_type_preference ?? null,
       created_at: now,
       updated_at: now,
     })
@@ -76,6 +78,8 @@ export async function updateCandidate(id: string, input: UpdateCandidateInput) {
   if ('display_name' in input) patch.display_name = input.display_name ?? null;
   if ('graduation_date' in input) patch.graduation_date = input.graduation_date ?? null;
   if ('notes' in input) patch.notes = input.notes ?? null;
+  if ('location' in input) patch.location = input.location ?? null;
+  if ('work_type_preference' in input) patch.work_type_preference = input.work_type_preference ?? null;
 
   return db.updateTable('candidates').set(patch).where('id', '=', id).returningAll().executeTakeFirst();
 }

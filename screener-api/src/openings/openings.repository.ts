@@ -11,6 +11,9 @@ export async function createOpening(input: CreateOpeningInput) {
       description: input.description ?? null,
       role_slug: input.role_slug,
       status: input.status,
+      location: input.location ?? null,
+      work_type: input.work_type ?? null,
+      source_url: input.source_url ?? null,
       created_at: new Date().toISOString(),
     })
     .returningAll()
@@ -41,6 +44,9 @@ export async function updateOpening(id: string, input: UpdateOpeningInput) {
   if ('title' in input && input.title !== undefined) patch.title = input.title;
   if ('description' in input) patch.description = input.description ?? null;
   if ('status' in input && input.status !== undefined) patch.status = input.status;
+  if ('location' in input) patch.location = input.location ?? null;
+  if ('work_type' in input) patch.work_type = input.work_type ?? null;
+  if ('source_url' in input) patch.source_url = input.source_url ?? null;
 
   return db.updateTable('openings').set(patch).where('id', '=', id).returningAll().executeTakeFirst();
 }
