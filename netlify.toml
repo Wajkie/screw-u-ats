@@ -1,0 +1,13 @@
+[build]
+  base    = "screener-ui"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# SPA fallback — all routes served by index.html, React Router handles client-side routing
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200

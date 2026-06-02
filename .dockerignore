@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/.env
+**/*.db
+screener-ui/
+docssite/
+e2e/
+.git
+.claude/
+*.log
