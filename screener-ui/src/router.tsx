@@ -9,6 +9,8 @@ import ReportDetail from './pages/ReportDetail';
 import RoleLeaderboard from './pages/RoleLeaderboard';
 import Openings from './pages/Openings';
 import NewOpening from './pages/NewOpening';
+import OpeningDetail from './pages/OpeningDetail';
+import SourcingProgress from './pages/SourcingProgress';
 
 export const router = createBrowserRouter([
   {
@@ -24,6 +26,8 @@ export const router = createBrowserRouter([
       { path: 'roles/:role', element: <RoleLeaderboard /> },
       { path: 'openings', element: <Openings /> },
       { path: 'openings/new', element: <NewOpening /> },
+      { path: 'openings/:id', element: <OpeningDetail /> },
+      { path: 'openings/:id/source/:jobId', element: <SourcingProgress /> },
       { path: '*', element: <NotFound /> },
     ],
   },
