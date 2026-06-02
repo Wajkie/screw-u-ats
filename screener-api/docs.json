@@ -63,6 +63,7 @@
             "display_name": "string | null",
             "graduation_date": "string | null",
             "notes": "string | null",
+            "sourced_from_opening_id": "string | null",
             "created_at": "string",
             "updated_at": "string"
           }
@@ -83,6 +84,7 @@
           "display_name": "John Doe",
           "graduation_date": "2024-06-01",
           "notes": "Strong trajectory, referred by Alice",
+          "sourced_from_opening_id": null,
           "created_at": "2026-05-30T10:00:00.000Z",
           "updated_at": "2026-05-30T10:00:00.000Z"
         }
@@ -103,6 +105,7 @@
               "display_name": "string | null",
               "graduation_date": "string | null",
               "notes": "string | null",
+              "sourced_from_opening_id": "string | null",
               "created_at": "string",
               "updated_at": "string",
               "latest_report": "{ id, best_fit, fit_score, created_at } | null"
@@ -147,6 +150,7 @@
             "display_name": "string | null",
             "graduation_date": "string | null",
             "notes": "string | null",
+            "sourced_from_opening_id": "string | null",
             "created_at": "string",
             "updated_at": "string",
             "latest_report": "{ id, best_fit, fit_score, created_at } | null"
@@ -181,6 +185,7 @@
           "display_name": "John Doe",
           "graduation_date": "2024-06-01",
           "notes": "Moved to top of shortlist after technical screen",
+          "sourced_from_opening_id": null,
           "created_at": "2026-05-30T10:00:00.000Z",
           "updated_at": "2026-05-30T11:00:00.000Z"
         }
