@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import * as repo from './openings.repository.js';
-import { createOpeningSchema, updateOpeningSchema } from './openings.schemas.js';
+import { batchOpeningsSchema, createOpeningSchema, updateOpeningSchema } from './openings.schemas.js';
 import { parseBody } from '../lib/validate.js';
 import { NotFoundError } from '../errors.js';
 
@@ -34,4 +34,10 @@ export async function deleteOpening(c: Context) {
   const deleted = await repo.deleteOpening(id);
   if (!deleted) throw new NotFoundError('Opening');
   return c.body(null, 204);
+}
+
+export async function batchOpenings(c: Context) {
+  const input = await parseBody(c, batchOpeningsSchema);
+  const result = await repo.batchUpsertOpenings(input.openings);
+  return c.json(result, 201);
 }

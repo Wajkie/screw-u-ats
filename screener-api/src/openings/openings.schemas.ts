@@ -27,5 +27,15 @@ export const updateOpeningSchema = z
   })
   .refine((data) => Object.keys(data).length > 0, 'No fields to update');
 
+export const batchOpeningItemSchema = createOpeningSchema.extend({
+  external_id: z.string().nullish(),
+});
+
+export const batchOpeningsSchema = z.object({
+  openings: z.array(batchOpeningItemSchema).min(1, 'openings array must not be empty'),
+});
+
 export type CreateOpeningInput = z.infer<typeof createOpeningSchema>;
 export type UpdateOpeningInput = z.infer<typeof updateOpeningSchema>;
+export type BatchOpeningItem = z.infer<typeof batchOpeningItemSchema>;
+export type BatchOpeningsInput = z.infer<typeof batchOpeningsSchema>;

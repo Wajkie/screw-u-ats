@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { db } from '../db/client.js';
-import type { CreateOpeningInput, UpdateOpeningInput } from './openings.schemas.js';
+import type { CreateOpeningInput, UpdateOpeningInput, BatchOpeningItem } from './openings.schemas.js';
 
 export async function createOpening(input: CreateOpeningInput) {
   return db
@@ -56,4 +56,63 @@ export async function deleteOpening(id: string): Promise<boolean> {
   if (!existing) return false;
   await db.deleteFrom('openings').where('id', '=', id).execute();
   return true;
+}
+
+export async function batchUpsertOpenings(items: BatchOpeningItem[]) {
+  let created = 0;
+  let updated = 0;
+  const openings: Awaited<ReturnType<typeof createOpening>>[] = [];
+
+  await db.transaction().execute(async (trx) => {
+    for (const item of items) {
+      if (item.external_id) {
+        const existing = await trx
+          .selectFrom('openings')
+          .select('id')
+          .where('external_id', '=', item.external_id)
+          .executeTakeFirst();
+
+        if (existing) {
+          const row = await trx
+            .updateTable('openings')
+            .set({
+              title: item.title,
+              description: item.description ?? null,
+              role_slug: item.role_slug,
+              status: item.status,
+              location: item.location ?? null,
+              work_type: item.work_type ?? null,
+              source_url: item.source_url ?? null,
+            })
+            .where('id', '=', existing.id)
+            .returningAll()
+            .executeTakeFirstOrThrow();
+          openings.push(row);
+          updated++;
+          continue;
+        }
+      }
+
+      const row = await trx
+        .insertInto('openings')
+        .values({
+          id: nanoid(),
+          title: item.title,
+          description: item.description ?? null,
+          role_slug: item.role_slug,
+          status: item.status,
+          location: item.location ?? null,
+          work_type: item.work_type ?? null,
+          source_url: item.source_url ?? null,
+          external_id: item.external_id ?? null,
+          created_at: new Date().toISOString(),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      openings.push(row);
+      created++;
+    }
+  });
+
+  return { created, updated, openings };
 }
