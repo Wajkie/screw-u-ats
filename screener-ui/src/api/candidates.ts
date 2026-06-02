@@ -116,11 +116,32 @@ export interface Report {
   created_at: string;
 }
 
+export const ALL_ROLES = [
+  'junior-frontend', 'junior-fullstack', 'junior-backend', 'junior-csharp',
+  'mid-frontend', 'mid-fullstack', 'mid-backend', 'mid-csharp',
+  'senior-frontend', 'senior-fullstack', 'senior-backend', 'senior-csharp',
+] as const;
+
+export type RoleSlug = (typeof ALL_ROLES)[number];
+
+export interface RoleLeaderboardEntry {
+  candidate_id: string;
+  github_username: string;
+  display_name: string | null;
+  report_id: string;
+  report_created_at: string;
+  fit_score: number;
+}
+
 export const candidatesKeys = {
   all: ['candidates'] as const,
   detail: (id: string) => ['candidates', id] as const,
   reports: (id: string) => ['candidates', id, 'reports'] as const,
   report: (id: string) => ['reports', id] as const,
+};
+
+export const rolesKeys = {
+  leaderboard: (role: string) => ['roles', role, 'candidates'] as const,
 };
 
 export function listCandidates(): Promise<Candidate[]> {
@@ -145,4 +166,8 @@ export function createJob(candidateId: string): Promise<Job> {
 
 export function getReport(reportId: string): Promise<Report> {
   return get<Report>(`/reports/${reportId}`);
+}
+
+export function listRoleLeaderboard(role: string): Promise<RoleLeaderboardEntry[]> {
+  return get<RoleLeaderboardEntry[]>(`/roles/${role}/candidates`);
 }
