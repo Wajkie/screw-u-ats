@@ -3,7 +3,7 @@ import { resolve } from "path";
 import { fetchRepos } from "../github/fetchRepos.js";
 import { extractLiveUrls } from "../github/extractUrls.js";
 import { scoreComplexity, filterNoise } from "../scoring/complexitySignals.js";
-import { parseRoleDefinition, matchConcepts } from "../scoring/conceptMatch.js";
+import { parseRoleDefinition, matchConcepts, type ConceptOccurrence } from "../scoring/conceptMatch.js";
 import { scoreTrajectory } from "../scoring/trajectoryScore.js";
 import { runLighthouseAudits } from "../lighthouse/runAudit.js";
 import type { GitHubRepo } from "../github/fetchRepos.js";
@@ -28,7 +28,7 @@ export interface RoleScore {
   fit_score: number;
   recommendation: "Interview" | "Pass";
   breakdown: { trajectory: number; concept_match: number; complexity: number };
-  matched_concepts: string[];
+  matched_concepts: ConceptOccurrence[];
   missing_concepts: string[];
 }
 
