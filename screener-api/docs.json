@@ -465,6 +465,46 @@
       }
     },
     {
+      "id": "batch-openings",
+      "method": "POST",
+      "path": "/openings/batch",
+      "summary": "Bulk create or upsert job openings. Items with a matching external_id are updated in place; items without external_id always create a new opening. All items are processed in a single transaction — any validation failure returns 400 and nothing is committed.",
+      "body": {
+        "openings": {
+          "type": "Array<CreateOpeningInput & { external_id?: string | null }>",
+          "required": true,
+          "description": "One or more opening objects. Each item accepts the same fields as POST /openings plus an optional external_id used as the upsert key."
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Batch processed",
+          "shape": {
+            "created": "number",
+            "updated": "number",
+            "openings": "Opening[]"
+          }
+        },
+        "400": { "description": "Empty array, or one or more items fail schema validation. No partial commits." }
+      },
+      "example": {
+        "request": {
+          "openings": [
+            { "title": "Junior Frontend Engineer", "role_slug": "junior-frontend", "external_id": "ats-job-001" },
+            { "title": "Mid Backend Engineer", "role_slug": "mid-backend", "external_id": "ats-job-002" }
+          ]
+        },
+        "response": {
+          "created": 2,
+          "updated": 0,
+          "openings": [
+            { "id": "op_abc", "title": "Junior Frontend Engineer", "role_slug": "junior-frontend", "status": "open", "external_id": "ats-job-001", "location": null, "work_type": null, "source_url": null, "description": null, "created_at": "2026-06-03T10:00:00.000Z" },
+            { "id": "op_def", "title": "Mid Backend Engineer", "role_slug": "mid-backend", "status": "open", "external_id": "ats-job-002", "location": null, "work_type": null, "source_url": null, "description": null, "created_at": "2026-06-03T10:00:00.000Z" }
+          ]
+        }
+      }
+    },
+    {
       "id": "list-openings",
       "method": "GET",
       "path": "/openings",
