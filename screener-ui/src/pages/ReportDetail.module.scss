@@ -381,6 +381,112 @@
   font-weight: 600;
 }
 
+// ── Top repos for review ──
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.reviewCard {
+  @include card;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.reviewCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.reviewRepoName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $accent;
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:hover { text-decoration: underline; }
+}
+
+.reviewScores {
+  display: flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.reviewScoreChip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: $radius;
+  border: 1px solid $border;
+  background: $bg;
+  min-width: 3.5rem;
+}
+
+.reviewScoreChipCombined {
+  border-color: rgba($accent, 0.4);
+  background: rgba($accent, 0.05);
+}
+
+.reviewScoreVal {
+  font-family: $font-mono;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: $text;
+  line-height: 1.2;
+}
+
+.reviewScoreLabel {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: $text-muted;
+}
+
+.reviewConcepts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.reviewConceptTag {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba($accent-2, 0.15);
+  color: $warn-text;
+}
+
+.reviewHighlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.reviewHighlight {
+  font-size: 0.7rem;
+  color: $text-muted;
+
+  a { color: $text-muted; text-decoration: none; &:hover { color: $accent; } }
+
+  & + &::before {
+    content: '·';
+    margin-right: 0.3rem;
+    color: $border;
+  }
+}
+
 // ── Activity panel ──
 .activityGrid {
   display: grid;

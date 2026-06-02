@@ -29,6 +29,7 @@
           "matched_concepts": "{ concept: string; occurrences: number }[]",
           "missing_concepts": "string[]",
           "trajectory_summary": "string",
+          "top_repos_for_review": "{ name: string, repo_url: string, combined_score: number, complexity_score: number, concept_score: number, matched_concepts: string[], highlights: { signal: string, url: string }[] }[] — up to 10 repos ranked by complexity (50%) + per-repo concept exposure (50%). Useful for staff engineers who want to manually inspect the candidate's strongest work.",
           "enrichment": "(optional) { lighthouse: { live_projects_found: number, audits: [{ url: string, scores: { performance: number, accessibility: number, best_practices: number, seo: number }, wcag_violations: string[] }] } }"
         }
       },

@@ -112,6 +112,16 @@ export interface ActivitySignal {
   is_recently_active: boolean;
 }
 
+export interface RepoReviewCard {
+  name: string;
+  repo_url: string;
+  combined_score: number;
+  complexity_score: number;
+  concept_score: number;
+  matched_concepts: string[];
+  highlights: Array<{ signal: string; url: string }>;
+}
+
 export interface AllRolesResult {
   candidate: string;
   best_fit: string;
@@ -120,6 +130,7 @@ export interface AllRolesResult {
   trajectory: TrajectoryInfo;
   lighthouse?: LighthouseEnrichment;
   activity?: ActivitySignal;
+  top_repos_for_review?: RepoReviewCard[];
 }
 
 export interface Report {

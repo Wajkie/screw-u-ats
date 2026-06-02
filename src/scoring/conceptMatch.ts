@@ -103,6 +103,20 @@ export function parseRoleDefinition(markdown: string): RoleDefinition {
   return { name, requiredConcepts, bonusConcepts, minimumComplexityScore };
 }
 
+export function scoreRepoConceptExposure(repo: GitHubRepo, role: RoleDefinition): { score: number; matched: string[] } {
+  const haystack = buildHaystack([repo]);
+  const allConcepts = [...role.requiredConcepts, ...role.bonusConcepts];
+  const matched: string[] = [];
+
+  for (const concept of allConcepts) {
+    const { matchKey, display } = splitConcept(concept);
+    if (conceptMatches(matchKey, haystack)) matched.push(display);
+  }
+
+  const score = allConcepts.length === 0 ? 0 : Math.round((matched.length / allConcepts.length) * 100);
+  return { score, matched };
+}
+
 export function matchConcepts(repos: GitHubRepo[], role: RoleDefinition): ConceptMatchResult {
   const repoHaystacks = repos.map(repo => buildHaystack([repo]));
 
