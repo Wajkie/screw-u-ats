@@ -205,12 +205,8 @@ function LighthousePanel({ lighthouse }: { lighthouse: LighthouseEnrichment }) {
 
 export default function ReportDetail() {
   const { id, reportId } = useParams<{ id: string; reportId: string }>();
-  const { report, bestRole, recommendation, isLoading, isError } = useReportDetail(reportId!);
-
-  if (isLoading) return <p>Loading…</p>;
-  if (isError) return <p>Failed to load report.</p>;
-
-  const data = report!.data;
+  const { report, bestRole, recommendation } = useReportDetail(reportId!);
+  const data = report.data;
 
   return (
     <div className={styles.page}>
@@ -230,7 +226,7 @@ export default function ReportDetail() {
             </a>
           </h1>
           <div className={styles.meta}>
-            {new Date(report!.created_at).toLocaleString()} · Best fit: <strong>{data.best_fit}</strong>
+            {new Date(report.created_at).toLocaleString()} · Best fit: <strong>{data.best_fit}</strong>
           </div>
         </div>
         {recommendation && (

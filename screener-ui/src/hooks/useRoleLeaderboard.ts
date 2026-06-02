@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { skipToken } from '@tanstack/react-query';
 import { getRoles, listRoleLeaderboard, rolesKeys } from '../api/candidates';
 import { ApiError } from '../api/client';
 import { useApiQuery } from './useApiQuery';
@@ -6,27 +7,20 @@ import { useApiQuery } from './useApiQuery';
 export function useRoleLeaderboard(role: string | undefined) {
   const navigate = useNavigate();
 
-  const rolesQuery = useApiQuery(rolesKeys.list, getRoles);
-  const knownRoles = rolesQuery.data ?? [];
-  const isValidRole = knownRoles.length === 0 || knownRoles.includes(role ?? '');
+  const { data: knownRoles } = useApiQuery(rolesKeys.list, getRoles);
+  const isValidRole = knownRoles.includes(role ?? '');
 
-  const leaderboardQuery = useApiQuery(
+  const { data, error } = useApiQuery(
     rolesKeys.leaderboard(role ?? ''),
-    () => listRoleLeaderboard(role!),
-    { enabled: knownRoles.length > 0 && isValidRole, retry: false },
+    isValidRole ? () => listRoleLeaderboard(role!) : skipToken,
+    { retry: false },
   );
 
-  const is400 =
-    (knownRoles.length > 0 && !isValidRole) ||
-    (leaderboardQuery.isError &&
-      leaderboardQuery.error instanceof ApiError &&
-      leaderboardQuery.error.status === 400);
+  const is400 = !isValidRole || (error instanceof ApiError && error.status === 400);
 
   return {
     roles: knownRoles,
-    data: leaderboardQuery.data,
-    isLoading: leaderboardQuery.isLoading,
-    isError: leaderboardQuery.isError && !is400,
+    data,
     is400,
     navigateTo: (r: string) => navigate(`/roles/${r}`),
   };

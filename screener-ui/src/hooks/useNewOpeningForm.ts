@@ -18,13 +18,13 @@ export function useNewOpeningForm() {
   const [fields, setFields] = useState<Fields>({ title: '', description: '', roleSlug: '' });
   const [fieldError, setFieldError] = useState('');
 
-  const rolesQuery = useApiQuery(rolesKeys.list, getRoles);
+  const { data: roles } = useApiQuery(rolesKeys.list, getRoles);
 
   useEffect(() => {
-    if (rolesQuery.data && rolesQuery.data.length > 0 && !fields.roleSlug) {
-      setFields((f) => ({ ...f, roleSlug: rolesQuery.data![0] }));
+    if (roles.length > 0 && !fields.roleSlug) {
+      setFields((f) => ({ ...f, roleSlug: roles[0] }));
     }
-  }, [rolesQuery.data, fields.roleSlug]);
+  }, [roles, fields.roleSlug]);
 
   const mutation = useApiMutation(createOpening, {
     onSuccess: (opening) => {
@@ -58,7 +58,7 @@ export function useNewOpeningForm() {
     setField,
     fieldError,
     apiError,
-    roles: rolesQuery.data ?? [],
+    roles,
     isPending: mutation.isPending,
     submit,
   };

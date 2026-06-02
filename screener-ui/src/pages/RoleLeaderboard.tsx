@@ -38,7 +38,7 @@ function LeaderboardRow({ entry, rank }: { entry: RoleLeaderboardEntry; rank: nu
 
 export default function RoleLeaderboard() {
   const { role } = useParams<{ role: string }>();
-  const { roles, data, isLoading, isError, is400, navigateTo } = useRoleLeaderboard(role);
+  const { roles, data, is400, navigateTo } = useRoleLeaderboard(role);
 
   return (
     <div className={styles.page}>
@@ -56,8 +56,6 @@ export default function RoleLeaderboard() {
       </div>
 
       {is400 && <div className={styles.errorState}><p>Unknown role: <strong>{role}</strong></p></div>}
-      {!is400 && isLoading && <p>Loading…</p>}
-      {!is400 && isError && <p className={styles.errorState}>Failed to load leaderboard.</p>}
       {!is400 && data?.length === 0 && (
         <div className={styles.emptyState}>
           <p>No candidates have been analyzed against <strong>{role}</strong> yet.</p>

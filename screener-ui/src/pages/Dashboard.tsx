@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { listCandidates, candidatesKeys, type Candidate } from '../api/candidates';
+import { useApiQuery } from '../hooks/useApiQuery';
 import styles from './Dashboard.module.scss';
 
 function RecommendationBadge({ score }: { score: number }) {
@@ -35,25 +35,19 @@ function CandidateCard({ candidate }: { candidate: Candidate }) {
 }
 
 export default function Dashboard() {
-  const { data: candidates, isLoading, isError } = useQuery({
-    queryKey: candidatesKeys.all,
-    queryFn: listCandidates,
-  });
-
-  if (isLoading) return <p>Loading candidates…</p>;
-  if (isError) return <p>Failed to load candidates.</p>;
+  const { data: candidates } = useApiQuery(candidatesKeys.all, listCandidates);
 
   return (
     <div>
       <h1 className={styles.heading}>Candidates</h1>
-      {candidates!.length === 0 ? (
+      {candidates.length === 0 ? (
         <div className={styles.emptyState}>
           <p>No candidates yet.</p>
           <Link to="/candidates/new">Add your first candidate →</Link>
         </div>
       ) : (
         <div className={styles.grid}>
-          {candidates!.map((c) => (
+          {candidates.map((c) => (
             <CandidateCard key={c.id} candidate={c} />
           ))}
         </div>

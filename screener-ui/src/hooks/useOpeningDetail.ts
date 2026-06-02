@@ -7,8 +7,8 @@ export function useOpeningDetail(id: string) {
   const navigate = useNavigate();
   const invalidate = useInvalidate();
 
-  const openingQuery = useApiQuery(openingsKeys.detail(id), () => getOpening(id));
-  const candidatesQuery = useApiQuery(openingsKeys.candidates(id), () => listOpeningCandidates(id));
+  const { data: opening } = useApiQuery(openingsKeys.detail(id), () => getOpening(id));
+  const { data: candidates } = useApiQuery(openingsKeys.candidates(id), () => listOpeningCandidates(id));
 
   const sourceMutation = useApiMutation(() => triggerSourcing(id), {
     onSuccess: ({ jobId }) => {
@@ -18,11 +18,8 @@ export function useOpeningDetail(id: string) {
   });
 
   return {
-    opening: openingQuery.data,
-    candidates: candidatesQuery.data ?? [],
-    isLoading: openingQuery.isLoading,
-    isError: openingQuery.isError,
-    isCandidatesLoading: candidatesQuery.isLoading,
+    opening,
+    candidates: candidates ?? [],
     startSourcing: () => sourceMutation.mutate(undefined as never),
     isSourcing: sourceMutation.isPending,
   };

@@ -13,9 +13,9 @@ export function useCandidateDetail(id: string) {
   const navigate = useNavigate();
   const invalidate = useInvalidate();
 
-  const candidateQuery = useApiQuery(candidatesKeys.detail(id), () => getCandidate(id));
-  const reportsQuery = useApiQuery(candidatesKeys.reports(id), () => listReports(id));
-  const fitHistoryQuery = useApiQuery(candidatesKeys.fitHistory(id), () => getFitHistory(id));
+  const { data: candidate } = useApiQuery(candidatesKeys.detail(id), () => getCandidate(id));
+  const { data: reports } = useApiQuery(candidatesKeys.reports(id), () => listReports(id));
+  const { data: fitHistory } = useApiQuery(candidatesKeys.fitHistory(id), () => getFitHistory(id));
 
   const jobMutation = useApiMutation(() => createJob(id), {
     onSuccess: (job) => {
@@ -25,11 +25,9 @@ export function useCandidateDetail(id: string) {
   });
 
   return {
-    candidate: candidateQuery.data,
-    reports: reportsQuery.data ?? [],
-    fitHistory: fitHistoryQuery.data,
-    isLoading: candidateQuery.isLoading,
-    isError: candidateQuery.isError,
+    candidate,
+    reports: reports ?? [],
+    fitHistory,
     startAnalysis: () => jobMutation.mutate(undefined as never),
     isAnalyzing: jobMutation.isPending,
   };

@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { Boundary } from './Boundary';
 import styles from './Layout.module.scss';
 
 export default function Layout() {
@@ -16,7 +17,9 @@ export default function Layout() {
         </ul>
       </nav>
       <main className={styles.main}>
-        <Outlet />
+        <Boundary>
+          <Outlet />
+        </Boundary>
       </main>
     </div>
   );

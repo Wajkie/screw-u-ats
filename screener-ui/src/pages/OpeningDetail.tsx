@@ -12,25 +12,21 @@ function ScoreBar({ score }: { score: number }) {
 
 export default function OpeningDetail() {
   const { id } = useParams<{ id: string }>();
-  const { opening, candidates, isLoading, isError, isCandidatesLoading, startSourcing, isSourcing } =
-    useOpeningDetail(id!);
-
-  if (isLoading) return <p>Loading…</p>;
-  if (isError) return <p>Failed to load opening.</p>;
+  const { opening, candidates, startSourcing, isSourcing } = useOpeningDetail(id!);
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
           <Link to="/openings" className={styles.backLink}>← Openings</Link>
-          <h1 className={styles.heading}>{opening!.title}</h1>
+          <h1 className={styles.heading}>{opening.title}</h1>
           <div className={styles.meta}>
-            <span className={styles.role}>{opening!.role_slug}</span>
-            <span className={opening!.status === 'open' ? styles.badgeOpen : styles.badgeClosed}>
-              {opening!.status}
+            <span className={styles.role}>{opening.role_slug}</span>
+            <span className={opening.status === 'open' ? styles.badgeOpen : styles.badgeClosed}>
+              {opening.status}
             </span>
           </div>
-          {opening!.description && <p className={styles.description}>{opening!.description}</p>}
+          {opening.description && <p className={styles.description}>{opening.description}</p>}
         </div>
         <button className={styles.sourceBtn} onClick={startSourcing} disabled={isSourcing}>
           {isSourcing ? 'Starting…' : 'Start Sourcing'}
@@ -39,11 +35,9 @@ export default function OpeningDetail() {
 
       <section className={styles.section}>
         <h2 className={styles.sectionHeading}>Sourced candidates</h2>
-        {isCandidatesLoading && <p className={styles.empty}>Loading candidates…</p>}
-        {!isCandidatesLoading && candidates.length === 0 && (
+        {candidates.length === 0 ? (
           <p className={styles.empty}>No candidates yet. Click "Start Sourcing" to find matches on GitHub.</p>
-        )}
-        {candidates.length > 0 && (
+        ) : (
           <table className={styles.table}>
             <thead>
               <tr>

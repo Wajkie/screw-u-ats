@@ -13,29 +13,25 @@ function RecommendationBadge({ score }: { score: number }) {
 
 export default function CandidateDetail() {
   const { id } = useParams<{ id: string }>();
-  const { candidate, reports, fitHistory, isLoading, isError, startAnalysis, isAnalyzing } =
-    useCandidateDetail(id!);
+  const { candidate, reports, fitHistory, startAnalysis, isAnalyzing } = useCandidateDetail(id!);
 
-  if (isLoading) return <p>Loading…</p>;
-  if (isError) return <p>Failed to load candidate.</p>;
-
-  const latest = candidate!.latest_report;
+  const latest = candidate.latest_report;
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
           <h1 className={styles.heading}>
-            {candidate!.display_name ?? candidate!.github_username}
+            {candidate.display_name ?? candidate.github_username}
           </h1>
-          {candidate!.display_name && (
-            <div className={styles.username}>@{candidate!.github_username}</div>
+          {candidate.display_name && (
+            <div className={styles.username}>@{candidate.github_username}</div>
           )}
-          {candidate!.graduation_date && (
-            <div className={styles.meta}>Graduated: {candidate!.graduation_date}</div>
+          {candidate.graduation_date && (
+            <div className={styles.meta}>Graduated: {candidate.graduation_date}</div>
           )}
-          {candidate!.notes && (
-            <div className={styles.notes}>{candidate!.notes}</div>
+          {candidate.notes && (
+            <div className={styles.notes}>{candidate.notes}</div>
           )}
         </div>
         <button className={styles.analyzeBtn} onClick={startAnalysis} disabled={isAnalyzing}>

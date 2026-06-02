@@ -1,0 +1,55 @@
+@use '../styles/tokens' as *;
+
+.wrap {
+  position: relative;
+}
+
+.spinnerWrap {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid $border;
+  border-top-color: $accent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.errorState {
+  padding: 2rem;
+  border: 1px solid $error-border;
+  background: $error-bg;
+  border-radius: $radius;
+  color: $error-text;
+}
+
+.errorTitle {
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.errorMessage {
+  font-size: 0.875rem;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.pendingOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba($bg, 0.7);
+  border-radius: $radius;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  backdrop-filter: blur(1px);
+}
