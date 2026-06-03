@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Codescreener",
-    "description": "MCP server that screens junior developer candidates by analyzing their GitHub profile instead of their CV.",
+    "title": "Staged",
+    "description": "MCP server that screens junior developer candidates by analysing their GitHub profile instead of their CV.",
     "version": "0.1.0",
     "repo": "https://github.com/Wajkie/screw-u-ats"
   },

@@ -14,7 +14,7 @@ export default function RecruiterDocs() {
   return (
     <div className={styles.prose}>
       <Section id="what" title="What is this?">
-        <p>Screw U, ATS is a proof-of-concept hiring tool that screens junior developer candidates by analysing their public GitHub activity instead of their CV. Junior candidates and career-changers often have little or no work history to put on a CV — this tool bypasses that entirely.</p>
+        <p>Staged is a proof-of-concept hiring tool that screens junior developer candidates by analysing their public GitHub activity instead of their CV. Junior candidates and career-changers often have little or no work history to put on a CV — Staged bypasses that entirely.</p>
         <p>Give it a GitHub username and it tells you: a fit score (0–100), whether to interview, which technical concepts they've demonstrated, which are missing, and a plain-English summary of how their skills have grown over time.</p>
         <div className={styles.callout}>
           Scoped to junior and early-career candidates. Scoring deliberately rewards learning trajectory — a candidate who is clearly improving is often a stronger long-term hire than one with a static skill set.

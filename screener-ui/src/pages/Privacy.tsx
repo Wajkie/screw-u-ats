@@ -9,12 +9,12 @@ export default function Privacy() {
 
       <section className={styles.section}>
         <h2 className={styles.sectionHeading}>What data we store</h2>
-        <p>This tool stores publicly available GitHub profile data (username, display name, repository metadata) alongside recruiter-entered notes such as graduation date, location, and work type preference. Analysis reports derived from that GitHub data are also stored.</p>
+        <p>Staged stores publicly available GitHub profile data (username, display name, repository metadata) alongside recruiter-entered notes such as graduation date, location, and work type preference. Analysis reports derived from that GitHub data are also stored.</p>
       </section>
 
       <section className={styles.section}>
         <h2 className={styles.sectionHeading}>Why we store it</h2>
-        <p>Data is stored solely to support candidate screening for open roles. This is a non-commercial tool used internally. No data is sold, shared with third parties, or used for advertising.</p>
+        <p>Data is stored solely to support candidate screening for open roles. Staged is a non-commercial tool. No data is sold, shared with third parties, or used for advertising.</p>
       </section>
 
       <section className={styles.section}>

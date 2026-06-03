@@ -9,7 +9,7 @@ export default function Layout() {
   return (
     <div className={styles.layout}>
       <nav className={styles.nav}>
-        <NavLink to="/" className={styles.brand}>Screener</NavLink>
+        <NavLink to="/" className={styles.brand}>Staged</NavLink>
         <ul className={styles.navList}>
           <li><NavLink to="/" end className={linkClass}>Dashboard</NavLink></li>
           <li><NavLink to="/candidates/new" className={linkClass}>New Candidate</NavLink></li>
