@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node -e \"require('fs').copyFileSync('../screener-api/docs.json', 'src/data/apiDocs.json')\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
