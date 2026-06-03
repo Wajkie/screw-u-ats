@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use '../styles/tokens' as *;
 @use '../styles/mixins' as *;
 
@@ -232,7 +233,7 @@
   font-family: $font-sans;
   transition: background 120ms ease;
 
-  &:hover { background: darken($surface, 2%); }
+  &:hover { background: color.adjust($surface, $lightness: -2%); }
 }
 
 .method {
