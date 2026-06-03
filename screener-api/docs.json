@@ -408,6 +408,48 @@
       }
     },
     {
+      "id": "candidate-repo-audits",
+      "method": "GET",
+      "path": "/candidates/:id/repo-audits",
+      "summary": "Return stored Lighthouse audit results for all repos belonging to a candidate, ordered by accessibility_score DESC.",
+      "auth": "Bearer token required",
+      "params": {
+        "id": { "type": "string", "description": "Candidate nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Audit results ordered by accessibility score descending. Empty array when no audits exist yet.",
+          "shape": [
+            {
+              "repo_name": "string",
+              "url": "string",
+              "accessibility_score": "number",
+              "performance_score": "number",
+              "best_practices_score": "number",
+              "seo_score": "number",
+              "wcag_violations": "array",
+              "audited_at": "string"
+            }
+          ]
+        },
+        "404": { "description": "Candidate not found" }
+      },
+      "example": {
+        "response": [
+          {
+            "repo_name": "portfolio",
+            "url": "https://example.com",
+            "accessibility_score": 92,
+            "performance_score": 85,
+            "best_practices_score": 90,
+            "seo_score": 80,
+            "wcag_violations": [],
+            "audited_at": "2026-06-03T18:00:00.000Z"
+          }
+        ]
+      }
+    },
+    {
       "id": "fit-history",
       "method": "GET",
       "path": "/candidates/:id/fit-history",

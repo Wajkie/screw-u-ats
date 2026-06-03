@@ -2,6 +2,17 @@ import { nanoid } from 'nanoid';
 import { db } from '../db/client.js';
 import type { UrlAuditResult } from '../../../src/lighthouse/runAudit.js';
 
+export async function listRepoAuditsByCandidate(candidateId: string) {
+  const rows = await db
+    .selectFrom('repo_audits')
+    .select(['repo_name', 'url', 'accessibility_score', 'performance_score', 'best_practices_score', 'seo_score', 'wcag_violations', 'audited_at'])
+    .where('candidate_id', '=', candidateId)
+    .orderBy('accessibility_score', 'desc')
+    .execute();
+
+  return rows.map((r) => ({ ...r, wcag_violations: JSON.parse(r.wcag_violations) as unknown[] }));
+}
+
 export async function insertRepoAudits(candidateId: string, audits: UrlAuditResult[]): Promise<void> {
   if (audits.length === 0) return;
 

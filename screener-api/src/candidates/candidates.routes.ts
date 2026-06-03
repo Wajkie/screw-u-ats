@@ -4,6 +4,7 @@ import { findCandidateById } from './candidates.repository.js';
 import { createJob } from '../jobs/jobs.repository.js';
 import { enqueueJob } from '../jobs/jobs.runner.js';
 import { listReportsByCandidate, fitHistoryByCandidate } from '../reports/reports.repository.js';
+import { listRepoAuditsByCandidate } from '../repo-audits/repo-audits.repository.js';
 
 const candidates = new Hono();
 
@@ -23,6 +24,12 @@ candidates.get('/:id/fit-history', async (c) => {
   const candidate = await findCandidateById(c.req.param('id'));
   if (!candidate) return c.json({ error: 'Candidate not found' }, 404);
   return c.json(await fitHistoryByCandidate(candidate.id));
+});
+
+candidates.get('/:id/repo-audits', async (c) => {
+  const candidate = await findCandidateById(c.req.param('id'));
+  if (!candidate) return c.json({ error: 'Candidate not found' }, 404);
+  return c.json(await listRepoAuditsByCandidate(candidate.id));
 });
 
 candidates.post('/:id/jobs', async (c) => {
