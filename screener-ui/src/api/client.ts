@@ -9,11 +9,13 @@ export class ApiError extends Error {
   }
 }
 
+const API_TOKEN = import.meta.env.VITE_API_TOKEN as string | undefined;
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
-    ...init,
-  });
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (API_TOKEN) headers['Authorization'] = `Bearer ${API_TOKEN}`;
+  if (init?.headers) Object.assign(headers, init.headers);
+  const res = await fetch(`${API_URL}${path}`, { ...init, headers });
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
     throw new ApiError(res.status, text);
