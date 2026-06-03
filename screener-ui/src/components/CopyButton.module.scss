@@ -1,0 +1,14 @@
+@use '../styles/tokens' as *;
+@use '../styles/mixins' as *;
+
+.btn {
+  @include btn-primary;
+  background: $surface;
+  color: $text;
+  border: 1px solid $border;
+
+  &:hover:not(:disabled) {
+    background: $border;
+    opacity: 1;
+  }
+}

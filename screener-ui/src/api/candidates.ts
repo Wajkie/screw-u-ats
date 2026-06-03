@@ -121,6 +121,7 @@ export interface RepoReviewCard {
   complexity_score: number;
   concept_score: number;
   matched_concepts: string[];
+  missing_concepts: string[];
   highlights: Array<{ signal: string; url: string }>;
 }
 

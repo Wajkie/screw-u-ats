@@ -35,6 +35,13 @@ export default function TopReposForReview({ repos }: { repos: RepoReviewCard[] }
                 ))}
               </div>
             )}
+            {repo.missing_concepts.length > 0 && (
+              <div className={styles.reviewConcepts}>
+                {repo.missing_concepts.map(c => (
+                  <span key={c} className={`${styles.reviewConceptTag} ${styles.reviewConceptTagMissing}`}>{c}</span>
+                ))}
+              </div>
+            )}
             {repo.highlights.length > 0 && (
               <div className={styles.reviewHighlights}>
                 {repo.highlights.map(h => (

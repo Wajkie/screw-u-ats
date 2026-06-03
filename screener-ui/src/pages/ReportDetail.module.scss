@@ -18,6 +18,18 @@
 
 .headerLeft { flex: 1; min-width: 0; }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.pdfBtn {
+  @include btn-primary;
+}
+
 .backLink {
   @include back-link;
   display: inline-block;
@@ -465,6 +477,11 @@
   border-radius: 999px;
   background: rgba($accent-2, 0.15);
   color: $warn-text;
+}
+
+.reviewConceptTagMissing {
+  background: $error-bg;
+  color: $error-text;
 }
 
 .reviewHighlights {

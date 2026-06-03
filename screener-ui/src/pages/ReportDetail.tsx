@@ -1,12 +1,14 @@
 import { useParams, Link } from 'react-router-dom';
 import { useReportDetail } from '../hooks/useReportDetail';
 import RecommendationBadge from '../components/RecommendationBadge';
+import CopyButton from '../components/CopyButton';
 import TrackSection from './report/TrackSection';
 import TrajectoryCurve from './report/TrajectoryCurve';
 import LighthousePanel from './report/LighthousePanel';
 import ActivityPanel from './report/ActivityPanel';
 import TopReposForReview from './report/TopReposForReview';
 import ConceptsSection from './report/ConceptsSection';
+import { buildAIPrompt, downloadAsPDF } from '../lib/reportExport';
 import styles from './ReportDetail.module.scss';
 
 export default function ReportDetail() {
@@ -35,9 +37,15 @@ export default function ReportDetail() {
             {new Date(report.created_at).toLocaleString()} · Best fit: <strong>{data.best_fit}</strong>
           </div>
         </div>
-        {recommendation && (
-          <RecommendationBadge recommendation={recommendation as 'Interview' | 'Pass'} />
-        )}
+        <div className={styles.headerActions}>
+          {recommendation && (
+            <RecommendationBadge recommendation={recommendation as 'Interview' | 'Pass'} />
+          )}
+          <CopyButton text={buildAIPrompt(data)} label="Copy AI prompt" copiedLabel="Copied!" />
+          <button type="button" className={styles.pdfBtn} onClick={() => downloadAsPDF(data)}>
+            Download PDF
+          </button>
+        </div>
       </div>
 
       <section className={styles.section}>

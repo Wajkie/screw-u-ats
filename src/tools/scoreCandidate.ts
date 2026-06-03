@@ -25,6 +25,7 @@ export interface RepoReviewCard {
   complexity_score: number;
   concept_score: number;
   matched_concepts: string[];
+  missing_concepts: string[];
   highlights: Array<{ signal: string; url: string }>;
 }
 
@@ -93,7 +94,9 @@ export function buildTopReposForReview(
   return repos
     .map((repo) => {
       const complexity_score = scoreComplexity(repo);
+      const allConcepts = [...roleDef.requiredConcepts, ...roleDef.bonusConcepts];
       const { score: concept_score, matched: matched_concepts } = scoreRepoConceptExposure(repo, roleDef);
+      const missing_concepts = allConcepts.filter(c => !matched_concepts.includes(c));
       const combined_score = Math.round(complexity_score * 0.5 + concept_score * 0.5);
       return {
         name: repo.name,
@@ -102,6 +105,7 @@ export function buildTopReposForReview(
         complexity_score,
         concept_score,
         matched_concepts,
+        missing_concepts,
         highlights: repo.highlights.map((h) => ({
           signal: h.signal,
           url: `https://github.com/${username}/${repo.name}/tree/${repo.defaultBranch}/${h.path}`,
