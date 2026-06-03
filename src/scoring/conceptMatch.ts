@@ -1,5 +1,18 @@
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import type { GitHubRepo } from "../github/fetchRepos.js";
-import { NPM_CONCEPT_INDEX } from "./npmConceptIndex.js";
+
+function loadNpmConceptIndex(): Record<string, string> {
+  const rolesDir = process.env.ROLES_DIR ?? resolve(process.cwd(), "knowledge/roles");
+  const indexPath = resolve(rolesDir, "..", "npm-concepts.json");
+  try {
+    return JSON.parse(readFileSync(indexPath, "utf-8")) as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
+
+const NPM_CONCEPT_INDEX = loadNpmConceptIndex();
 
 export interface RoleDefinition {
   name: string;
