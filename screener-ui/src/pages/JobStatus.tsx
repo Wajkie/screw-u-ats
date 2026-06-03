@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useJobStream } from '../hooks/useJobStream';
+import { candidatesKeys } from '../api/candidates';
 import styles from './JobStatus.module.scss';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -13,13 +15,15 @@ const STATUS_LABEL: Record<string, string> = {
 export default function JobStatus() {
   const { id, jobId } = useParams<{ id: string; jobId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { status, reportId, error } = useJobStream(jobId!);
 
   useEffect(() => {
     if (status === 'done' && reportId) {
+      void queryClient.invalidateQueries({ queryKey: candidatesKeys.all });
       void navigate(`/candidates/${id}/reports/${reportId}`, { replace: true });
     }
-  }, [status, reportId, id, navigate]);
+  }, [status, reportId, id, navigate, queryClient]);
 
   return (
     <div className={styles.page}>
