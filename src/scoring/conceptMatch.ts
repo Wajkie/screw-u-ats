@@ -91,6 +91,8 @@ function buildHaystack(repos: GitHubRepo[], includeReadme = false): string {
         hasHttpLib ? "rest api integration" : "",
         hasBuildTool ? "build tooling" : "",
         hasTestLib ? "testing" : "",
+        // CI implies organized git workflow (feature branches, PRs, meaningful commits)
+        r.hasCi ? "git workflow" : "",
         r.hasCsFiles ? "csharp dotnet" : "",
         r.csprojDeps.length > 0 ? "csharp dotnet" : "",
         r.description ?? "",
