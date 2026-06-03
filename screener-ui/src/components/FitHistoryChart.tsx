@@ -54,13 +54,13 @@ export default function FitHistoryChart({ history }: Props) {
           );
         })}
 
-        {/* 70-point interview threshold */}
+        {/* interview threshold */}
         <line
-          x1={PAD.left} y1={toY(70)} x2={PAD.left + INNER_W} y2={toY(70)}
+          x1={PAD.left} y1={toY(50)} x2={PAD.left + INNER_W} y2={toY(50)}
           className={styles.threshold}
         />
-        <text x={PAD.left + INNER_W + 4} y={toY(70) + 4} className={styles.thresholdLabel}>
-          70
+        <text x={PAD.left + INNER_W + 4} y={toY(50) + 4} className={styles.thresholdLabel}>
+          50
         </text>
 
         {/* Line */}
