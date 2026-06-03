@@ -52,7 +52,9 @@ function normalizeLanguage(lang: string): string {
 const FRONTEND_FRAMEWORKS = ["react", "vue", "angular", "svelte", "solid", "astro", "preact"];
 const CSS_DEPS = ["sass", "postcss", "tailwindcss", "styled-components", "@emotion", "less"];
 
-function buildHaystack(repos: GitHubRepo[]): string {
+// includeReadme=false for fit scoring (cross-repo aggregate — README noise causes false positives).
+// includeReadme=true for per-repo display (single-repo breakdown — README is the main signal).
+function buildHaystack(repos: GitHubRepo[], includeReadme = false): string {
   return repos
     .flatMap((r) => {
       const lang = (r.language ?? "").toLowerCase();
@@ -71,12 +73,11 @@ function buildHaystack(repos: GitHubRepo[]): string {
         hasCss ? "css" : "",
         r.hasCsFiles ? "csharp dotnet" : "",
         r.csprojDeps.length > 0 ? "csharp dotnet" : "",
-        // description is short and intentional; readmeContent is excluded — long READMEs
-        // contain disclaimers, tutorials, and negations that produce false positive matches.
         r.description ?? "",
         r.topics.map(expandSlug).join(" "),
         r.packageDeps.map(expandSlug).join(" "),
         r.csprojDeps.join(" "),
+        includeReadme ? (r.readmeContent ?? "") : "",
       ];
     })
     .join(" ")
@@ -132,7 +133,7 @@ export function parseRoleDefinition(markdown: string): RoleDefinition {
 }
 
 export function scoreRepoConceptExposure(repo: GitHubRepo, role: RoleDefinition): { score: number; matched: string[] } {
-  const haystack = buildHaystack([repo]);
+  const haystack = buildHaystack([repo], true);
   const allConcepts = [...role.requiredConcepts, ...role.bonusConcepts];
   const matched: string[] = [];
 
