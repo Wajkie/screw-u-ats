@@ -11,6 +11,7 @@ import Openings from './pages/Openings';
 import NewOpening from './pages/NewOpening';
 import OpeningDetail from './pages/OpeningDetail';
 import SourcingProgress from './pages/SourcingProgress';
+import Docs from './pages/Docs';
 import Privacy from './pages/Privacy';
 import DataRemoval from './pages/DataRemoval';
 
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
       { path: 'openings/new', element: <NewOpening /> },
       { path: 'openings/:id', element: <OpeningDetail /> },
       { path: 'openings/:id/source/:jobId', element: <SourcingProgress /> },
+      { path: 'docs', element: <Docs /> },
       { path: 'privacy', element: <Privacy /> },
       { path: 'data-removal', element: <DataRemoval /> },
       { path: '*', element: <NotFound /> },

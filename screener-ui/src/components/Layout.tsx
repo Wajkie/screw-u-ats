@@ -14,6 +14,7 @@ export default function Layout() {
           <li><NavLink to="/" end className={linkClass}>Dashboard</NavLink></li>
           <li><NavLink to="/candidates/new" className={linkClass}>New Candidate</NavLink></li>
           <li><NavLink to="/openings" className={linkClass}>Openings</NavLink></li>
+          <li><NavLink to="/docs" className={linkClass}>Docs</NavLink></li>
         </ul>
         <div className={styles.navFooter}>
           <Link to="/privacy" className={styles.navFooterLink}>Privacy</Link>

@@ -1,0 +1,721 @@
+{
+  "meta": {
+    "title": "screener-api",
+    "description": "REST API for the fullstack screener app — candidate management, async analysis jobs, and historical report snapshots.",
+    "version": "0.1.0",
+    "repo": "https://github.com/Wajkie/screw-u-ats"
+  },
+  "middleware": {
+    "stack": ["secureHeaders", "cors", "bodyLimit", "rateLimit", "auth"],
+    "description": "All middleware runs on every request in this order before routes are matched.",
+    "layers": [
+      {
+        "id": "secureHeaders",
+        "summary": "Sets security-related HTTP response headers",
+        "headers": ["X-Content-Type-Options: nosniff", "X-Frame-Options: SAMEORIGIN", "Strict-Transport-Security", "Content-Security-Policy"],
+        "config": "No env var — always on"
+      },
+      {
+        "id": "cors",
+        "summary": "Cross-origin resource sharing",
+        "config": "CORS_ORIGIN — comma-separated allowed origins, or * for open. Defaults to *."
+      },
+      {
+        "id": "bodyLimit",
+        "summary": "Rejects requests whose Content-Length exceeds the configured limit",
+        "responses": { "413": "Request body exceeds limit" },
+        "config": "BODY_LIMIT_BYTES — default 65536 (64 KB)"
+      },
+      {
+        "id": "rateLimit",
+        "summary": "Sliding-window per-IP rate limiter",
+        "headers": ["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset", "Retry-After (on 429)"],
+        "responses": { "429": "Rate limit exceeded — try again later" },
+        "config": "RATE_LIMIT (default 100), RATE_WINDOW_MS (default 60000)"
+      },
+      {
+        "id": "auth",
+        "summary": "JWT Bearer token validation via hono/jwt (HS256). No-op when JWT_SECRET is unset.",
+        "responses": { "401": "Unauthorized — invalid or missing token (only when JWT_SECRET is set)" },
+        "config": "JWT_SECRET — leave unset in local dev to skip auth"
+      }
+    ],
+    "errorShape": { "error": "string" }
+  },
+  "endpoints": [
+    {
+      "id": "create-candidate",
+      "method": "POST",
+      "path": "/candidates",
+      "summary": "Create a new candidate",
+      "body": {
+        "github_username": { "type": "string", "required": true, "description": "GitHub username — must be unique" },
+        "display_name": { "type": "string", "required": false, "description": "Human-readable name shown in the UI" },
+        "graduation_date": { "type": "string", "required": false, "description": "ISO date (YYYY-MM-DD). Pre-graduation repos are weighted lower in trajectory scoring." },
+        "notes": { "type": "string", "required": false, "description": "Free-text recruiter notes" },
+        "location": { "type": "string | null", "required": false, "description": "Candidate's current location (free text)" },
+        "work_type_preference": { "type": "'remote' | 'hybrid' | 'onsite' | null", "required": false, "description": "Candidate's preferred work arrangement" }
+      },
+      "responses": {
+        "201": {
+          "description": "Candidate created",
+          "shape": {
+            "id": "string",
+            "github_username": "string",
+            "display_name": "string | null",
+            "graduation_date": "string | null",
+            "notes": "string | null",
+            "location": "string | null",
+            "work_type_preference": "'remote' | 'hybrid' | 'onsite' | null",
+            "sourced_from_opening_id": "string | null",
+            "created_at": "string",
+            "updated_at": "string"
+          }
+        },
+        "400": { "description": "Missing or invalid fields" },
+        "409": { "description": "github_username already exists" }
+      },
+      "example": {
+        "request": {
+          "github_username": "johndoe",
+          "display_name": "John Doe",
+          "graduation_date": "2024-06-01",
+          "notes": "Strong trajectory, referred by Alice",
+          "location": "Stockholm, Sweden",
+          "work_type_preference": "hybrid"
+        },
+        "response": {
+          "id": "yEvCFU6MFw75wOfbzQFXP",
+          "github_username": "johndoe",
+          "display_name": "John Doe",
+          "graduation_date": "2024-06-01",
+          "notes": "Strong trajectory, referred by Alice",
+          "location": "Stockholm, Sweden",
+          "work_type_preference": "hybrid",
+          "sourced_from_opening_id": null,
+          "created_at": "2026-05-30T10:00:00.000Z",
+          "updated_at": "2026-05-30T10:00:00.000Z"
+        }
+      }
+    },
+    {
+      "id": "list-candidates",
+      "method": "GET",
+      "path": "/candidates",
+      "summary": "List all candidates with their latest report summary",
+      "responses": {
+        "200": {
+          "description": "Array of candidates, newest first. latest_report is null if no analysis has run yet.",
+          "shape": [
+            {
+              "id": "string",
+              "github_username": "string",
+              "display_name": "string | null",
+              "graduation_date": "string | null",
+              "notes": "string | null",
+              "location": "string | null",
+              "work_type_preference": "'remote' | 'hybrid' | 'onsite' | null",
+              "sourced_from_opening_id": "string | null",
+              "created_at": "string",
+              "updated_at": "string",
+              "latest_report": "{ id, best_fit, fit_score, created_at } | null"
+            }
+          ]
+        }
+      },
+      "example": {
+        "response": [
+          {
+            "id": "yEvCFU6MFw75wOfbzQFXP",
+            "github_username": "johndoe",
+            "display_name": "John Doe",
+            "graduation_date": "2024-06-01",
+            "notes": null,
+            "created_at": "2026-05-30T10:00:00.000Z",
+            "updated_at": "2026-05-30T10:00:00.000Z",
+            "latest_report": {
+              "id": "rpt_abc123",
+              "best_fit": "junior-frontend",
+              "fit_score": 72,
+              "created_at": "2026-05-30T10:05:00.000Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "get-candidate",
+      "method": "GET",
+      "path": "/candidates/:id",
+      "summary": "Get a single candidate with their latest report summary",
+      "params": {
+        "id": { "type": "string", "description": "Candidate nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Candidate with latest_report summary (null if no analysis run yet)",
+          "shape": {
+            "id": "string",
+            "github_username": "string",
+            "display_name": "string | null",
+            "graduation_date": "string | null",
+            "notes": "string | null",
+            "location": "string | null",
+            "work_type_preference": "'remote' | 'hybrid' | 'onsite' | null",
+            "sourced_from_opening_id": "string | null",
+            "created_at": "string",
+            "updated_at": "string",
+            "latest_report": "{ id, best_fit, fit_score, created_at } | null"
+          }
+        },
+        "404": { "description": "Candidate not found" }
+      }
+    },
+    {
+      "id": "update-candidate",
+      "method": "PATCH",
+      "path": "/candidates/:id",
+      "summary": "Update display_name, graduation_date, or notes",
+      "params": {
+        "id": { "type": "string", "description": "Candidate nanoid" }
+      },
+      "body": {
+        "display_name": { "type": "string | null", "required": false },
+        "graduation_date": { "type": "string | null", "required": false, "description": "ISO date YYYY-MM-DD, or null to clear" },
+        "notes": { "type": "string | null", "required": false },
+        "location": { "type": "string | null", "required": false },
+        "work_type_preference": { "type": "'remote' | 'hybrid' | 'onsite' | null", "required": false }
+      },
+      "responses": {
+        "200": { "description": "Updated candidate row" },
+        "400": { "description": "Invalid field value or no fields provided" },
+        "404": { "description": "Candidate not found" }
+      },
+      "example": {
+        "request": { "notes": "Moved to top of shortlist after technical screen", "location": "Stockholm, Sweden", "work_type_preference": "hybrid" },
+        "response": {
+          "id": "yEvCFU6MFw75wOfbzQFXP",
+          "github_username": "johndoe",
+          "display_name": "John Doe",
+          "graduation_date": "2024-06-01",
+          "notes": "Moved to top of shortlist after technical screen",
+          "location": "Stockholm, Sweden",
+          "work_type_preference": "hybrid",
+          "sourced_from_opening_id": null,
+          "created_at": "2026-05-30T10:00:00.000Z",
+          "updated_at": "2026-05-30T11:00:00.000Z"
+        }
+      }
+    },
+    {
+      "id": "delete-candidate",
+      "method": "DELETE",
+      "path": "/candidates/:id",
+      "summary": "Delete a candidate and cascade to their analysis jobs and reports",
+      "params": {
+        "id": { "type": "string", "description": "Candidate nanoid" }
+      },
+      "responses": {
+        "204": { "description": "Deleted — no body" },
+        "404": { "description": "Candidate not found" }
+      }
+    },
+    {
+      "id": "trigger-job",
+      "method": "POST",
+      "path": "/candidates/:id/jobs",
+      "summary": "Trigger a new analysis job for a candidate. Returns immediately with the pending job row — does not wait for the analysis to complete.",
+      "params": {
+        "id": { "type": "string", "description": "Candidate nanoid" }
+      },
+      "responses": {
+        "202": {
+          "description": "Job accepted and queued. Poll GET /jobs/:id for status.",
+          "shape": {
+            "id": "string",
+            "candidate_id": "string",
+            "status": "'pending'",
+            "error": "null",
+            "created_at": "string",
+            "started_at": "null",
+            "completed_at": "null"
+          }
+        },
+        "404": { "description": "Candidate not found" }
+      },
+      "example": {
+        "response": {
+          "id": "job_xyz789",
+          "candidate_id": "yEvCFU6MFw75wOfbzQFXP",
+          "status": "pending",
+          "error": null,
+          "created_at": "2026-05-30T10:10:00.000Z",
+          "started_at": null,
+          "completed_at": null
+        }
+      }
+    },
+    {
+      "id": "stream-job",
+      "method": "GET",
+      "path": "/jobs/:id/stream",
+      "summary": "Server-Sent Events stream for a job. Emits the current status immediately on connect, then pushes an event on each state transition, and closes after a terminal event.",
+      "params": {
+        "id": { "type": "string", "description": "Job nanoid" }
+      },
+      "headers": {
+        "response": { "Content-Type": "text/event-stream" }
+      },
+      "eventShape": {
+        "status": "'pending' | 'running' | 'done' | 'failed'",
+        "report_id": "string (only on 'done')",
+        "error": "string (only on 'failed')"
+      },
+      "responses": {
+        "200": { "description": "SSE stream — closes after terminal event ('done' or 'failed')" },
+        "404": { "description": "Job not found" }
+      },
+      "example": {
+        "events": [
+          "data: {\"status\":\"pending\"}",
+          "data: {\"status\":\"running\"}",
+          "data: {\"status\":\"done\",\"report_id\":\"rpt_def456\"}"
+        ]
+      }
+    },
+    {
+      "id": "list-candidate-reports",
+      "method": "GET",
+      "path": "/candidates/:id/reports",
+      "summary": "List all reports for a candidate, newest first. Returns a summary shape — no full data blob.",
+      "params": {
+        "id": { "type": "string", "description": "Candidate nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Array of report summaries, newest first. Empty array when candidate exists but has no reports.",
+          "shape": [
+            {
+              "id": "string",
+              "job_id": "string",
+              "best_fit": "string",
+              "fit_score": "number",
+              "created_at": "string"
+            }
+          ]
+        },
+        "404": { "description": "Candidate not found" }
+      },
+      "example": {
+        "response": [
+          {
+            "id": "rpt_def456",
+            "job_id": "job_xyz789",
+            "best_fit": "junior-frontend",
+            "fit_score": 72,
+            "created_at": "2026-05-30T10:10:45.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "id": "get-report",
+      "method": "GET",
+      "path": "/reports/:id",
+      "summary": "Get a full report including the parsed AllRolesResult in the data field.",
+      "params": {
+        "id": { "type": "string", "description": "Report nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Full report row. data is the parsed AllRolesResult object. Each role in data.roles has matched_concepts as { concept: string; occurrences: number }[] — occurrences is the number of repos the concept was detected in.",
+          "shape": {
+            "id": "string",
+            "candidate_id": "string",
+            "job_id": "string",
+            "best_fit": "string",
+            "fit_score": "number",
+            "data": {
+              "candidate": "string",
+              "best_fit": "string",
+              "chart": "string",
+              "roles": "{ role, role_name, fit_score, recommendation, breakdown, matched_concepts: { concept: string; occurrences: number }[], missing_concepts: string[] }[]",
+              "tracks": "{ track: string, tiers: RoleScore[] }[]",
+              "trajectory": "{ score: number, summary: string, curve: { period, repoCount, avgComplexity }[] }",
+              "lighthouse": "(optional) LighthouseEnrichment",
+              "activity": "(optional) ActivitySignal — { last_pushed_at: string, repos_last_90d: number, repos_last_180d: number, total_original_repos: number, account_age_months: number, is_recently_active: boolean }",
+              "top_repos_for_review": "(optional) { name: string, repo_url: string, combined_score: number, complexity_score: number, concept_score: number, matched_concepts: string[], highlights: { signal: string, url: string }[] }[] — up to 10 repos for the best-fit role, ranked by combined complexity + concept exposure score"
+            },
+            "created_at": "string"
+          }
+        },
+        "404": { "description": "Report not found" }
+      }
+    },
+    {
+      "id": "role-leaderboard",
+      "method": "GET",
+      "path": "/roles/:role/candidates",
+      "summary": "List all candidates that have a stored score for this role, ranked by fit_score descending. Only candidates with at least one report containing a score for the requested role are included.",
+      "params": {
+        "role": { "type": "string", "description": "Role slug — must be one of the values in ALL_ROLES (e.g. junior-frontend, mid-backend). Returns 400 for unknown slugs." }
+      },
+      "responses": {
+        "200": {
+          "description": "Candidates ranked by fit_score descending for the requested role. Empty array when no stored data exists for this role.",
+          "shape": [
+            {
+              "candidate_id": "string",
+              "github_username": "string",
+              "display_name": "string | null",
+              "report_id": "string",
+              "report_created_at": "string",
+              "fit_score": "number"
+            }
+          ]
+        },
+        "400": { "description": "Unknown role slug" }
+      },
+      "example": {
+        "response": [
+          {
+            "candidate_id": "yEvCFU6MFw75wOfbzQFXP",
+            "github_username": "johndoe",
+            "display_name": "John Doe",
+            "report_id": "rpt_def456",
+            "report_created_at": "2026-05-30T10:10:45.000Z",
+            "fit_score": 72
+          }
+        ]
+      }
+    },
+    {
+      "id": "fit-history",
+      "method": "GET",
+      "path": "/candidates/:id/fit-history",
+      "summary": "Return all reports for a candidate ordered oldest-first, each with created_at, fit_score, and best_fit. Useful for plotting score over time.",
+      "params": {
+        "id": { "type": "string", "description": "Candidate nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Reports ordered oldest-first. Empty array when the candidate has no reports yet.",
+          "shape": [
+            {
+              "id": "string",
+              "created_at": "string",
+              "fit_score": "number",
+              "best_fit": "string"
+            }
+          ]
+        },
+        "404": { "description": "Candidate not found" }
+      },
+      "example": {
+        "response": [
+          { "id": "rpt_aaa111", "created_at": "2026-05-28T09:00:00.000Z", "fit_score": 58, "best_fit": "junior-frontend" },
+          { "id": "rpt_def456", "created_at": "2026-05-30T10:10:45.000Z", "fit_score": 72, "best_fit": "junior-frontend" }
+        ]
+      }
+    },
+    {
+      "id": "create-opening",
+      "method": "POST",
+      "path": "/openings",
+      "summary": "Create a new job opening",
+      "body": {
+        "title": { "type": "string", "required": true, "description": "Human-readable opening title" },
+        "description": { "type": "string | null", "required": false, "description": "Optional longer description" },
+        "role_slug": { "type": "string", "required": true, "description": "One of the ALL_ROLES values (e.g. junior-frontend, mid-backend)" },
+        "status": { "type": "'open' | 'closed'", "required": false, "description": "Defaults to 'open'" },
+        "location": { "type": "string | null", "required": false, "description": "Location for the role (free text)" },
+        "work_type": { "type": "'remote' | 'hybrid' | 'onsite' | null", "required": false, "description": "Work arrangement for the role" },
+        "source_url": { "type": "string | null", "required": false, "description": "URL where the opening was originally posted (must be a valid URL)" }
+      },
+      "responses": {
+        "201": {
+          "description": "Opening created",
+          "shape": {
+            "id": "string",
+            "title": "string",
+            "description": "string | null",
+            "role_slug": "string",
+            "status": "'open' | 'closed'",
+            "location": "string | null",
+            "work_type": "'remote' | 'hybrid' | 'onsite' | null",
+            "source_url": "string | null",
+            "external_id": "string | null",
+            "created_at": "string"
+          }
+        },
+        "400": { "description": "Missing or invalid fields, or unknown role_slug" }
+      },
+      "example": {
+        "request": { "title": "Junior Frontend Engineer", "role_slug": "junior-frontend", "location": "Remote, EU", "work_type": "remote", "source_url": "https://example.com/jobs/1" },
+        "response": {
+          "id": "op_abc123",
+          "title": "Junior Frontend Engineer",
+          "description": null,
+          "role_slug": "junior-frontend",
+          "status": "open",
+          "location": "Remote, EU",
+          "work_type": "remote",
+          "source_url": "https://example.com/jobs/1",
+          "external_id": null,
+          "created_at": "2026-06-02T09:00:00.000Z"
+        }
+      }
+    },
+    {
+      "id": "batch-openings",
+      "method": "POST",
+      "path": "/openings/batch",
+      "summary": "Bulk create or upsert job openings. Items with a matching external_id are updated in place; items without external_id always create a new opening. All items are processed in a single transaction — any validation failure returns 400 and nothing is committed.",
+      "body": {
+        "openings": {
+          "type": "Array<CreateOpeningInput & { external_id?: string | null }>",
+          "required": true,
+          "description": "One or more opening objects. Each item accepts the same fields as POST /openings plus an optional external_id used as the upsert key."
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Batch processed",
+          "shape": {
+            "created": "number",
+            "updated": "number",
+            "openings": "Opening[]"
+          }
+        },
+        "400": { "description": "Empty array, or one or more items fail schema validation. No partial commits." }
+      },
+      "example": {
+        "request": {
+          "openings": [
+            { "title": "Junior Frontend Engineer", "role_slug": "junior-frontend", "external_id": "ats-job-001" },
+            { "title": "Mid Backend Engineer", "role_slug": "mid-backend", "external_id": "ats-job-002" }
+          ]
+        },
+        "response": {
+          "created": 2,
+          "updated": 0,
+          "openings": [
+            { "id": "op_abc", "title": "Junior Frontend Engineer", "role_slug": "junior-frontend", "status": "open", "external_id": "ats-job-001", "location": null, "work_type": null, "source_url": null, "description": null, "created_at": "2026-06-03T10:00:00.000Z" },
+            { "id": "op_def", "title": "Mid Backend Engineer", "role_slug": "mid-backend", "status": "open", "external_id": "ats-job-002", "location": null, "work_type": null, "source_url": null, "description": null, "created_at": "2026-06-03T10:00:00.000Z" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "list-openings",
+      "method": "GET",
+      "path": "/openings",
+      "summary": "List all openings, newest first",
+      "responses": {
+        "200": {
+          "description": "Array of openings",
+          "shape": [{ "id": "string", "title": "string", "description": "string | null", "role_slug": "string", "status": "'open' | 'closed'", "location": "string | null", "work_type": "'remote' | 'hybrid' | 'onsite' | null", "source_url": "string | null", "external_id": "string | null", "created_at": "string", "candidate_count": "number" }]
+        }
+      }
+    },
+    {
+      "id": "get-opening",
+      "method": "GET",
+      "path": "/openings/:id",
+      "summary": "Get a single opening by id",
+      "params": { "id": { "type": "string", "description": "Opening nanoid" } },
+      "responses": {
+        "200": { "description": "Opening row", "shape": { "id": "string", "title": "string", "description": "string | null", "role_slug": "string", "status": "'open' | 'closed'", "location": "string | null", "work_type": "'remote' | 'hybrid' | 'onsite' | null", "source_url": "string | null", "external_id": "string | null", "created_at": "string" } },
+        "404": { "description": "Opening not found" }
+      }
+    },
+    {
+      "id": "update-opening",
+      "method": "PATCH",
+      "path": "/openings/:id",
+      "summary": "Update title, description, or status. At least one field required.",
+      "params": { "id": { "type": "string", "description": "Opening nanoid" } },
+      "body": {
+        "title": { "type": "string", "required": false },
+        "description": { "type": "string | null", "required": false },
+        "status": { "type": "'open' | 'closed'", "required": false },
+        "location": { "type": "string | null", "required": false },
+        "work_type": { "type": "'remote' | 'hybrid' | 'onsite' | null", "required": false },
+        "source_url": { "type": "string | null", "required": false }
+      },
+      "responses": {
+        "200": { "description": "Updated opening row" },
+        "400": { "description": "No fields provided or invalid value" },
+        "404": { "description": "Opening not found" }
+      },
+      "example": {
+        "request": { "status": "closed", "work_type": "hybrid" },
+        "response": { "id": "op_abc123", "title": "Junior Frontend Engineer", "description": null, "role_slug": "junior-frontend", "status": "closed", "location": null, "work_type": "hybrid", "source_url": null, "external_id": null, "created_at": "2026-06-02T09:00:00.000Z" }
+      }
+    },
+    {
+      "id": "delete-opening",
+      "method": "DELETE",
+      "path": "/openings/:id",
+      "summary": "Delete an opening",
+      "params": { "id": { "type": "string", "description": "Opening nanoid" } },
+      "responses": {
+        "204": { "description": "Deleted — no body" },
+        "404": { "description": "Opening not found" }
+      }
+    },
+    {
+      "id": "trigger-sourcing",
+      "method": "POST",
+      "path": "/openings/:id/source",
+      "summary": "Trigger a sourcing job for an opening. Searches GitHub for candidates matching the opening's role, creates candidate rows, and enqueues an analysis job for each. Returns immediately with the sourcing job id.",
+      "params": {
+        "id": { "type": "string", "description": "Opening nanoid" }
+      },
+      "responses": {
+        "201": {
+          "description": "Sourcing job started",
+          "shape": { "jobId": "string" }
+        },
+        "404": { "description": "Opening not found" }
+      },
+      "example": {
+        "response": { "jobId": "sj_abc123" }
+      }
+    },
+    {
+      "id": "get-sourcing-job",
+      "method": "GET",
+      "path": "/sourcing-jobs/:id",
+      "summary": "Get the current status and progress counters of a sourcing job.",
+      "params": {
+        "id": { "type": "string", "description": "Sourcing job nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Sourcing job row",
+          "shape": {
+            "id": "string",
+            "opening_id": "string",
+            "status": "'pending' | 'running' | 'done' | 'failed'",
+            "error": "string | null",
+            "usernames_found": "number",
+            "usernames_scored": "number",
+            "created_at": "string",
+            "started_at": "string | null",
+            "completed_at": "string | null"
+          }
+        },
+        "404": { "description": "Sourcing job not found" }
+      }
+    },
+    {
+      "id": "stream-sourcing-job",
+      "method": "GET",
+      "path": "/sourcing-jobs/:id/stream",
+      "summary": "SSE stream for a sourcing job. Emits current state on connect, then pushes an event on each progress update. Closes after a terminal event ('done' or 'failed').",
+      "params": {
+        "id": { "type": "string", "description": "Sourcing job nanoid" }
+      },
+      "headers": {
+        "response": { "Content-Type": "text/event-stream" }
+      },
+      "eventShape": {
+        "status": "'running' | 'done' | 'failed'",
+        "usernames_found": "number (emitted when GitHub search completes)",
+        "usernames_scored": "number (increments as each candidate is enqueued)",
+        "error": "string (only on 'failed')"
+      },
+      "responses": {
+        "200": { "description": "SSE stream — closes after terminal event" },
+        "404": { "description": "Sourcing job not found" }
+      },
+      "example": {
+        "events": [
+          "data: {\"status\":\"running\"}",
+          "data: {\"status\":\"running\",\"usernames_found\":12}",
+          "data: {\"status\":\"running\",\"usernames_scored\":1}",
+          "data: {\"status\":\"done\",\"usernames_found\":12,\"usernames_scored\":12}"
+        ]
+      }
+    },
+    {
+      "id": "list-opening-candidates",
+      "method": "GET",
+      "path": "/openings/:id/candidates",
+      "summary": "List candidates sourced from this opening, each joined with their latest report. Sorted by fit_score descending. Returns an empty array if sourcing hasn't run or no reports exist yet.",
+      "params": {
+        "id": { "type": "string", "description": "Opening nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Candidates ranked by fit_score descending. Empty array if none yet.",
+          "shape": [
+            {
+              "id": "string",
+              "github_username": "string",
+              "display_name": "string | null",
+              "created_at": "string",
+              "report_id": "string",
+              "best_fit": "string",
+              "fit_score": "number",
+              "scored_at": "string"
+            }
+          ]
+        },
+        "404": { "description": "Opening not found" }
+      },
+      "example": {
+        "response": [
+          {
+            "id": "cnd_xyz",
+            "github_username": "alice",
+            "display_name": null,
+            "created_at": "2026-06-02T10:00:00.000Z",
+            "report_id": "rpt_xyz",
+            "best_fit": "junior-frontend",
+            "fit_score": 68,
+            "scored_at": "2026-06-02T10:02:00.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "id": "get-job",
+      "method": "GET",
+      "path": "/jobs/:id",
+      "summary": "Get the current status of an analysis job. Includes report_id once status is 'done'.",
+      "params": {
+        "id": { "type": "string", "description": "Job nanoid" }
+      },
+      "responses": {
+        "200": {
+          "description": "Job row. report_id is non-null only when status is 'done'.",
+          "shape": {
+            "id": "string",
+            "candidate_id": "string",
+            "status": "'pending' | 'running' | 'done' | 'failed'",
+            "error": "string | null",
+            "created_at": "string",
+            "started_at": "string | null",
+            "completed_at": "string | null",
+            "report_id": "string | null"
+          }
+        },
+        "404": { "description": "Job not found" }
+      },
+      "example": {
+        "response": {
+          "id": "job_xyz789",
+          "candidate_id": "yEvCFU6MFw75wOfbzQFXP",
+          "status": "done",
+          "error": null,
+          "created_at": "2026-05-30T10:10:00.000Z",
+          "started_at": "2026-05-30T10:10:01.000Z",
+          "completed_at": "2026-05-30T10:10:45.000Z",
+          "report_id": "rpt_def456"
+        }
+      }
+    }
+  ]
+}
