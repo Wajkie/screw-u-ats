@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { secureHeaders } from 'hono/secure-headers';
 import { serve } from '@hono/node-server';
 import { candidates } from './candidates/candidates.routes.js';
@@ -37,6 +38,9 @@ export function createApiApp(): Hono {
   app.onError((err, c) => {
     if (err instanceof AppError) {
       return c.json({ error: err.message }, err.statusCode as Parameters<typeof c.json>[1]);
+    }
+    if (err instanceof HTTPException) {
+      return c.json({ error: err.message }, err.status);
     }
     console.error(err);
     return c.json({ error: 'Internal server error' }, 500);

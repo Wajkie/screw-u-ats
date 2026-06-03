@@ -20,6 +20,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const text = await res.text().catch(() => res.statusText);
     throw new ApiError(res.status, text);
   }
+  const contentType = res.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) {
+    const preview = await res.text().catch(() => '');
+    throw new ApiError(res.status, `Expected JSON but got ${contentType || 'unknown content-type'} — check VITE_API_URL (got: ${preview.slice(0, 120)})`);
+  }
   return res.json() as Promise<T>;
 }
 
