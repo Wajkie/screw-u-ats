@@ -24,10 +24,12 @@ Minimum 50% fit score to recommend **Interview**. Ties between equal fit scores 
 
 ## Repo structure
 
+This is a monorepo with four sub-projects under one root.
+
 ```
 codescreen/
-├── src/
-│   ├── server.ts               # MCP server entry point
+├── src/                        # MCP server + REST check endpoint
+│   ├── server.ts               # MCP server entry point (stdio / HTTP+SSE)
 │   ├── checkServer.ts          # Hono REST server (/check/:githubName)
 │   ├── config.ts               # Env var loading
 │   ├── toolRuntime.ts          # ToolRuntime / ToolDefinition contract
@@ -47,21 +49,38 @@ codescreen/
 │       ├── scoreBatch.ts       # score_batch tool
 │       ├── scoreAllRoles.ts    # score_all_roles tool
 │       └── candidateProfile.ts # candidate_profile tool
-├── knowledge/
-│   ├── roles/
-│   │   ├── junior-frontend.md
-│   │   ├── junior-fullstack.md
-│   │   ├── junior-backend.md
-│   │   ├── junior-csharp.md
-│   │   ├── mid-frontend.md
-│   │   ├── mid-fullstack.md
-│   │   ├── mid-backend.md
-│   │   ├── mid-csharp.md
-│   │   └── ...                 # add more; server picks them up on restart
-│   └── getting-started.md
-├── docssite/                   # Vite + React docs site + screener UI
+│
+├── screener-api/               # Hono REST API — candidates, openings, sourcing
+│   └── src/
+│       ├── index.ts            # Server entry point
+│       ├── candidates/         # Candidate CRUD + scoring jobs
+│       ├── openings/           # Job openings CRUD
+│       ├── reports/            # Saved score reports
+│       ├── roles/              # Role definitions endpoint
+│       ├── sourcing/           # Outbound GitHub user search + runner
+│       ├── jobs/               # Background job queue + runner
+│       ├── github/             # GitHub user search helper
+│       ├── db/                 # Kysely client, schema, migrations (libsql/Postgres)
+│       └── middleware/         # Auth, CORS, rate limiting, body limit
+│
+├── screener-ui/                # React SPA — recruiter-facing web app
+│   └── src/
+│       ├── pages/              # Dashboard, CandidateDetail, Openings, Reports, Docs…
+│       ├── components/         # Shared UI — Layout, Boundary, badges, charts
+│       ├── hooks/              # Data-fetching hooks (React Query)
+│       ├── api/                # Typed API client wrappers
+│       └── styles/             # Global tokens + SCSS modules
+│
+├── docssite/                   # Vite + React docs site (legacy screener UI)
 │   └── src/components/
 │       └── Screener.tsx        # Visual screener + PDF export
+│
+├── knowledge/
+│   ├── roles/                  # Role definition markdown files
+│   │   ├── junior-frontend.md
+│   │   ├── mid-frontend.md
+│   │   └── ...                 # add more; server picks them up on restart
+│   └── getting-started.md
 ├── docs/
 │   └── docs.json               # Single source of truth for all docs content
 ├── scripts/
@@ -190,13 +209,34 @@ Key optional variables:
 
 ## Development
 
+**MCP server** (root):
 ```bash
-npm run dev          # MCP server (tsx watch)
+npm run dev          # MCP server (tsx watch, stdio)
 npm test             # Vitest unit tests
 npm run typecheck    # tsc --noEmit
 npm run lint         # ESLint
+npm run local        # check server + docssite + browser
+```
 
-cd docssite && npm run dev   # Docs/screener UI (Vite, port 5173)
+**screener-api**:
+```bash
+cd screener-api
+npm run dev          # Hono API server (tsx watch)
+npm run typecheck
+npm run lint
+```
+
+**screener-ui**:
+```bash
+cd screener-ui
+npm run dev          # Vite dev server
+npm run build        # copies screener-api/docs.json then tsc + vite build
+npm run lint
+```
+
+**docssite** (legacy):
+```bash
+cd docssite && npm run dev   # Vite, port 5173
 ```
 
 Built on [mcp-kit](./mcp-kit) — a production-ready MCP server scaffold with dual transport, write-gating, structured logging, and a docs-driven site generator.

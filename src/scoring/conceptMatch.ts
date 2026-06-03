@@ -43,18 +43,34 @@ function normalizeLanguage(lang: string): string {
   return lang.replace(/c#/gi, "csharp").replace(/f#/gi, "fsharp").replace(/c\+\+/gi, "cpp");
 }
 
+const FRONTEND_FRAMEWORKS = ["react", "vue", "angular", "svelte", "solid", "astro", "preact"];
+const CSS_DEPS = ["sass", "postcss", "tailwindcss", "styled-components", "@emotion", "less"];
+
 function buildHaystack(repos: GitHubRepo[]): string {
   return repos
-    .flatMap((r) => [
-      normalizeLanguage(r.language ?? ""),
-      r.hasCsFiles ? "csharp dotnet" : "",
-      r.csprojDeps.length > 0 ? "csharp dotnet" : "",
-      r.readmeContent ?? "",
-      r.description ?? "",
-      r.topics.map(expandSlug).join(" "),
-      r.packageDeps.map(expandSlug).join(" "),
-      r.csprojDeps.join(" "),
-    ])
+    .flatMap((r) => {
+      const lang = (r.language ?? "").toLowerCase();
+      const deps = r.packageDeps.map((d) => d.toLowerCase());
+      const hasFrontend = FRONTEND_FRAMEWORKS.some((f) => deps.some((d) => d.includes(f)));
+      const hasCss = hasFrontend || CSS_DEPS.some((f) => deps.some((d) => d.includes(f)));
+
+      return [
+        normalizeLanguage(r.language ?? ""),
+        // TypeScript is a strict superset of JavaScript — ES6+ features are intrinsic
+        lang === "typescript" ? "javascript" : "",
+        // Frontend frameworks render HTML; any React/Vue/etc. project implies HTML authoring
+        hasFrontend ? "html" : "",
+        // Component-based projects always involve CSS (modules, sass, or plain stylesheets)
+        hasCss ? "css" : "",
+        r.hasCsFiles ? "csharp dotnet" : "",
+        r.csprojDeps.length > 0 ? "csharp dotnet" : "",
+        r.readmeContent ?? "",
+        r.description ?? "",
+        r.topics.map(expandSlug).join(" "),
+        r.packageDeps.map(expandSlug).join(" "),
+        r.csprojDeps.join(" "),
+      ];
+    })
     .join(" ")
     .toLowerCase();
 }
