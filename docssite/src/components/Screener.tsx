@@ -71,7 +71,7 @@ const PERIOD_LABELS: Record<string, string> = {
 };
 
 function buildAIPrompt(r: AllRolesResult): string {
-  const best = r.roles.find(ro => ro.role === r.best_fit) ?? r.roles[0];
+  const best = r.roles.find(ro => ro.role === r.best_fit);
   const lines: string[] = [];
 
   lines.push('=== CANDIDATE SCREENING REPORT ===');
@@ -152,7 +152,7 @@ function downloadAsPDF(r: AllRolesResult): void {
   const CW = W - M * 2;
   let y = 22;
 
-  const best = r.roles.find(ro => ro.role === r.best_fit) ?? r.roles[0];
+  const best = r.roles.find(ro => ro.role === r.best_fit);
   const exportDate = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
 
   function newPageIfNeeded(needed = 14): void {
