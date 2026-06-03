@@ -42,6 +42,24 @@
     ],
     "errorShape": { "error": "string" }
   },
+  "tables": {
+    "repo_audits": {
+      "description": "Stores per-repo Lighthouse audit results for a candidate. One row per (candidate_id, url) pair — re-running a scan upserts on that key.",
+      "columns": {
+        "id": "text PK — nanoid",
+        "candidate_id": "text NOT NULL — FK → candidates.id",
+        "repo_name": "text NOT NULL — GitHub repo name",
+        "url": "text NOT NULL — audited homepage URL",
+        "accessibility_score": "integer NOT NULL — Lighthouse a11y score 0–100",
+        "performance_score": "integer NOT NULL — Lighthouse perf score 0–100",
+        "best_practices_score": "integer NOT NULL — Lighthouse best-practices score 0–100",
+        "seo_score": "integer NOT NULL — Lighthouse SEO score 0–100",
+        "wcag_violations": "text NOT NULL — JSON array of violation title strings",
+        "audited_at": "text NOT NULL — ISO timestamp"
+      },
+      "uniqueIndexes": ["(candidate_id, url)"]
+    }
+  },
   "endpoints": [
     {
       "id": "create-candidate",
