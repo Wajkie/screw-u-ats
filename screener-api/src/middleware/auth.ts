@@ -8,5 +8,9 @@ export function createAuthMiddleware(): MiddlewareHandler {
   if (!secret) {
     return (_c, next) => next();
   }
-  return jwt({ secret, alg: 'HS256' });
+  const jwtMiddleware = jwt({ secret, alg: 'HS256' });
+  return (c, next) => {
+    if (c.req.path === '/health') return next();
+    return jwtMiddleware(c, next);
+  };
 }
