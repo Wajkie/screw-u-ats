@@ -85,8 +85,8 @@ function buildHaystack(repos: GitHubRepo[], includeReadme = false): string {
         hasCss ? "css" : "",
         // Synthetic concept tokens — derived from deps so README exclusion doesn't break matching.
         // Each phrase maps to tokens that appear in the corresponding role concept label.
-        hasFrontend ? "hooks composition components" : "",
-        hasRouter ? "routing" : "",
+        hasFrontend ? "hooks composition component" : "",
+        hasRouter ? "client-side routing" : "",
         hasStateLib ? "state management" : "",
         hasHttpLib ? "rest api integration" : "",
         hasBuildTool ? "build tooling" : "",
