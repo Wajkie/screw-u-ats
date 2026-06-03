@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { API_URL } from '../api/client';
+import { API_URL, API_TOKEN } from '../api/client';
 
 export type JobStatus = 'pending' | 'running' | 'done' | 'failed';
 
@@ -21,7 +21,8 @@ export function useJobStream(jobId: string): UseJobStreamResult {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const es = new EventSource(`${API_URL}/jobs/${jobId}/stream`);
+    const streamUrl = `${API_URL}/jobs/${jobId}/stream${API_TOKEN ? `?token=${API_TOKEN}` : ''}`;
+    const es = new EventSource(streamUrl);
 
     es.onmessage = (e) => {
       const data = JSON.parse(e.data as string) as StreamEvent;

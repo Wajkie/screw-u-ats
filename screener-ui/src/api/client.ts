@@ -9,7 +9,7 @@ export class ApiError extends Error {
   }
 }
 
-const API_TOKEN = import.meta.env.VITE_API_TOKEN as string | undefined;
+export const API_TOKEN = import.meta.env.VITE_API_TOKEN as string | undefined;
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };

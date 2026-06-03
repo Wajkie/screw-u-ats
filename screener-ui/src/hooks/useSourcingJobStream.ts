@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { API_URL } from '../api/client';
+import { API_URL, API_TOKEN } from '../api/client';
 
 export type SourcingJobStatus = 'pending' | 'running' | 'done' | 'failed';
 
@@ -24,7 +24,8 @@ export function useSourcingJobStream(jobId: string): UseSourcingJobStreamResult 
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const es = new EventSource(`${API_URL}/sourcing-jobs/${jobId}/stream`);
+    const streamUrl = `${API_URL}/sourcing-jobs/${jobId}/stream${API_TOKEN ? `?token=${API_TOKEN}` : ''}`;
+    const es = new EventSource(streamUrl);
 
     const applyEvent = (data: SourcingEvent) => {
       setStatus(data.status);
