@@ -1,7 +1,7 @@
 import { sql } from 'kysely';
 import { db } from './client.js';
 
-async function migrate() {
+export async function migrate() {
   await db.schema
     .createTable('candidates')
     .ifNotExists()
@@ -102,7 +102,9 @@ async function migrate() {
   console.log('Migration complete.');
 }
 
-migrate().catch((err: unknown) => {
-  console.error('Migration failed:', err);
-  process.exit(1);
-});
+if (process.argv[1]?.endsWith('migrate.js') || process.argv[1]?.endsWith('migrate.ts')) {
+  migrate().catch((err: unknown) => {
+    console.error('Migration failed:', err);
+    process.exit(1);
+  });
+}
