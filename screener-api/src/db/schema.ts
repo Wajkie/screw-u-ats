@@ -59,10 +59,24 @@ export interface ReportsTable {
   created_at: string;
 }
 
+export interface RepoAuditsTable {
+  id: string;
+  candidate_id: string;
+  repo_name: string;
+  url: string;
+  accessibility_score: number;
+  performance_score: number;
+  best_practices_score: number;
+  seo_score: number;
+  wcag_violations: string;
+  audited_at: string;
+}
+
 export interface Database {
   candidates: CandidatesTable;
   analysis_jobs: AnalysisJobsTable;
   reports: ReportsTable;
   openings: OpeningsTable;
   sourcing_jobs: SourcingJobsTable;
+  repo_audits: RepoAuditsTable;
 }

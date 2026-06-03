@@ -88,6 +88,33 @@ export async function migrate() {
   await addColumnSafe('ALTER TABLE openings ADD COLUMN source_url text');
   await addColumnSafe('ALTER TABLE openings ADD COLUMN external_id text');
 
+  await db.schema
+    .createTable('repo_audits')
+    .ifNotExists()
+    .addColumn('id', 'text', (col) => col.primaryKey())
+    .addColumn('candidate_id', 'text', (col) => col.notNull().references('candidates.id'))
+    .addColumn('repo_name', 'text', (col) => col.notNull())
+    .addColumn('url', 'text', (col) => col.notNull())
+    .addColumn('accessibility_score', 'integer', (col) => col.notNull())
+    .addColumn('performance_score', 'integer', (col) => col.notNull())
+    .addColumn('best_practices_score', 'integer', (col) => col.notNull())
+    .addColumn('seo_score', 'integer', (col) => col.notNull())
+    .addColumn('wcag_violations', 'text', (col) => col.notNull())
+    .addColumn('audited_at', 'text', (col) => col.notNull())
+    .execute();
+
+  // Upsert key for repo_audits is (candidate_id, url)
+  if (isPostgres) {
+    await sql`CREATE UNIQUE INDEX IF NOT EXISTS repo_audits_candidate_url_unique ON repo_audits(candidate_id, url)`.execute(db);
+  } else {
+    try {
+      await sql`CREATE UNIQUE INDEX repo_audits_candidate_url_unique ON repo_audits(candidate_id, url)`.execute(db);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (!msg.includes('already exists')) throw err;
+    }
+  }
+
   // UNIQUE constraint on openings.external_id — idempotency key for batch ingest
   if (isPostgres) {
     await sql`CREATE UNIQUE INDEX IF NOT EXISTS openings_external_id_unique ON openings(external_id) WHERE external_id IS NOT NULL`.execute(db);
