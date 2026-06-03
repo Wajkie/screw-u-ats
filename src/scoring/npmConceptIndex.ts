@@ -3,12 +3,18 @@
 // Token phrases must align with the vocabulary used in role concept labels (knowledge/roles/).
 
 export const NPM_CONCEPT_INDEX: Record<string, string> = {
-  // Client-side routing
+  // Client-side routing — explicit router libraries
   "react-router":       "client-side routing",
   "tanstack-router":    "client-side routing",
   "wouter":             "client-side routing",
   "reach-router":       "client-side routing",
   "vue-router":         "client-side routing",
+  // Client-side routing — framework-native routing (file-based, no explicit router dep)
+  "next":               "client-side routing",
+  "@sveltejs/kit":      "client-side routing",
+  "@remix-run":         "client-side routing",
+  "gatsby":             "client-side routing",
+  "astro":              "client-side routing",
 
   // State management
   "zustand":            "state management",
