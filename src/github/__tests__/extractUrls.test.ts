@@ -32,12 +32,12 @@ function makeRepo(overrides: Partial<GitHubRepo> = {}): GitHubRepo {
 describe("extractLiveUrls", () => {
   it("returns homepage URLs set on repos", () => {
     const repos = [makeRepo({ homepage: "https://wajkiedevelopment.se" })];
-    expect(extractLiveUrls(repos)).toEqual(["https://wajkiedevelopment.se"]);
+    expect(extractLiveUrls(repos)).toEqual([{ url: "https://wajkiedevelopment.se", repoName: "test-repo" }]);
   });
 
   it("strips trailing slashes", () => {
     const repos = [makeRepo({ homepage: "https://wajkiedevelopment.se/" })];
-    expect(extractLiveUrls(repos)).toEqual(["https://wajkiedevelopment.se"]);
+    expect(extractLiveUrls(repos)[0]?.url).toBe("https://wajkiedevelopment.se");
   });
 
   it("deduplicates the same URL across multiple repos", () => {
@@ -48,6 +48,11 @@ describe("extractLiveUrls", () => {
     expect(extractLiveUrls(repos)).toHaveLength(1);
   });
 
+  it("carries the repo name with the URL", () => {
+    const repos = [makeRepo({ name: "portfolio", homepage: "https://wajkiedevelopment.se" })];
+    expect(extractLiveUrls(repos)[0]).toEqual({ url: "https://wajkiedevelopment.se", repoName: "portfolio" });
+  });
+
   it("skips repos with no homepage", () => {
     const repos = [makeRepo({ homepage: null }), makeRepo({ homepage: "" })];
     expect(extractLiveUrls(repos)).toHaveLength(0);
@@ -55,7 +60,7 @@ describe("extractLiveUrls", () => {
 
   it("accepts bare domain homepage values by prepending https://", () => {
     const repos = [makeRepo({ homepage: "wajkiedevelopment.vercel.app" })];
-    expect(extractLiveUrls(repos)).toEqual(["https://wajkiedevelopment.vercel.app"]);
+    expect(extractLiveUrls(repos)[0]?.url).toBe("https://wajkiedevelopment.vercel.app");
   });
 
   it("skips values that are not parseable as URLs", () => {

@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
 import { scoreAllRoles } from '../../../src/tools/scoreAllRoles.js';
 import { setJobRunning, setJobFailed, setJobDone, insertReport } from './jobs.repository.js';
+import { insertRepoAudits } from '../repo-audits/repo-audits.repository.js';
 
 export type SseEvent = {
   status: 'pending' | 'running' | 'done' | 'failed';
@@ -45,6 +46,9 @@ async function runJob(
     const gradDate = graduationDate ? new Date(graduationDate) : null;
     const result = await scoreAllRoles(githubUsername, githubToken, rolesDir, gradDate, includeLighthouse);
     const report = await insertReport(jobId, candidateId, result);
+    if (result.lighthouse?.audits && result.lighthouse.audits.length > 0) {
+      await insertRepoAudits(candidateId, result.lighthouse.audits);
+    }
     await setJobDone(jobId);
     notify(jobId, { status: 'done', report_id: report.id });
   } catch (err) {

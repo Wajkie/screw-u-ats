@@ -41,6 +41,8 @@ function makePageSpeedResponse(overrides: {
 }
 
 describe("runLighthouseAudits", () => {
+  const liveUrl = (url: string, repoName = "my-repo") => ({ url, repoName });
+
   it("returns empty enrichment when no URLs provided", async () => {
     const result = await runLighthouseAudits([], "");
     expect(result.live_projects_found).toBe(0);
@@ -53,9 +55,19 @@ describe("runLighthouseAudits", () => {
       json: async () => makePageSpeedResponse({ performance: 72, accessibility: 91 }),
     });
 
-    const result = await runLighthouseAudits(["https://myapp.vercel.app"], "");
+    const result = await runLighthouseAudits([liveUrl("https://myapp.vercel.app")], "");
     expect(result.audits[0]?.scores.performance).toBe(72);
     expect(result.audits[0]?.scores.accessibility).toBe(91);
+  });
+
+  it("includes repo_name on each audit result", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => makePageSpeedResponse(),
+    });
+
+    const result = await runLighthouseAudits([liveUrl("https://myapp.vercel.app", "my-portfolio")], "");
+    expect(result.audits[0]?.repo_name).toBe("my-portfolio");
   });
 
   it("reports WCAG violations from failing accessibility audits", async () => {
@@ -70,7 +82,7 @@ describe("runLighthouseAudits", () => {
         }),
     });
 
-    const result = await runLighthouseAudits(["https://myapp.vercel.app"], "");
+    const result = await runLighthouseAudits([liveUrl("https://myapp.vercel.app")], "");
     expect(result.audits[0]?.wcag_violations).toContain(
       "Background and foreground colors do not have sufficient contrast ratio.",
     );
@@ -80,7 +92,7 @@ describe("runLighthouseAudits", () => {
   it("skips URLs that return a non-OK response", async () => {
     fetchMock.mockResolvedValue({ ok: false });
 
-    const result = await runLighthouseAudits(["https://myapp.vercel.app"], "");
+    const result = await runLighthouseAudits([liveUrl("https://myapp.vercel.app")], "");
     expect(result.live_projects_found).toBe(1);
     expect(result.audits).toHaveLength(0);
   });
@@ -88,7 +100,7 @@ describe("runLighthouseAudits", () => {
   it("skips URLs where fetch throws", async () => {
     fetchMock.mockRejectedValue(new Error("network error"));
 
-    const result = await runLighthouseAudits(["https://myapp.vercel.app"], "");
+    const result = await runLighthouseAudits([liveUrl("https://myapp.vercel.app")], "");
     expect(result.live_projects_found).toBe(1);
   });
 
@@ -98,7 +110,7 @@ describe("runLighthouseAudits", () => {
       json: async () => makePageSpeedResponse(),
     });
 
-    const urls = Array.from({ length: 12 }, (_, i) => `https://repo-${i}.vercel.app`);
+    const urls = Array.from({ length: 12 }, (_, i) => liveUrl(`https://repo-${i}.vercel.app`, `repo-${i}`));
     const result = await runLighthouseAudits(urls, "");
     expect(fetchMock).toHaveBeenCalledTimes(10);
     expect(result.audits.length).toBeLessThanOrEqual(10);
@@ -110,7 +122,7 @@ describe("runLighthouseAudits", () => {
       json: async () => makePageSpeedResponse(),
     });
 
-    await runLighthouseAudits(["https://myapp.vercel.app"], "my-api-key");
+    await runLighthouseAudits([liveUrl("https://myapp.vercel.app")], "my-api-key");
     const calledUrl = fetchMock.mock.calls[0][0] as string;
     expect(calledUrl).toContain("key=my-api-key");
   });
@@ -121,7 +133,7 @@ describe("runLighthouseAudits", () => {
       json: async () => makePageSpeedResponse(),
     });
 
-    await runLighthouseAudits(["https://myapp.vercel.app"], "");
+    await runLighthouseAudits([liveUrl("https://myapp.vercel.app")], "");
     const calledUrl = fetchMock.mock.calls[0][0] as string;
     expect(calledUrl).not.toContain("key=");
   });

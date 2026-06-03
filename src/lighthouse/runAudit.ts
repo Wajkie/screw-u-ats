@@ -35,6 +35,7 @@ export interface LighthouseScores {
 
 export interface UrlAuditResult {
   url: string;
+  repo_name: string;
   scores: LighthouseScores;
   wcag_violations: string[];
 }
@@ -49,7 +50,7 @@ function toScore(raw: number | null | undefined): number {
   return Math.round(raw * 100);
 }
 
-async function auditUrl(url: string, apiKey: string): Promise<UrlAuditResult | null> {
+async function auditUrl(url: string, repoName: string, apiKey: string): Promise<UrlAuditResult | null> {
   const params = new URLSearchParams({ url, strategy: "mobile" });
   params.append("category", "performance");
   params.append("category", "accessibility");
@@ -74,6 +75,7 @@ async function auditUrl(url: string, apiKey: string): Promise<UrlAuditResult | n
 
   return {
     url,
+    repo_name: repoName,
     scores: {
       performance: toScore(cats?.performance?.score),
       accessibility: toScore(cats?.accessibility?.score),
@@ -85,12 +87,12 @@ async function auditUrl(url: string, apiKey: string): Promise<UrlAuditResult | n
 }
 
 export async function runLighthouseAudits(
-  urls: string[],
+  liveUrls: import("../github/extractUrls.js").LiveUrl[],
   apiKey: string,
 ): Promise<LighthouseEnrichment> {
-  const capped = urls.slice(0, 10);
+  const capped = liveUrls.slice(0, 10);
   const results = await Promise.all(
-    capped.map((url) => auditUrl(url, apiKey).catch(() => null)),
+    capped.map(({ url, repoName }) => auditUrl(url, repoName, apiKey).catch(() => null)),
   );
   const successful = results.filter((r): r is UrlAuditResult => r !== null);
 
