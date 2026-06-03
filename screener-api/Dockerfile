@@ -1,7 +1,7 @@
 # Build context: monorepo root
 # docker build -f screener-api/Dockerfile -t screener-api .
 
-FROM node:22-alpine AS builder
+FROM node:22-slim AS builder
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ RUN cd screener-api && npm run build
 RUN cd screener-api && npm prune --omit=dev
 
 # ---- runtime ----
-FROM node:22-alpine
+FROM node:22-slim
 
 WORKDIR /app/screener-api
 
