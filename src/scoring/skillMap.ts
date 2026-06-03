@@ -114,9 +114,15 @@ function scoreArchitectureRepo(repo: GitHubRepo): number {
   return Math.min(pts, 100);
 }
 
-function maxAxis(scores: number[]): number {
-  if (scores.length === 0) return 0;
-  return Math.max(...scores);
+// Average the top N non-zero scores. Rewards consistency across repos — a single standout
+// among many weak repos scores lower than a candidate who demonstrates the skill repeatedly.
+// Zero-score repos are excluded so a mixed portfolio (frontend + backend repos) doesn't
+// unfairly drag down a skill the candidate clearly has.
+function topNMean(scores: number[], n: number): number {
+  const nonZero = scores.filter((s) => s > 0);
+  if (nonZero.length === 0) return 0;
+  const top = [...nonZero].sort((a, b) => b - a).slice(0, n);
+  return Math.round(top.reduce((sum, v) => sum + v, 0) / top.length);
 }
 
 export function computeSkillMap(repos: GitHubRepo[]): SkillMap {
@@ -125,10 +131,10 @@ export function computeSkillMap(repos: GitHubRepo[]): SkillMap {
   }
 
   return {
-    frontend: maxAxis(repos.map(scoreFrontendRepo)),
-    backend: maxAxis(repos.map(scoreBackendRepo)),
-    devops: maxAxis(repos.map(scoreDevopsRepo)),
-    testing: maxAxis(repos.map(scoreTestingRepo)),
-    architecture: maxAxis(repos.map(scoreArchitectureRepo)),
+    frontend: topNMean(repos.map(scoreFrontendRepo), 3),
+    backend: topNMean(repos.map(scoreBackendRepo), 3),
+    devops: topNMean(repos.map(scoreDevopsRepo), 3),
+    testing: topNMean(repos.map(scoreTestingRepo), 3),
+    architecture: topNMean(repos.map(scoreArchitectureRepo), 3),
   };
 }

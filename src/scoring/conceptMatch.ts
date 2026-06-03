@@ -39,6 +39,12 @@ function expandSlug(s: string): string {
   return s.replace(/([a-z]{2,})(js|ts)$/i, "$1 $2");
 }
 
+// Strip parenthetical examples before tokenising so "(async/await, closures…)" example tokens
+// can't trigger a match independently from the core concept label.
+function stripParens(s: string): string {
+  return s.replace(/\([^)]*\)/g, " ").trim();
+}
+
 function normalizeLanguage(lang: string): string {
   return lang.replace(/c#/gi, "csharp").replace(/f#/gi, "fsharp").replace(/c\+\+/gi, "cpp");
 }
@@ -56,15 +62,17 @@ function buildHaystack(repos: GitHubRepo[]): string {
 
       return [
         normalizeLanguage(r.language ?? ""),
-        // TypeScript is a strict superset of JavaScript — ES6+ features are intrinsic
-        lang === "typescript" ? "javascript" : "",
+        // TypeScript is a strict superset of ES6+ JavaScript — both tokens must be findable.
+        // Plain JavaScript repos already emit "javascript" via the language field; add "es6".
+        lang === "typescript" ? "javascript es6" : lang === "javascript" ? "es6" : "",
         // Frontend frameworks render HTML; any React/Vue/etc. project implies HTML authoring
         hasFrontend ? "html" : "",
         // Component-based projects always involve CSS (modules, sass, or plain stylesheets)
         hasCss ? "css" : "",
         r.hasCsFiles ? "csharp dotnet" : "",
         r.csprojDeps.length > 0 ? "csharp dotnet" : "",
-        r.readmeContent ?? "",
+        // description is short and intentional; readmeContent is excluded — long READMEs
+        // contain disclaimers, tutorials, and negations that produce false positive matches.
         r.description ?? "",
         r.topics.map(expandSlug).join(" "),
         r.packageDeps.map(expandSlug).join(" "),
@@ -84,8 +92,12 @@ function splitConcept(concept: string): { matchKey: string; display: string } {
 }
 
 function conceptMatches(matchKey: string, haystack: string): boolean {
-  const tokens = extractTokens(matchKey);
-  return tokens.length > 0 && tokens.some((t) => new RegExp(`\\b${t}\\b`).test(haystack));
+  const tokens = extractTokens(stripParens(matchKey));
+  if (tokens.length === 0) return false;
+  // Require at least 2 tokens to match for multi-token concepts — prevents a single common word
+  // (e.g. "async") from satisfying a long concept like "JavaScript ES6+ (async/await…)".
+  const threshold = Math.min(2, tokens.length);
+  return tokens.filter((t) => new RegExp(`\\b${t}\\b`).test(haystack)).length >= threshold;
 }
 
 export function parseRoleDefinition(markdown: string): RoleDefinition {

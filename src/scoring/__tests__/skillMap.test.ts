@@ -140,7 +140,9 @@ describe("computeSkillMap — architecture axis", () => {
 });
 
 describe("computeSkillMap — mixed portfolio", () => {
-  it("takes max across repos — frontend repo boosts frontend even in mixed portfolio", () => {
+  it("strong repo in mixed portfolio still scores high on its axis", () => {
+    // Non-zero scores are averaged across top-3; zero-scored repos don't drag the axis down,
+    // so a single strong frontend repo should still produce a high frontend score.
     const frontendRepo = makeRepo({ packageDeps: ["react", "next", "tailwindcss"], hasAppRouter: true });
     const backendRepo = makeRepo({ packageDeps: ["express", "prisma"] });
     const result = computeSkillMap([frontendRepo, backendRepo]);
