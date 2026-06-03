@@ -38,6 +38,9 @@
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-weight: 700;
   font-size: 0.875rem;
   letter-spacing: 0.04em;

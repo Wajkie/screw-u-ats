@@ -1,5 +1,6 @@
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { Boundary } from './Boundary';
+import Logo from './Logo';
 import styles from './Layout.module.scss';
 
 export default function Layout() {
@@ -9,7 +10,10 @@ export default function Layout() {
   return (
     <div className={styles.layout}>
       <nav className={styles.nav}>
-        <NavLink to="/" className={styles.brand}>Staged</NavLink>
+        <NavLink to="/" className={styles.brand}>
+          <Logo size={18} />
+          Staged
+        </NavLink>
         <ul className={styles.navList}>
           <li><NavLink to="/" end className={linkClass}>Dashboard</NavLink></li>
           <li><NavLink to="/candidates/new" className={linkClass}>New Candidate</NavLink></li>
