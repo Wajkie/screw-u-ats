@@ -1,0 +1,55 @@
+@use '../styles/tokens' as *;
+@use '../styles/mixins' as *;
+
+.page {
+  max-width: 640px;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  color: $text;
+}
+
+.updated {
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin: 0 0 2rem;
+}
+
+.section {
+  margin-bottom: 2rem;
+
+  p {
+    font-size: 0.9rem;
+    color: $text;
+    line-height: 1.65;
+    margin: 0.5rem 0 0;
+  }
+}
+
+.sectionHeading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $text;
+  margin: 0;
+}
+
+.ctaLink {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: $accent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+.link {
+  color: $accent;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}

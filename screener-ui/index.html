@@ -7,6 +7,13 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Netlify Forms detection stub for the SPA data-removal form -->
+    <form name="data-removal" netlify netlify-honeypot="bot-field" hidden>
+      <input name="name" />
+      <input name="email" />
+      <input name="github_username" />
+      <textarea name="message"></textarea>
+    </form>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,0 +1,84 @@
+@use '../styles/tokens' as *;
+@use '../styles/mixins' as *;
+
+.page {
+  max-width: 480px;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+  color: $text;
+}
+
+.description {
+  font-size: 0.9rem;
+  color: $text-muted;
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $text;
+}
+
+.input {
+  @include input-base;
+}
+
+.textarea {
+  @include input-base;
+  min-height: 80px;
+  resize: vertical;
+}
+
+.submit {
+  @include btn-primary;
+  align-self: flex-start;
+}
+
+.errorMsg {
+  font-size: 0.85rem;
+  color: $error-text;
+  margin: 0;
+}
+
+.successBox {
+  padding: 2rem;
+  background: $success-bg;
+  border: 1px solid $success-text;
+  border-radius: $radius;
+
+  p {
+    font-size: 0.9rem;
+    color: $text;
+    margin: 0.5rem 0 1rem;
+  }
+}
+
+.backLink {
+  font-size: 0.875rem;
+  color: $accent;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+.link {
+  color: $accent;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}

@@ -87,6 +87,28 @@
   font-weight: 600;
 }
 
+.navFooter {
+  display: none;
+
+  @media (min-width: 768px) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid $border;
+  }
+}
+
+.navFooterLink {
+  font-size: 0.75rem;
+  color: $text-muted;
+  text-decoration: none;
+  padding: 0.2rem 0;
+
+  &:hover { color: $accent; }
+}
+
 // ── Main content ──
 .main {
   flex: 1;
