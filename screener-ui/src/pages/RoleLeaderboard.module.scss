@@ -109,9 +109,6 @@
   min-width: 110px;
 }
 
-.badgeInterview { @include badge-interview; }
-.badgePass      { @include badge-pass; }
-
 .emptyState { @include empty-state; }
 
 .errorState {

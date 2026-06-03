@@ -1,15 +1,8 @@
 import { Link } from 'react-router-dom';
 import { listCandidates, candidatesKeys, type Candidate } from '../api/candidates';
 import { useApiQuery } from '../hooks/useApiQuery';
+import RecommendationBadge from '../components/RecommendationBadge';
 import styles from './Dashboard.module.scss';
-
-function RecommendationBadge({ score }: { score: number }) {
-  return (
-    <span className={score >= 70 ? styles.badgeInterview : styles.badgePass}>
-      {score >= 70 ? 'Interview' : 'Pass'}
-    </span>
-  );
-}
 
 function CandidateCard({ candidate }: { candidate: Candidate }) {
   const { latest_report: report } = candidate;
@@ -25,7 +18,7 @@ function CandidateCard({ candidate }: { candidate: Candidate }) {
         <div className={styles.cardScore}>
           <span className={styles.scoreValue}>{report.fit_score}</span>
           <span className={styles.scoreRole}>{report.best_fit}</span>
-          <RecommendationBadge score={report.fit_score} />
+          <RecommendationBadge recommendation={report.recommendation} />
         </div>
       ) : (
         <div className={styles.noReport}>No report yet &mdash;</div>

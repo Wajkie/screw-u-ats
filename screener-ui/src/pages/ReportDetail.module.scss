@@ -163,9 +163,6 @@
   color: $text-muted;
 }
 
-// ── Badges ──
-.badgeInterview { @include badge-interview; }
-.badgePass      { @include badge-pass; }
 
 .badgeBest {
   display: inline-block;

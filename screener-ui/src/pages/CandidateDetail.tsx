@@ -1,15 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 import { useCandidateDetail } from '../hooks/useCandidateDetail';
 import FitHistoryChart from '../components/FitHistoryChart';
+import RecommendationBadge from '../components/RecommendationBadge';
 import styles from './CandidateDetail.module.scss';
-
-function RecommendationBadge({ recommendation }: { recommendation: 'Interview' | 'Pass' }) {
-  return (
-    <span className={recommendation === 'Interview' ? styles.badgeInterview : styles.badgePass}>
-      {recommendation}
-    </span>
-  );
-}
 
 export default function CandidateDetail() {
   const { id } = useParams<{ id: string }>();

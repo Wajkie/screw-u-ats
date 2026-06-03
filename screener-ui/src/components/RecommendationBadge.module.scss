@@ -1,0 +1,4 @@
+@use '../styles/mixins' as *;
+
+.badgeInterview { @include badge-interview; }
+.badgePass      { @include badge-pass; }

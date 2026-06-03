@@ -132,6 +132,3 @@
   font-size: 0.8rem;
   color: $text-muted;
 }
-
-.badgeInterview { @include badge-interview; }
-.badgePass      { @include badge-pass; }

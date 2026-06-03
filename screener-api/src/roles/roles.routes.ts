@@ -29,6 +29,7 @@ roles.get('/:role/candidates', async (c) => {
         report_id: row.id,
         report_created_at: row.created_at,
         fit_score: roleScore.fit_score,
+        recommendation: roleScore.recommendation,
       };
     })
     .filter((r): r is NonNullable<typeof r> => r !== null)

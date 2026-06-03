@@ -152,6 +152,7 @@ export interface RoleLeaderboardEntry {
   report_id: string;
   report_created_at: string;
   fit_score: number;
+  recommendation: 'Interview' | 'Pass';
 }
 
 export interface FitHistoryEntry {

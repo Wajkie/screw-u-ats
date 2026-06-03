@@ -10,6 +10,7 @@ import type {
   ActivitySignal,
   RepoReviewCard,
 } from '../api/candidates';
+import RecommendationBadge from '../components/RecommendationBadge';
 import styles from './ReportDetail.module.scss';
 
 const PERIOD_LABELS: Record<string, string> = {
@@ -45,14 +46,6 @@ function ScoreBar({ score }: { score: number }) {
   );
 }
 
-function Badge({ recommendation }: { recommendation: 'Interview' | 'Pass' }) {
-  return (
-    <span className={recommendation === 'Interview' ? styles.badgeInterview : styles.badgePass}>
-      {recommendation}
-    </span>
-  );
-}
-
 function RoleRow({ role, bestFit }: { role: RoleScore; bestFit: string }) {
   const [expanded, setExpanded] = useState(false);
   const tier = (role.role.split('-')[0] ?? '').replace(/^\w/, c => c.toUpperCase());
@@ -70,7 +63,7 @@ function RoleRow({ role, bestFit }: { role: RoleScore; bestFit: string }) {
         <span className={styles.roleName}>{role.role_name}</span>
         <ScoreBar score={role.fit_score} />
         <span className={styles.pct}>{role.fit_score}%</span>
-        <Badge recommendation={role.recommendation} />
+        <RecommendationBadge recommendation={role.recommendation} />
         {isBest && <span className={styles.badgeBest}>best fit</span>}
         <span className={styles.chevron} aria-hidden="true">{expanded ? '▲' : '▼'}</span>
       </button>
@@ -330,7 +323,7 @@ export default function ReportDetail() {
           </div>
         </div>
         {recommendation && (
-          <Badge recommendation={recommendation as 'Interview' | 'Pass'} />
+          <RecommendationBadge recommendation={recommendation as 'Interview' | 'Pass'} />
         )}
       </div>
 

@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useRoleLeaderboard } from '../hooks/useRoleLeaderboard';
 import type { RoleLeaderboardEntry } from '../api/candidates';
+import RecommendationBadge from '../components/RecommendationBadge';
 import styles from './RoleLeaderboard.module.scss';
 
 function ScoreBar({ score }: { score: number }) {
@@ -8,15 +9,6 @@ function ScoreBar({ score }: { score: number }) {
     <div className={styles.scoreBar} role="progressbar" aria-valuenow={score} aria-valuemin={0} aria-valuemax={100}>
       <div className={`${styles.scoreFill} ${score >= 50 ? styles.scoreFillInterview : ''}`} style={{ width: `${score}%` }} />
     </div>
-  );
-}
-
-function Badge({ score }: { score: number }) {
-  const isInterview = score >= 50;
-  return (
-    <span className={isInterview ? styles.badgeInterview : styles.badgePass}>
-      {isInterview ? 'Interview' : 'Pass'}
-    </span>
   );
 }
 
@@ -31,7 +23,7 @@ function LeaderboardRow({ entry, rank }: { entry: RoleLeaderboardEntry; rank: nu
       </td>
       <td className={styles.barCell}><ScoreBar score={entry.fit_score} /></td>
       <td className={styles.scoreCell}>{entry.fit_score}%</td>
-      <td className={styles.badgeCell}><Badge score={entry.fit_score} /></td>
+      <td className={styles.badgeCell}><RecommendationBadge recommendation={entry.recommendation} /></td>
     </tr>
   );
 }
