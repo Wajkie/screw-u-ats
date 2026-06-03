@@ -23,6 +23,8 @@ export function createApiApp(): Hono {
   app.use('*', createRateLimiterFromEnv());
   app.use('*', createAuthMiddleware());
 
+  app.get('/health', (c) => c.json({ status: 'ok' }));
+
   app.route('/candidates', candidates);
   app.route('/jobs', jobs);
   app.route('/reports', reports);
