@@ -11,9 +11,9 @@ real monorepo or multi-package setups.
 - SSR or SSG with a modern framework (Next.js, Remix, or Nuxt — not just client-side React or Vue)
 - Advanced TypeScript (mapped types, conditional types, utility types, generics beyond basic use)
 - Component library or design system contribution (Storybook, published packages, or shared UI kit)
-- Testing across the pyramid (unit with Vitest or Jest, integration with React Testing Library, e2e with Playwright or Cypress)
+- playwright cypress testing-library | Testing across the pyramid (unit with Vitest or Jest, integration with React Testing Library, e2e with Playwright or Cypress)
 - Core Web Vitals and bundle analysis (LCP, CLS, FID — bundle-analyzer, lighthouse CI, performance budgets)
-- Accessibility beyond basics (WCAG audit, axe-core, screen reader testing, keyboard navigation patterns)
+- axe-core a11y wcag accessibility | Accessibility beyond basics (WCAG audit, axe-core, screen reader testing, keyboard navigation patterns)
 - Monorepo tooling (Turborepo or Nx — workspace dependencies, task pipelines, shared configs)
 
 ## Bonus Concepts

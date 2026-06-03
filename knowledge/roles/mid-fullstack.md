@@ -11,11 +11,11 @@ work show production-level thinking.
 - SSR or SSG with a modern framework (Next.js, Remix, or Nuxt — not just client-side rendering)
 - Advanced TypeScript across client and server (mapped types, conditional types, shared type contracts)
 - Type-safe client/server contracts (tRPC, GraphQL with code generation, or OpenAPI codegen)
-- Testing across the pyramid (unit, integration, and e2e with Playwright or Cypress)
-- Database optimization (indexing, query explain plans, ORM pitfalls, connection pooling)
-- Caching strategy (Redis, HTTP cache headers, CDN, stale-while-revalidate patterns)
-- Container orchestration (Docker Compose locally, Kubernetes or managed container service in production)
-- CI/CD pipeline ownership (GitHub Actions or equivalent — automated test, build, and deploy)
+- playwright cypress testing-library | Testing across the pyramid (unit, integration, and e2e with Playwright or Cypress)
+- database query indexing orm | Database optimization (indexing, query explain plans, ORM pitfalls, connection pooling)
+- redis cache caching | Caching strategy (Redis, HTTP cache headers, CDN, stale-while-revalidate patterns)
+- docker kubernetes container | Container orchestration (Docker Compose locally, Kubernetes or managed container service in production)
+- github actions pipeline deploy | CI/CD pipeline ownership (GitHub Actions or equivalent — automated test, build, and deploy)
 
 ## Bonus Concepts
 

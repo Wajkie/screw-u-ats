@@ -79,15 +79,15 @@
   "less":               "css",
   "bootstrap":          "css",
 
-  "@axe-core":                          "accessibility fundamentals",
-  "eslint-plugin-jsx-a11y":             "accessibility fundamentals",
-  "eslint-plugin-vuejs-accessibility":  "accessibility fundamentals",
-  "@radix-ui":                          "accessibility fundamentals",
-  "headlessui":                         "accessibility fundamentals",
-  "reach-ui":                           "accessibility fundamentals",
-  "pa11y":                              "accessibility fundamentals",
-  "@wajkie/a11y-core":                  "accessibility fundamentals",
-  "@wajkie/react-a11y":                 "accessibility fundamentals",
+  "@axe-core":                          "accessibility fundamentals wcag axe",
+  "eslint-plugin-jsx-a11y":             "accessibility fundamentals wcag axe",
+  "eslint-plugin-vuejs-accessibility":  "accessibility fundamentals wcag axe",
+  "@radix-ui":                          "accessibility fundamentals wcag axe",
+  "headlessui":                         "accessibility fundamentals wcag axe",
+  "reach-ui":                           "accessibility fundamentals wcag axe",
+  "pa11y":                              "accessibility fundamentals wcag axe",
+  "@wajkie/a11y-core":                  "accessibility fundamentals wcag axe",
+  "@wajkie/react-a11y":                 "accessibility fundamentals wcag axe",
 
   "vue":                "vue svelte alternative",
   "svelte":             "vue svelte alternative",
@@ -135,5 +135,50 @@
   "memcached":          "caching layers",
 
   "aspnetcore":         "csharp dotnet",
-  "@microsoft/signalr": "csharp dotnet"
+  "@microsoft/signalr": "csharp dotnet",
+
+  "type-fest":          "advanced typescript types generics",
+  "ts-toolbelt":        "advanced typescript types generics",
+  "ts-pattern":         "advanced typescript types generics",
+  "effect":             "advanced typescript types generics",
+  "@effect/schema":     "advanced typescript types generics",
+
+  "web-vitals":               "core web vitals performance budgets",
+  "@next/bundle-analyzer":    "core web vitals bundle performance budgets",
+  "webpack-bundle-analyzer":  "core web vitals bundle performance budgets",
+  "bundlesize":               "core web vitals bundle performance budgets",
+  "rollup-plugin-visualizer": "bundle performance",
+  "@vercel/analytics":        "core web vitals performance",
+
+  "kafkajs":               "event driven message queue architecture kafka",
+  "kafka-node":            "event driven message queue architecture kafka",
+  "amqplib":               "event driven message queue architecture",
+  "bullmq":                "event driven message queue architecture distributed systems retry",
+  "bull":                  "event driven message queue",
+  "bee-queue":             "event driven message queue",
+  "@aws-sdk/client-sqs":   "event driven message queue architecture",
+  "nats":                  "event driven message queue architecture",
+
+  "express-rate-limit":    "rate limiting throttling",
+  "rate-limiter-flexible": "rate limiting throttling",
+  "@nestjs/throttler":     "rate limiting throttling",
+  "bottleneck":            "rate limiting throttling",
+  "p-throttle":            "rate limiting throttling",
+
+  "swagger-ui-express":          "api versioning compatibility openapi swagger",
+  "@nestjs/swagger":             "api versioning compatibility openapi swagger",
+  "@fastify/swagger":            "api versioning compatibility openapi swagger",
+  "fastify-swagger":             "api versioning compatibility openapi swagger",
+  "openapi-backend":             "api versioning compatibility openapi",
+  "express-openapi-validator":   "api versioning compatibility openapi",
+  "zod-to-openapi":              "api versioning compatibility openapi",
+
+  "dockerode":                "docker container orchestration",
+  "@kubernetes/client-node":  "kubernetes container orchestration",
+
+  "p-retry":    "retry distributed systems backoff",
+  "async-retry": "retry distributed systems backoff",
+  "axios-retry": "retry distributed systems backoff",
+  "cockatiel":  "circuit distributed systems retry",
+  "opossum":    "circuit distributed systems"
 }

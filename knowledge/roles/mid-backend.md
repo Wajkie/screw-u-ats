@@ -7,14 +7,14 @@ caching strategy, and container orchestration beyond a local docker-compose file
 
 ## Required Concepts
 
-- Database optimization (indexing strategy, query explain plans, N+1 detection, connection pooling)
-- Event-driven architecture (message queues or pub/sub — Kafka, RabbitMQ, Redis Streams, or SQS)
+- database query indexing orm | Database optimization (indexing strategy, query explain plans, N+1 detection, connection pooling)
+- kafka bull queue event | Event-driven architecture (message queues or pub/sub — Kafka, RabbitMQ, Redis Streams, or SQS)
 - Caching layers (Redis, Memcached, CDN cache, HTTP cache headers — not just in-memory maps)
-- API versioning and backwards compatibility (URL versioning, header negotiation, deprecation strategy)
+- swagger openapi api versioning | API versioning and backwards compatibility (URL versioning, header negotiation, deprecation strategy)
 - Rate limiting and throttling (token bucket or sliding window, per-user vs per-IP, backpressure)
-- Container orchestration (Docker Compose for local, Kubernetes or ECS for production workloads)
-- CI/CD pipeline ownership (GitHub Actions or equivalent — build, test, lint, deploy stages)
-- Distributed systems basics (idempotency, retry with backoff, circuit breakers, at-least-once delivery)
+- docker kubernetes container | Container orchestration (Docker Compose for local, Kubernetes or ECS for production workloads)
+- github actions pipeline deploy | CI/CD pipeline ownership (GitHub Actions or equivalent — build, test, lint, deploy stages)
+- retry circuit distributed | Distributed systems basics (idempotency, retry with backoff, circuit breakers, at-least-once delivery)
 - Structured error handling and API error contracts (RFC 7807 problem details or equivalent, error taxonomy, no stack traces in responses)
 
 ## Bonus Concepts
