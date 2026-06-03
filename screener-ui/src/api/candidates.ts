@@ -117,6 +117,7 @@ export interface ActivitySignal {
 export interface RepoReviewCard {
   name: string;
   repo_url: string;
+  homepage_url: string | null;
   combined_score: number;
   complexity_score: number;
   concept_score: number;

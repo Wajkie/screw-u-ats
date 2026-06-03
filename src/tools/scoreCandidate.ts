@@ -21,6 +21,7 @@ export interface RepoSummary {
 export interface RepoReviewCard {
   name: string;
   repo_url: string;
+  homepage_url: string | null;
   combined_score: number;
   complexity_score: number;
   concept_score: number;
@@ -99,9 +100,19 @@ export function buildTopReposForReview(
       const { score: concept_score, matched: matched_concepts } = scoreRepoConceptExposure(repo, roleDef, highA11yUrls);
       const missing_concepts = allConcepts.filter(c => !matched_concepts.includes(c));
       const combined_score = Math.round(complexity_score * 0.5 + concept_score * 0.5);
+      const hp = repo.homepage?.trim();
+      let homepage_url: string | null = null;
+      if (hp && !hp.includes(" ")) {
+        const withProtocol = hp.startsWith("http") ? hp : `https://${hp}`;
+        try {
+          const url = new URL(withProtocol);
+          if (url.protocol === "https:" || url.protocol === "http:") homepage_url = withProtocol.replace(/\/$/, "");
+        } catch { /* unparseable */ }
+      }
       return {
         name: repo.name,
         repo_url: `https://github.com/${username}/${repo.name}`,
+        homepage_url,
         combined_score,
         complexity_score,
         concept_score,
