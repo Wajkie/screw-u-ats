@@ -191,8 +191,12 @@ export function listReports(candidateId: string): Promise<ReportSummary[]> {
   return get<ReportSummary[]>(`/candidates/${candidateId}/reports`);
 }
 
-export function createJob(candidateId: string): Promise<Job> {
-  return post<Job>(`/candidates/${candidateId}/jobs`);
+export function createJob(candidateId: string, includeLighthouse = false): Promise<Job> {
+  return post<Job>(`/candidates/${candidateId}/jobs`, { include_lighthouse: includeLighthouse });
+}
+
+export function getFeatures(): Promise<{ lighthouse: boolean }> {
+  return get<{ lighthouse: boolean }>('/features');
 }
 
 export function getReport(reportId: string): Promise<Report> {

@@ -25,6 +25,7 @@ export function createApiApp(): Hono {
   app.use('*', createAuthMiddleware());
 
   app.get('/health', (c) => c.json({ status: 'ok' }));
+  app.get('/features', (c) => c.json({ lighthouse: !!process.env.PAGESPEED_API_KEY }));
 
   app.route('/candidates', candidates);
   app.route('/jobs', jobs);

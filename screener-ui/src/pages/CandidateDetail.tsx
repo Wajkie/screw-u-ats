@@ -6,7 +6,11 @@ import styles from './CandidateDetail.module.scss';
 
 export default function CandidateDetail() {
   const { id } = useParams<{ id: string }>();
-  const { candidate, reports, fitHistory, startAnalysis, isAnalyzing } = useCandidateDetail(id!);
+  const {
+    candidate, reports, fitHistory,
+    lighthouseAvailable, includeLighthouse, setIncludeLighthouse,
+    startAnalysis, isAnalyzing,
+  } = useCandidateDetail(id!);
 
   const latest = candidate.latest_report;
 
@@ -36,9 +40,22 @@ export default function CandidateDetail() {
             <div className={styles.notes}>{candidate.notes}</div>
           )}
         </div>
-        <button className={styles.analyzeBtn} onClick={startAnalysis} disabled={isAnalyzing}>
-          {isAnalyzing ? 'Starting…' : 'Re-analyze'}
-        </button>
+        <div className={styles.analyzeGroup}>
+          {lighthouseAvailable && (
+            <label className={styles.lighthouseToggle}>
+              <input
+                type="checkbox"
+                checked={includeLighthouse}
+                onChange={e => setIncludeLighthouse(e.target.checked)}
+                disabled={isAnalyzing}
+              />
+              Lighthouse
+            </label>
+          )}
+          <button className={styles.analyzeBtn} onClick={startAnalysis} disabled={isAnalyzing}>
+            {isAnalyzing ? 'Starting…' : 'Re-analyze'}
+          </button>
+        </div>
       </div>
 
       <section className={styles.section}>

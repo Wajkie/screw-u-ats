@@ -29,8 +29,11 @@ candidates.post('/:id/jobs', async (c) => {
   const candidate = await findCandidateById(c.req.param('id'));
   if (!candidate) return c.json({ error: 'Candidate not found' }, 404);
 
+  const body = await c.req.json().catch(() => ({})) as { include_lighthouse?: boolean };
+  const includeLighthouse = body.include_lighthouse === true && !!process.env.PAGESPEED_API_KEY;
+
   const job = await createJob(candidate.id);
-  enqueueJob(job.id, candidate.id, candidate.github_username, candidate.graduation_date);
+  enqueueJob(job.id, candidate.id, candidate.github_username, candidate.graduation_date, includeLighthouse);
   return c.json(job, 202);
 });
 

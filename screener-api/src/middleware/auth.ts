@@ -12,7 +12,7 @@ export function createAuthMiddleware(): MiddlewareHandler {
   }
   const jwtMiddleware = jwt({ secret, alg: 'HS256' });
   return (c, next) => {
-    if (c.req.path === '/health') return next();
+    if (c.req.path === '/health' || c.req.path === '/features') return next();
     // If no Authorization header but ?token= is present, promote it to a header
     // so the standard jwt() middleware can verify it.
     if (!c.req.header('Authorization')) {

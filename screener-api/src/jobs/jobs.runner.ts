@@ -34,6 +34,7 @@ async function runJob(
   candidateId: string,
   githubUsername: string,
   graduationDate: string | null,
+  includeLighthouse: boolean,
 ): Promise<void> {
   running++;
   try {
@@ -42,7 +43,7 @@ async function runJob(
     const githubToken = process.env.GITHUB_TOKEN ?? '';
     const rolesDir = resolve(process.env.ROLES_DIR ?? '../knowledge/roles');
     const gradDate = graduationDate ? new Date(graduationDate) : null;
-    const result = await scoreAllRoles(githubUsername, githubToken, rolesDir, gradDate);
+    const result = await scoreAllRoles(githubUsername, githubToken, rolesDir, gradDate, includeLighthouse);
     const report = await insertReport(jobId, candidateId, result);
     await setJobDone(jobId);
     notify(jobId, { status: 'done', report_id: report.id });
@@ -61,9 +62,10 @@ export function enqueueJob(
   candidateId: string,
   githubUsername: string,
   graduationDate: string | null,
+  includeLighthouse = false,
 ): void {
   const task = () => {
-    void runJob(jobId, candidateId, githubUsername, graduationDate);
+    void runJob(jobId, candidateId, githubUsername, graduationDate, includeLighthouse);
   };
   if (running < MAX_CONCURRENT) {
     task();
