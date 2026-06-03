@@ -44,7 +44,8 @@ async function runJob(
     const githubToken = process.env.GITHUB_TOKEN ?? '';
     const rolesDir = resolve(process.env.ROLES_DIR ?? '../knowledge/roles');
     const gradDate = graduationDate ? new Date(graduationDate) : null;
-    const result = await scoreAllRoles(githubUsername, githubToken, rolesDir, gradDate, includeLighthouse);
+    const pagespeedApiKey = process.env.PAGESPEED_API_KEY ?? '';
+    const result = await scoreAllRoles(githubUsername, githubToken, rolesDir, gradDate, includeLighthouse, pagespeedApiKey);
     const report = await insertReport(jobId, candidateId, result);
     if (result.lighthouse?.audits && result.lighthouse.audits.length > 0) {
       await insertRepoAudits(candidateId, result.lighthouse.audits);
