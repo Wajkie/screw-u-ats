@@ -8,6 +8,7 @@ export interface LatestReportSummary {
   id: string;
   best_fit: string;
   fit_score: number;
+  recommendation: 'Interview' | 'Pass';
   created_at: string;
 }
 
@@ -39,7 +40,7 @@ export async function listCandidates() {
 
   const reports = await db
     .selectFrom('reports')
-    .select(['candidate_id', 'id', 'best_fit', 'fit_score', 'created_at'])
+    .select(['candidate_id', 'id', 'best_fit', 'fit_score', 'recommendation', 'created_at'])
     .execute();
 
   const latestByCandidate = new Map<string, (typeof reports)[0]>();
@@ -53,7 +54,7 @@ export async function listCandidates() {
     return {
       ...c,
       latest_report: lr
-        ? { id: lr.id, best_fit: lr.best_fit, fit_score: lr.fit_score, created_at: lr.created_at }
+        ? { id: lr.id, best_fit: lr.best_fit, fit_score: lr.fit_score, recommendation: lr.recommendation, created_at: lr.created_at }
         : null,
     };
   });
@@ -66,7 +67,7 @@ export async function findCandidateById(id: string) {
 export async function getLatestReport(candidateId: string): Promise<LatestReportSummary | undefined> {
   return db
     .selectFrom('reports')
-    .select(['id', 'best_fit', 'fit_score', 'created_at'])
+    .select(['id', 'best_fit', 'fit_score', 'recommendation', 'created_at'])
     .where('candidate_id', '=', candidateId)
     .orderBy('created_at', 'desc')
     .limit(1)

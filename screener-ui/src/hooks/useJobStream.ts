@@ -39,7 +39,8 @@ export function useJobStream(jobId: string): UseJobStreamResult {
       // SSE stream closed before a terminal event — fall back to REST to get
       // the current state (handles the race where the server closes the
       // already-terminal stream before the browser's onmessage fires).
-      void fetch(`${API_URL}/jobs/${jobId}`)
+      const restUrl = `${API_URL}/jobs/${jobId}${API_TOKEN ? `?token=${API_TOKEN}` : ''}`;
+      void fetch(restUrl)
         .then((r) => (r.ok ? (r.json() as Promise<{ status: string; report_id?: string; error?: string }>) : null))
         .then((job) => {
           if (!job) { setError('Connection lost.'); return; }

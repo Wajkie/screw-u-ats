@@ -3,10 +3,10 @@ import { useCandidateDetail } from '../hooks/useCandidateDetail';
 import FitHistoryChart from '../components/FitHistoryChart';
 import styles from './CandidateDetail.module.scss';
 
-function RecommendationBadge({ score }: { score: number }) {
+function RecommendationBadge({ recommendation }: { recommendation: 'Interview' | 'Pass' }) {
   return (
-    <span className={score >= 70 ? styles.badgeInterview : styles.badgePass}>
-      {score >= 70 ? 'Interview' : 'Pass'}
+    <span className={recommendation === 'Interview' ? styles.badgeInterview : styles.badgePass}>
+      {recommendation}
     </span>
   );
 }
@@ -54,7 +54,7 @@ export default function CandidateDetail() {
           <div className={styles.latestReport}>
             <span className={styles.score}>{latest.fit_score}</span>
             <span className={styles.role}>{latest.best_fit}</span>
-            <RecommendationBadge score={latest.fit_score} />
+            <RecommendationBadge recommendation={latest.recommendation} />
             <Link to={`/candidates/${id}/reports/${latest.id}`} className={styles.viewLink}>
               View →
             </Link>

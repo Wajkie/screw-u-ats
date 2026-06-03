@@ -79,6 +79,7 @@ export async function migrate() {
     }
   };
 
+  await addColumnSafe("ALTER TABLE reports ADD COLUMN recommendation text NOT NULL DEFAULT 'Pass'");
   await addColumnSafe('ALTER TABLE candidates ADD COLUMN sourced_from_opening_id text REFERENCES openings(id)');
   await addColumnSafe('ALTER TABLE candidates ADD COLUMN location text');
   await addColumnSafe('ALTER TABLE candidates ADD COLUMN work_type_preference text');

@@ -52,6 +52,7 @@ export async function insertReport(jobId: string, candidateId: string, result: A
       job_id: jobId,
       best_fit: result.best_fit,
       fit_score: best?.fit_score ?? 0,
+      recommendation: best?.recommendation ?? 'Pass',
       data: JSON.stringify(result),
       created_at: new Date().toISOString(),
     })

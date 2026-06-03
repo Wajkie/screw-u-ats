@@ -54,6 +54,7 @@ export interface ReportsTable {
   job_id: string;
   best_fit: string;
   fit_score: number;
+  recommendation: 'Interview' | 'Pass';
   data: string;
   created_at: string;
 }

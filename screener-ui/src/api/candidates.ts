@@ -5,6 +5,7 @@ export interface ReportSummary {
   job_id: string;
   best_fit: string;
   fit_score: number;
+  recommendation: 'Interview' | 'Pass';
   created_at: string;
 }
 
@@ -23,6 +24,7 @@ export interface LatestReport {
   id: string;
   best_fit: string;
   fit_score: number;
+  recommendation: 'Interview' | 'Pass';
   created_at: string;
 }
 
