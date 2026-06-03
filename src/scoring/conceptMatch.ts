@@ -54,6 +54,12 @@ const CSS_DEPS = ["sass", "postcss", "tailwindcss", "styled-components", "@emoti
 
 // includeReadme=false for fit scoring (cross-repo aggregate — README noise causes false positives).
 // includeReadme=true for per-repo display (single-repo breakdown — README is the main signal).
+const ROUTER_DEPS = ["react-router", "tanstack-router", "wouter", "reach-router", "vue-router", "svelte-kit"];
+const STATE_DEPS = ["zustand", "redux", "jotai", "recoil", "mobx", "nanostores", "xstate", "pinia"];
+const HTTP_DEPS = ["axios", "swr", "react-query", "@tanstack/react-query", "react-query", "ky", "ofetch"];
+
+// includeReadme=false for fit scoring (cross-repo aggregate — README noise causes false positives).
+// includeReadme=true for per-repo display (single-repo breakdown — README is the main signal).
 function buildHaystack(repos: GitHubRepo[], includeReadme = false): string {
   return repos
     .flatMap((r) => {
@@ -61,6 +67,12 @@ function buildHaystack(repos: GitHubRepo[], includeReadme = false): string {
       const deps = r.packageDeps.map((d) => d.toLowerCase());
       const hasFrontend = FRONTEND_FRAMEWORKS.some((f) => deps.some((d) => d.includes(f)));
       const hasCss = hasFrontend || CSS_DEPS.some((f) => deps.some((d) => d.includes(f)));
+      const hasRouter = ROUTER_DEPS.some((f) => deps.some((d) => d.includes(f)));
+      const hasStateLib = STATE_DEPS.some((s) => deps.some((d) => d.includes(s)));
+      const hasHttpLib = HTTP_DEPS.some((s) => deps.some((d) => d.includes(s)));
+      const hasVite = deps.some((d) => d.includes("vite"));
+      const hasBuildTool = hasVite || deps.some((d) => ["webpack", "esbuild", "parcel", "turbopack", "rollup"].some((b) => d.includes(b)));
+      const hasTestLib = deps.some((d) => ["vitest", "jest", "mocha", "jasmine", "cypress", "playwright", "testing-library"].some((t) => d.includes(t)));
 
       return [
         normalizeLanguage(r.language ?? ""),
@@ -71,6 +83,14 @@ function buildHaystack(repos: GitHubRepo[], includeReadme = false): string {
         hasFrontend ? "html" : "",
         // Component-based projects always involve CSS (modules, sass, or plain stylesheets)
         hasCss ? "css" : "",
+        // Synthetic concept tokens — derived from deps so README exclusion doesn't break matching.
+        // Each phrase maps to tokens that appear in the corresponding role concept label.
+        hasFrontend ? "hooks composition components" : "",
+        hasRouter ? "routing" : "",
+        hasStateLib ? "state management" : "",
+        hasHttpLib ? "rest api integration" : "",
+        hasBuildTool ? "build tooling" : "",
+        hasTestLib ? "testing" : "",
         r.hasCsFiles ? "csharp dotnet" : "",
         r.csprojDeps.length > 0 ? "csharp dotnet" : "",
         r.description ?? "",
