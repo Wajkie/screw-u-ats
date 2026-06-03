@@ -21,3 +21,9 @@ export function lhColorClass(score: number, s: Record<string, string>): string {
   if (score >= 50) return s.lhOk;
   return s.lhPoor;
 }
+
+export function a11yBadgeClass(score: number, s: Record<string, string>): string {
+  if (score >= 90) return s.a11yBadgeGood;
+  if (score >= 70) return s.a11yBadgeOk;
+  return s.a11yBadgePoor;
+}

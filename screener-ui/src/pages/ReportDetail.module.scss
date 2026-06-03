@@ -484,6 +484,10 @@
   color: $error-text;
 }
 
+.a11yBadgeGood { border-color: rgba(91, 173, 117, 0.4); background: rgba(91, 173, 117, 0.08); .reviewScoreVal { color: $success-text; } }
+.a11yBadgeOk   { border-color: rgba(232, 168, 74, 0.4);  background: rgba(232, 168, 74, 0.08);  .reviewScoreVal { color: $warn-text; } }
+.a11yBadgePoor { border-color: rgba(220, 80, 80, 0.4);   background: rgba(220, 80, 80, 0.08);   .reviewScoreVal { color: $error-text; } }
+
 .reviewHighlights {
   display: flex;
   flex-wrap: wrap;

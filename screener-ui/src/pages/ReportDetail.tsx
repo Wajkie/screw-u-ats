@@ -1,5 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useReportDetail } from '../hooks/useReportDetail';
+import { useApiQuery } from '../hooks/useApiQuery';
+import { getRepoAudits, candidatesKeys } from '../api/candidates';
 import RecommendationBadge from '../components/RecommendationBadge';
 import CopyButton from '../components/CopyButton';
 import TrackSection from './report/TrackSection';
@@ -14,6 +16,7 @@ import styles from './ReportDetail.module.scss';
 export default function ReportDetail() {
   const { id, reportId } = useParams<{ id: string; reportId: string }>();
   const { report, bestRole, recommendation } = useReportDetail(reportId!);
+  const { data: repoAudits } = useApiQuery(candidatesKeys.repoAudits(id!), () => getRepoAudits(id!));
   const data = report.data;
 
   return (
@@ -64,7 +67,7 @@ export default function ReportDetail() {
       {data.activity && <ActivityPanel activity={data.activity} />}
 
       {data.top_repos_for_review && data.top_repos_for_review.length > 0 && (
-        <TopReposForReview repos={data.top_repos_for_review} />
+        <TopReposForReview repos={data.top_repos_for_review} audits={repoAudits} />
       )}
 
       {bestRole && <ConceptsSection role={bestRole} />}

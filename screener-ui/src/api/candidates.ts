@@ -163,12 +163,24 @@ export interface FitHistoryEntry {
   best_fit: string;
 }
 
+export interface RepoAudit {
+  repo_name: string;
+  url: string;
+  accessibility_score: number;
+  performance_score: number;
+  best_practices_score: number;
+  seo_score: number;
+  wcag_violations: string[];
+  audited_at: string;
+}
+
 export const candidatesKeys = {
   all: ['candidates'] as const,
   detail: (id: string) => ['candidates', id] as const,
   reports: (id: string) => ['candidates', id, 'reports'] as const,
   report: (id: string) => ['reports', id] as const,
   fitHistory: (id: string) => ['candidates', id, 'fit-history'] as const,
+  repoAudits: (id: string) => ['candidates', id, 'repo-audits'] as const,
 };
 
 export const rolesKeys = {
@@ -214,4 +226,8 @@ export function getFitHistory(candidateId: string): Promise<FitHistoryEntry[]> {
 
 export function getRoles(): Promise<string[]> {
   return get<string[]>('/roles');
+}
+
+export function getRepoAudits(candidateId: string): Promise<RepoAudit[]> {
+  return get<RepoAudit[]>(`/candidates/${candidateId}/repo-audits`);
 }
