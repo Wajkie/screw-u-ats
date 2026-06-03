@@ -14,6 +14,8 @@
   font-weight: 600;
   background: $success-bg;
   color: $success-text;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 @mixin badge-pass {
@@ -25,6 +27,8 @@
   background: $surface;
   color: $text-muted;
   border: 1px solid $border;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 @mixin btn-primary {
