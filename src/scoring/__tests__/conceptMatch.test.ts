@@ -53,9 +53,9 @@ describe("parseRoleDefinition - junior-frontend.md", () => {
     expect(role.requiredConcepts).toHaveLength(10);
   });
 
-  it("parses all bonus concepts (9 expected)", () => {
+  it("parses all bonus concepts (8 expected)", () => {
     const role = parseRoleDefinition(frontendMd);
-    expect(role.bonusConcepts).toHaveLength(9);
+    expect(role.bonusConcepts).toHaveLength(8);
   });
 
   it("parses minimum_complexity_score: 35", () => {

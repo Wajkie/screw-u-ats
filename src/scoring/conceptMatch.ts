@@ -1,4 +1,5 @@
 import type { GitHubRepo } from "../github/fetchRepos.js";
+import { NPM_CONCEPT_INDEX } from "./npmConceptIndex.js";
 
 export interface RoleDefinition {
   name: string;
@@ -50,16 +51,16 @@ function normalizeLanguage(lang: string): string {
 }
 
 const FRONTEND_FRAMEWORKS = ["react", "vue", "angular", "svelte", "solid", "astro", "preact"];
-const CSS_DEPS = ["sass", "postcss", "tailwindcss", "styled-components", "@emotion", "less"];
 
-// includeReadme=false for fit scoring (cross-repo aggregate — README noise causes false positives).
-// includeReadme=true for per-repo display (single-repo breakdown — README is the main signal).
-const ROUTER_DEPS = ["react-router", "tanstack-router", "wouter", "reach-router", "vue-router", "svelte-kit"];
-const STATE_DEPS = ["zustand", "redux", "jotai", "recoil", "mobx", "nanostores", "xstate", "pinia"];
-const HTTP_DEPS = ["axios", "swr", "react-query", "@tanstack/react-query", "react-query", "ky", "ofetch"];
-const FORM_DEPS = ["react-hook-form", "formik", "final-form", "zod", "yup", "valibot", "vest"];
-const A11Y_DEPS = ["@axe-core", "eslint-plugin-jsx-a11y", "eslint-plugin-vuejs-accessibility", "radix-ui", "@radix-ui", "headlessui", "@headlessui", "reach-ui"];
-const VUE_SVELTE_DEPS = ["vue", "svelte", "@sveltejs", "nuxt"];
+function depConceptTokens(deps: string[]): string {
+  const phrases = new Set<string>();
+  for (const dep of deps) {
+    for (const [fragment, phrase] of Object.entries(NPM_CONCEPT_INDEX)) {
+      if (dep.includes(fragment)) phrases.add(phrase);
+    }
+  }
+  return [...phrases].join(" ");
+}
 
 // includeReadme=false for fit scoring (cross-repo aggregate — README noise causes false positives).
 // includeReadme=true for per-repo display (single-repo breakdown — README is the main signal).
@@ -69,45 +70,22 @@ function buildHaystack(repos: GitHubRepo[], includeReadme = false): string {
       const lang = (r.language ?? "").toLowerCase();
       const deps = r.packageDeps.map((d) => d.toLowerCase());
       const hasFrontend = FRONTEND_FRAMEWORKS.some((f) => deps.some((d) => d.includes(f)));
-      const hasCss = hasFrontend || CSS_DEPS.some((f) => deps.some((d) => d.includes(f)));
-      const hasRouter = ROUTER_DEPS.some((f) => deps.some((d) => d.includes(f)));
-      const hasStateLib = STATE_DEPS.some((s) => deps.some((d) => d.includes(s)));
-      const hasHttpLib = HTTP_DEPS.some((s) => deps.some((d) => d.includes(s)));
-      const hasVite = deps.some((d) => d.includes("vite"));
-      const hasBuildTool = hasVite || deps.some((d) => ["webpack", "esbuild", "parcel", "turbopack", "rollup"].some((b) => d.includes(b)));
-      const hasTestLib = deps.some((d) => ["vitest", "jest", "mocha", "jasmine", "cypress", "playwright", "testing-library"].some((t) => d.includes(t)));
-      const hasFormLib = FORM_DEPS.some((s) => deps.some((d) => d.includes(s)));
-      const hasA11y = A11Y_DEPS.some((s) => deps.some((d) => d.includes(s))) || r.topics.some((t) => t.includes("a11y") || t.includes("accessibility"));
-      const hasVueSvelte = VUE_SVELTE_DEPS.some((s) => deps.some((d) => d.includes(s)));
+      const hasVueSvelte = deps.some((d) => d.includes("vue") || d.includes("svelte") || d.includes("nuxt"));
+      const hasA11yTopic = r.topics.some((t) => t.includes("a11y") || t.includes("accessibility"));
 
       return [
         normalizeLanguage(r.language ?? ""),
-        // TypeScript is a strict superset of ES6+ JavaScript — both tokens must be findable.
-        // Plain JavaScript repos already emit "javascript" via the language field; add "es6".
         lang === "typescript" ? "javascript es6" : lang === "javascript" ? "es6" : "",
-        // Frontend frameworks render HTML; any React/Vue/etc. project implies HTML authoring
         hasFrontend ? "html" : "",
-        // Component-based projects always involve CSS (modules, sass, or plain stylesheets)
-        hasCss ? "css" : "",
-        // Synthetic concept tokens — derived from deps so README exclusion doesn't break matching.
-        // Each phrase maps to tokens that appear in the corresponding role concept label.
         hasFrontend ? "hooks composition component" : "",
-        hasRouter ? "client-side routing" : "",
-        hasStateLib ? "state management" : "",
-        hasHttpLib ? "rest api integration" : "",
-        hasBuildTool ? "build tooling" : "",
-        hasTestLib ? "testing" : "",
-        // CI implies organized git workflow and deployment pipeline
+        hasFrontend ? "error boundaries fallback" : "",
+        hasVueSvelte ? "vue svelte alternative" : "",
+        hasA11yTopic ? "accessibility fundamentals" : "",
         r.hasCi ? "git workflow" : "",
         r.hasCi ? "ci cd deployment" : "",
-        hasFormLib ? "form validation" : "",
-        hasA11y ? "accessibility fundamentals" : "",
-        // Any React project can demonstrate error boundaries — it's a React-native pattern
-        hasFrontend ? "error boundaries fallback" : "",
-        // "Vue or Svelte as an alternative" — add "alternative" so the 4-token concept hits threshold
-        hasVueSvelte ? "vue svelte alternative" : "",
         r.hasCsFiles ? "csharp dotnet" : "",
         r.csprojDeps.length > 0 ? "csharp dotnet" : "",
+        depConceptTokens(deps),
         r.description ?? "",
         r.topics.map(expandSlug).join(" "),
         r.packageDeps.map(expandSlug).join(" "),
