@@ -46,6 +46,10 @@ async function enrichRepo(owner: string, raw: RawRepo, token: string): Promise<G
   const hasLibDir = hasDir(contents, "lib") || hasDir(srcContents, "lib");
   const hasActionsDir = hasDir(contents, "actions") || hasDir(srcContents, "actions");
   const hasCsFiles = contents.some((item) => item.type === "file" && item.name.endsWith(".cs"));
+  const CSS_MODULE_PATTERN = /\.module\.(css|scss|sass|less)$/;
+  const hasCssModules =
+    contents.some((item) => item.type === "file" && CSS_MODULE_PATTERN.test(item.name)) ||
+    srcContents.some((item) => item.type === "file" && CSS_MODULE_PATTERN.test(item.name));
 
   const highlights: RepoHighlight[] = [];
   if (hasCi) highlights.push({ signal: "ci", path: ".github/workflows" });
@@ -86,6 +90,7 @@ async function enrichRepo(owner: string, raw: RawRepo, token: string): Promise<G
     hasLibDir,
     hasActionsDir,
     hasCsFiles,
+    hasCssModules,
     packageDeps,
     csprojDeps,
     size: raw.size,

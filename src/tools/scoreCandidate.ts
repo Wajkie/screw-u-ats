@@ -90,12 +90,13 @@ export function buildTopReposForReview(
   username: string,
   roleDef: import("../scoring/conceptMatch.js").RoleDefinition,
   limit = 10,
+  highA11yUrls = new Set<string>(),
 ): RepoReviewCard[] {
   return repos
     .map((repo) => {
       const complexity_score = scoreComplexity(repo);
       const allConcepts = [...roleDef.requiredConcepts, ...roleDef.bonusConcepts];
-      const { score: concept_score, matched: matched_concepts } = scoreRepoConceptExposure(repo, roleDef);
+      const { score: concept_score, matched: matched_concepts } = scoreRepoConceptExposure(repo, roleDef, highA11yUrls);
       const missing_concepts = allConcepts.filter(c => !matched_concepts.includes(c));
       const combined_score = Math.round(complexity_score * 0.5 + concept_score * 0.5);
       return {
@@ -137,11 +138,22 @@ export async function scoreCandidate(
   const repos = await fetchRepos(githubUsername, githubToken);
   const scoringRepos = filterNoise(repos);
 
+  // Run Lighthouse before concept matching so accessibility scores feed into the haystack.
+  let lighthouseResult: import("../lighthouse/runAudit.js").LighthouseEnrichment | undefined;
+  let highA11yUrls = new Set<string>();
+  if (includeLighthouse) {
+    const urls = extractLiveUrls(repos);
+    lighthouseResult = await runLighthouseAudits(urls, pagespeedApiKey);
+    highA11yUrls = new Set(
+      lighthouseResult.audits.filter((a) => a.scores.accessibility >= 80).map((a) => a.url),
+    );
+  }
+
   const trajectoryResult = scoreTrajectory(scoringRepos, Date.now(), graduationDate);
-  const conceptResult = matchConcepts(scoringRepos, roleDef);
+  const conceptResult = matchConcepts(scoringRepos, roleDef, highA11yUrls);
   const complexityScore = avgComplexity(scoringRepos);
   const { top, weak } = buildRepoSummaries(repos, githubUsername);
-  const top_repos_for_review = buildTopReposForReview(repos, githubUsername, roleDef);
+  const top_repos_for_review = buildTopReposForReview(repos, githubUsername, roleDef, 10, highA11yUrls);
   const skill_map = computeSkillMap(scoringRepos);
 
   const fit_score = Math.round(
@@ -169,11 +181,7 @@ export async function scoreCandidate(
     skill_map,
   };
 
-  if (includeLighthouse) {
-    const urls = extractLiveUrls(repos);
-    const lighthouse = await runLighthouseAudits(urls, pagespeedApiKey);
-    result.enrichment = { lighthouse };
-  }
+  if (lighthouseResult) result.enrichment = { lighthouse: lighthouseResult };
 
   return result;
 }

@@ -21,6 +21,7 @@ export interface GitHubRepo {
   hasLibDir: boolean;
   hasActionsDir: boolean;
   hasCsFiles: boolean;
+  hasCssModules: boolean;
   packageDeps: string[];
   csprojDeps: string[];
   size: number;

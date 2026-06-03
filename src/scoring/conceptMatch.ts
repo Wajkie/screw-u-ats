@@ -65,6 +65,16 @@ function normalizeLanguage(lang: string): string {
 
 const FRONTEND_FRAMEWORKS = ["react", "vue", "angular", "svelte", "solid", "astro", "preact"];
 
+function normalizeHomepage(raw: string | null): string | null {
+  if (!raw?.trim() || raw.includes(" ")) return null;
+  const withProtocol = raw.startsWith("http") ? raw : `https://${raw}`;
+  try {
+    const url = new URL(withProtocol);
+    if (url.protocol === "https:" || url.protocol === "http:") return withProtocol.replace(/\/$/, "");
+  } catch { /* unparseable */ }
+  return null;
+}
+
 function depConceptTokens(deps: string[]): string {
   const phrases = new Set<string>();
   for (const dep of deps) {
@@ -77,7 +87,8 @@ function depConceptTokens(deps: string[]): string {
 
 // includeReadme=false for fit scoring (cross-repo aggregate — README noise causes false positives).
 // includeReadme=true for per-repo display (single-repo breakdown — README is the main signal).
-function buildHaystack(repos: GitHubRepo[], includeReadme = false): string {
+// highA11yUrls: normalized homepage URLs whose Lighthouse accessibility score >= 80.
+function buildHaystack(repos: GitHubRepo[], includeReadme = false, highA11yUrls = new Set<string>()): string {
   return repos
     .flatMap((r) => {
       const lang = (r.language ?? "").toLowerCase();
@@ -85,15 +96,18 @@ function buildHaystack(repos: GitHubRepo[], includeReadme = false): string {
       const hasFrontend = FRONTEND_FRAMEWORKS.some((f) => deps.some((d) => d.includes(f)));
       const hasVueSvelte = deps.some((d) => d.includes("vue") || d.includes("svelte") || d.includes("nuxt"));
       const hasA11yTopic = r.topics.some((t) => t.includes("a11y") || t.includes("accessibility"));
+      const repoUrl = normalizeHomepage(r.homepage);
+      const hasA11yScore = repoUrl !== null && highA11yUrls.has(repoUrl);
 
       return [
         normalizeLanguage(r.language ?? ""),
         lang === "typescript" ? "javascript es6" : lang === "javascript" ? "es6" : "",
-        hasFrontend ? "html" : "",
+        hasFrontend ? "html css" : "",
         hasFrontend ? "hooks composition component" : "",
         hasFrontend ? "error boundaries fallback" : "",
         hasVueSvelte ? "vue svelte alternative" : "",
-        hasA11yTopic ? "accessibility fundamentals" : "",
+        hasA11yTopic || hasA11yScore ? "accessibility fundamentals" : "",
+        r.hasCssModules ? "utility-first css" : "",
         r.hasCi ? "git workflow" : "",
         r.hasCi ? "ci cd deployment" : "",
         r.hasCsFiles ? "csharp dotnet" : "",
@@ -158,8 +172,8 @@ export function parseRoleDefinition(markdown: string): RoleDefinition {
   return { name, requiredConcepts, bonusConcepts, minimumComplexityScore };
 }
 
-export function scoreRepoConceptExposure(repo: GitHubRepo, role: RoleDefinition): { score: number; matched: string[] } {
-  const haystack = buildHaystack([repo], true);
+export function scoreRepoConceptExposure(repo: GitHubRepo, role: RoleDefinition, highA11yUrls = new Set<string>()): { score: number; matched: string[] } {
+  const haystack = buildHaystack([repo], true, highA11yUrls);
   const allConcepts = [...role.requiredConcepts, ...role.bonusConcepts];
   const matched: string[] = [];
 
@@ -172,8 +186,8 @@ export function scoreRepoConceptExposure(repo: GitHubRepo, role: RoleDefinition)
   return { score, matched };
 }
 
-export function matchConcepts(repos: GitHubRepo[], role: RoleDefinition): ConceptMatchResult {
-  const repoHaystacks = repos.map(repo => buildHaystack([repo]));
+export function matchConcepts(repos: GitHubRepo[], role: RoleDefinition, highA11yUrls = new Set<string>()): ConceptMatchResult {
+  const repoHaystacks = repos.map(repo => buildHaystack([repo], false, highA11yUrls));
 
   const matchedConcepts: ConceptOccurrence[] = [];
   const missingConcepts: string[] = [];
