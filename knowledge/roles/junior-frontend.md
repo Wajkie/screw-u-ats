@@ -25,7 +25,6 @@ composition patterns, and how state flows through an app.
 - Form libraries with validation (react-hook-form, Zod schema validation)
 - Accessibility fundamentals (ARIA roles, semantic HTML, keyboard navigation)
 - Deployment and CI/CD (Vercel, Netlify, GitHub Actions)
-- Performance patterns (code splitting, lazy loading, memoization trade-offs)
 - Error boundaries and fallback UI patterns (React ErrorBoundary, graceful degradation)
 - Vue or Svelte as an alternative to React
 
