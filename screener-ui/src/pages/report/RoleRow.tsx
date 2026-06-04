@@ -23,7 +23,6 @@ export default function RoleRow({ role, bestFit }: { role: RoleScore; bestFit: s
         <ScoreBar score={role.fit_score} />
         <span className={styles.pct}>{role.fit_score}%</span>
         <RecommendationBadge recommendation={role.recommendation} />
-        {isBest && <span className={styles.badgeBest}>best fit</span>}
         <span className={styles.chevron} aria-hidden="true">{expanded ? '▲' : '▼'}</span>
       </button>
       {expanded && (
